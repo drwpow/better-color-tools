@@ -1,0 +1,6 @@
+.eslint*
+.github/
+.prettier*
+test/
+tsconfig.json
+

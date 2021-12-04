@@ -1,0 +1,40 @@
+@use "sass:color";
+@use "sass:math";
+
+@function mix($color1, $color2, $weight: 0.5) {
+  $r1: color.red($color1);
+  $g1: color.green($color1);
+  $b1: color.blue($color1);
+  $a1: color.alpha($color1);
+
+  $r2: color.red($color2);
+  $g2: color.green($color2);
+  $b2: color.blue($color2);
+  $a2: color.alpha($color2);
+
+  $w1: 1 - $weight;
+  $w2: $weight;
+
+  @return rgba(
+    math.sqrt(math.pow($r1, 2) * $w1 + math.pow($r2, 2) * $w2),
+    math.sqrt(math.pow($g1, 2) * $w1 + math.pow($g2, 2) * $w2),
+    math.sqrt(math.pow($b1, 2) * $w1 + math.pow($b2, 2) * $w2),
+    $w1 * $a1 + $w2 * $a2
+  );
+}
+
+@function lighten($color, $weight: 0.5) {
+  @if ($weight >= 0) {
+    @return mix($color, #fff, $weight);
+  } @else {
+    @return darken($color, -$weight);
+  }
+}
+
+@function darken($color, $weight: 0.5) {
+  @if ($weight >= 0) {
+    @return mix($color, #000, $weight);
+  } @else {
+    @return lighten($color, -$weight);
+  }
+}
