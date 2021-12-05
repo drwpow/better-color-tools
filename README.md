@@ -56,8 +56,11 @@ It may be hard to tell a difference at first, but upon closer inspection you’l
 ```scss
 @use 'better-color-tools' as color;
 
-// mix color (0 = pure color1, 0.5 = even blend, 1 = pure color2)
-$mix: color.mix(#1a7f37, #cf222e, 0.4);
+$mix: color.mix(#1a7f37, #cf222e, 0); // 100% color 1, 0% color 2
+$mix: color.mix(#1a7f37, #cf222e, 0.25); // 75%, 25%
+$mix: color.mix(#1a7f37, #cf222e, 0.5); // 50%, 50%
+$mix: color.mix(#1a7f37, #cf222e, 0.75); // 25%, 75%
+$mix: color.mix(#1a7f37, #cf222e, 1); // 0%, 100%
 ```
 
 ### Lighten / Darken
@@ -68,11 +71,13 @@ better results than this library, and I’m not happy with that 🙂.
 ```scss
 @use 'better-color-tools' as color;
 
-// 0 = current color, 1 = white, -1 = black
-$lighter: color.lighten(#cf222e, 0.25);
+$lighter: color.lighten(#cf222e, 0); // 0% lighter (original color)
+$lighter: color.lighten(#cf222e, 0.25); // 25% lighter
+$lighter: color.lighten(#cf222e, 1); // 100% lighter (pure white)
 
-// 0 = current color, 1 = black, -1 = white
-$darker: color.darken(#cf222e, 0.25);
+$darker: color.darken(#cf222e, 0); // 0% darker (original color)
+$darker: color.darken(#cf222e, 0.25); // 25% darker
+$darker: color.darken(#cf222e, 1); // 100% darker (pure black)
 ```
 
 ## JavaScript / TypeScript
@@ -81,11 +86,16 @@ $darker: color.darken(#cf222e, 0.25);
 
 [View comparison](#mix) (Sass’ mix function is a generic implementation of mixing you’ll find with other libraries in JavaScript)
 
+_Note: you’ll see `0xcf222e` in the examples which is just another way of writing `'#cf222e'`. It’s just replacing the `#` with `0x`. Use what you prefer!_
+
 ```ts
 import color from 'better-color-tools';
 
-// mix color (0.5 = even blend, 0 = color 1, 1 = color 2)
-const mix = color.mix('#1a7f37', '#cf222e', 0.4);
+const mix = color.mix(0x1a7f37, 0xcf222e, 0); // 100% color 1, 0% color 2
+const mix = color.mix(0x1a7f37, 0xcf222e, 0.25); // 75%, 25%
+const mix = color.mix(0x1a7f37, 0xcf222e, 0.5); // 50%, 50%
+const mix = color.mix(0x1a7f37, 0xcf222e, 0.75); // 25%, 75%
+const mix = color.mix(0x1a7f37, 0xcf222e, 1); // 0%, 100%
 ```
 
 ### Lighten / Darken
@@ -95,11 +105,13 @@ const mix = color.mix('#1a7f37', '#cf222e', 0.4);
 ```ts
 import color from 'better-color-tools';
 
-// 1 = white, 0 = current color, -1 = black
-const lighter = color.lighten('#cf222e', 0.5);
+color.lighten(0xcf222e, 0); // 0% lighter (original color)
+color.lighten(0xcf222e, 0.25); // 25% lighter
+color.lighten(0xcf222e, 1); // 100% lighter (pure white)
 
-// 1 = black, 0 = current color, -1 = white
-const darker = color.darken('#cf222e', 0.5);
+color.darken(0xcf222e, 0); // 0% darker (original color)
+color.darken(0xcf222e, 0.25); // 25% darker
+color.darken(0xcf222e, 1); // 100% darker (pure black)
 ```
 
 ### Conversion
