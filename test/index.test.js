@@ -20,11 +20,11 @@ describe('color.from', () => {
   });
 
   it('rgb -> hsl', () => {
-    expect(color.from([173, 255, 47]).hsl).to.equal('hsl(83.654, 100%, 59.2%, 1)');
-    expect(color.from('#C4432B').hsl).to.equal('hsl(9.412, 64%, 46.9%, 1)');
-    expect(color.from([173, 255, 47]).hslVal.toString()).to.equal([83.654, 1, 0.592, 1].toString());
-    expect(color.from([162, 61, 149]).hsl).to.equal('hsl(307.723, 45.3%, 43.7%, 1)');
-    expect(color.from([220, 37, 149]).hsl).to.equal('hsl(323.279, 72.3%, 50.4%, 1)');
+    expect(color.from([173, 255, 47]).hsl).to.equal('hsl(83.65, 100%, 59.22%, 1)');
+    expect(color.from('#C4432B').hsl).to.equal('hsl(9.41, 64.02%, 46.86%, 1)');
+    expect(color.from([173, 255, 47]).hslVal.toString()).to.equal([83.65, 1, 0.5922, 1].toString());
+    expect(color.from([162, 61, 149]).hsl).to.equal('hsl(307.72, 45.29%, 43.73%, 1)');
+    expect(color.from([220, 37, 149]).hsl).to.equal('hsl(323.28, 72.33%, 50.39%, 1)');
 
     // random test
     const c = randomColor();
@@ -42,7 +42,7 @@ describe('color.from', () => {
   });
 
   it('hex -> hsl', () => {
-    expect(color.from('#fa8072').hsl).to.equal('hsl(6.176, 93.2%, 71.4%, 1)');
+    expect(color.from('#fa8072').hsl).to.equal('hsl(6.18, 93.15%, 71.37%, 1)');
 
     // random test
     const c = randomColor();

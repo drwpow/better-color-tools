@@ -65,8 +65,8 @@ $mix: color.mix(#1a7f37, #cf222e, 1); // 0%, 100%
 
 ### Lighten / Darken
 
-⚠️ Still in development. It’s important to note that Sass’ new [`color.scale()`][sass-color-scale] tool is pretty advanced, and is actually good way to lighten / darken colors (previous methods have been lacking). Right now Sass’ `color.scale()` produces
-better results than this library, and I’m not happy with that 🙂.
+⚠️ Still in development. It’s important to note that Sass’ new [`color.scale()`][sass-color-scale] utility is now a fantastic way to lighten / darken colors (previous attempts had been lacking). `color.scale()` produces better results than this library,
+currently, and I’m not happy with that 🙂.
 
 ```scss
 @use 'better-color-tools' as color;
@@ -118,24 +118,22 @@ color.darken(0xcf222e, 1); // 100% darker (pure black)
 
 Color conversion between RGB and hexadecimal is a trivial 1:1 conversion, so this library isn’t better than any other in that regard.
 
-It’s in HSL handling where approaches differ. Because HSL is a smaller color space than RGB, in order to use it, it **requires some use of decimals.** So any library that rounds out-of-the-box will yield different results.
-
-Compare this library to [color-convert], converting from RGB -> HSL -> RGB
+It’s in HSL handling where approaches differ. Because HSL is a smaller color space than RGB, in order to use it, it **requires at least 1 decimal place.** So any library that rounds out-of-the-box will produce inaccurate results (compare this library to
+[color-convert] converting from RGB -> HSL and back again):
 
 ```ts
-const original = [167, 214, 65];
-color.from(color.from(original).hsl).rgb; // ✅ [167, 214, 65]
-
-convert.hsl.rgb(convert.rgb.hsl(...original)); // ❌ [168, 215, 66]
+color.from(color.from([167, 214, 65]).hsl).rgbVal; // ✅ [167, 214, 65]
+convert.hsl.rgb(convert.rgb.hsl(167, 214, 65)); // ❌ [168, 215, 66]
 ```
 
-2 things are the cause of the difference:
+The reason, again, is rounding by default. This is a [known limitation of HSL][hsl], so many libraries can disable rounding with overrides, but in addition to that not being default behavior it also produces noisy results:
 
-1. **JavaScript’s rounding errors.** Many implementations are borrowed from other languages that don’t have JavaScript’s “[bad math][number-precision].” This implementation was written with JavaScript in mind and minimizes decimal calculations through
-   tricks like normalizing to `255` rather than `1.`
-2. **No rounding by default.** As stated before, **HSL requires decimal places** to produce the full RGB color space. When a library rounds by default it will always make HSL conversions inaccurate. This is a known limitation, so libraries like
-   color-convert will allow you to use decimals. But that generates numbers like `hsl(78.9261744966443, 64.50216450216452%, 54.70588235294118%)`. Compare that to better-color-tools: `hsl(78.926, 64.5%, 54.7%)`. Why do you have to choose between accuracy
-   and utility?
+```ts
+color.from([167, 214, 65]).hsl; // hsl(78.93, 64.5%, 54.71%)
+convert.rgb.hsl.raw([167, 214, 65]); // hsl(78.9261744966443, 64.50216450216452%, 54.70588235294118%)
+```
+
+This library takes the opinion that **HSL should have RGB precision by default.** So this library generates values that support infinite conversions without quality loss that are still readable.
 
 #### Usage
 
@@ -158,16 +156,22 @@ color.from(0xc4432b).rgba; // 'rgba(196, 67, 43, 1)'
 color.from('#C4432B').rgbaVal; // [196, 67, 43, 1]
 
 // convert color to hsl
-color.from('#C4432B').hsl; // 'hsl(9.412, 64%, 46.9%, 1)'
-color.from(0xc4432b).hsl; // 'hsl(9.412, 64%, 46.9%, 1)'
-color.from('#C4432B').hslVal; // [9.412, 0.64, 0.469, 1]
+color.from('#C4432B').hsl; // 'hsl(9.41, 64.02%, 46.86%, 1)'
+color.from(0xc4432b).hsl; // 'hsl(9.41, 64.02%, 46.86%, 1)'
+color.from('#C4432B').hslVal; // [9.41, 0.6402, 0.4686, 1]
 
 // convert color names to hex
 color.from('rebeccapurple').hex; // '#663399'
 ```
 
+## TODO / Roadmap
+
+- Adding color spaces like [Adobe](https://en.wikipedia.org/wiki/Adobe_RGB_color_space) and [Rec 709](https://en.wikipedia.org/wiki/Rec._709) to allow color mixing and lightening/darkening to use different perceptual color algorithms
+- This library currently only supports 8-bit RGB (web & apps); is 16-bit useful? (create an issue!)
+
 [color-convert]: https://github.com/Qix-/color-convert
 [computer-color]: https://www.youtube.com/watch?v=LKnqECcg6Gw&vl=en
+[hsl]: https://en.wikipedia.org/wiki/HSL_and_HSV#Disadvantages
 [number-precision]: https://github.com/nefe/number-precision
 [sass-color]: https://sass-lang.com/documentation/modules/color
 [sass-color-scale]: https://sass-lang.com/documentation/modules/color#scale

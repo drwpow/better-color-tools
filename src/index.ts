@@ -140,14 +140,28 @@ export function parse(rawColor: Color): RGBA {
     // hsl
     if (strVal.toLocaleLowerCase().startsWith('hsl')) {
       const hsl: HSL = [0, 0, 0, 1];
-      const values = strVal
-        .replace(/hsl\s*\(/i, '')
+      let [h, s, l, a] = strVal
+        .replace(/hsla?\s*\(/i, '')
         .replace(/\)\s*$/, '')
         .split(',');
-      hsl[0] = parseFloat(values[0]);
-      hsl[1] = values[1].includes('%') ? parseFloat(values[1]) / 100 : parseFloat(values[1]);
-      hsl[2] = values[2].includes('%') ? parseFloat(values[2]) / 100 : parseFloat(values[2]);
-      hsl[3] = parseFloat(values[3] || '1');
+      hsl[0] = parseFloat(h);
+      if ((s.includes('%') && !l.includes('%')) || (!s.includes('%') && l.includes('%'))) throw new Error(`Mix of % and normalized (0–1) values in "${strVal}", prefer one or the other.`);
+      if (s.includes('%')) {
+        const sVal = parseFloat(s) / 100;
+        const lVal = parseFloat(l) / 100;
+        if (sVal < 0 || sVal > 100) throw new Error(`Saturation out of bounds for "${strVal}", must be between 0% and 100%`);
+        if (lVal < 0 || lVal > 100) throw new Error(`Lightness out of bounds for "${strVal}", must be between 0% and 100%`);
+        hsl[1] = sVal;
+        hsl[2] = lVal;
+      } else {
+        const sVal = parseFloat(s);
+        const lVal = parseFloat(l);
+        if (sVal < 0 || sVal > 1) throw new Error(`Saturation out of bounds for "${strVal}", must be between 0 and 1 (or be a %)`);
+        if (lVal < 0 || lVal > 1) throw new Error(`Lightness out of bounds for "${strVal}", must be between 0 and 1 (or be a %)`);
+        hsl[1] = sVal;
+        hsl[2] = lVal;
+      }
+      hsl[3] = parseFloat(a || '1');
       const color = hslToRGB(hsl);
       return validate(color);
     }
@@ -155,12 +169,8 @@ export function parse(rawColor: Color): RGBA {
     const rawStr = strVal.replace(/rgba?\s*\(/i, '').replace(/\)\s*$/, '');
     const values = rawStr.includes(',') ? rawStr.split(',').filter((v) => !!v.trim()) : rawStr.split(' ').filter((v) => !!v.trim());
     if (values.length != 3 && values.length != 4) throw new Error(`Unable to parse color "${rawColor}"`);
-    const color: RGBA = [
-      parseInt(values[0], 10), // r
-      parseInt(values[1], 10), // g
-      parseInt(values[2], 10), // b
-      parseFloat((values[3] || '1').trim()), // a
-    ];
+    const [r, g, b, a] = values;
+    const color: RGBA = [parseInt(r, 10), parseInt(g, 10), parseInt(b, 10), parseFloat((a || '1').trim())];
     return validate(color);
   }
 
@@ -266,7 +276,7 @@ export function rgbToHSL(rgb: RGBA): HSL {
   let L = (M + m) / 2; // default: standard HSL (“fill”) calculation
 
   // if white/black/gray, exit early
-  if (M == m) return [H, S, NP.round(L / 255, 3), A];
+  if (M == m) return [H, S, NP.round(L / 255, 4), A];
 
   // if any other color, calculate hue & saturation
   const C = M - m;
@@ -294,7 +304,7 @@ export function rgbToHSL(rgb: RGBA): HSL {
     S = (M - L) / Math.min(L, 255 - L);
   }
 
-  return [NP.round(H, 3), NP.round(S, 3), NP.round(L / 255, 3), NP.round(A, 3)];
+  return [NP.round(H, 2), NP.round(S, 4), NP.round(L / 255, 4), A];
 }
 
 export default {
