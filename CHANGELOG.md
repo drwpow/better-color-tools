@@ -1,6 +1,13 @@
 # better-color-tools
 
+## 0.0.2
+
+### Patch Changes
+
+- 181de13: Improve HSL accuracy by standardizing to 2 decimal places for all 3 values (before, hue had 3; saturation & lightness had 1)
+
 ## 0.0.1
+
 ### Patch Changes
 
 - ce992b2: Fixed hex and HSL bugs
