@@ -118,8 +118,8 @@ color.darken(0xcf222e, 1); // 100% darker (pure black)
 
 Color conversion between RGB and hexadecimal is a trivial 1:1 conversion, so this library isn’t better than any other in that regard.
 
-It’s in HSL handling where approaches differ. Because HSL is a smaller color space than RGB, in order to use it, it **requires at least 1 decimal place.** So any library that rounds out-of-the-box will produce inaccurate results (compare this library to
-[color-convert] converting from RGB -> HSL and back again):
+It’s in HSL handling where approaches differ. Few realize that when using whole numbers in HSL, [it only has 14.5% the colors of RGB][hsl-rgb]. In order to recreate the full RGB spectrum you need **at least 1 decimal place in all H, S, and L values.** For
+this reason, any library that uses whole numbers in HSL out-of-the-box will result in distorted colors and quality loss (compare this library to [color-convert] converting from RGB -> HSL and back again):
 
 ```ts
 color.from(color.from([167, 214, 65]).hsl).rgbVal; // ✅ [167, 214, 65]
@@ -137,6 +137,8 @@ This library takes the opinion that **HSL should have RGB precision by default.*
 
 #### Usage
 
+`color.from()` takes any valid CSS string, hex number, or RGBA array as an input, and can generate any desired output as a result:
+
 ```ts
 import color from 'better-color-tools';
 
@@ -150,15 +152,18 @@ color.from('#C4432B').rgb; // 'rgb(196, 67, 43)'
 color.from(0xc4432b).rgb; // 'rgb(196, 67, 43)'
 color.from('#C4432B').rgbVal; // [196, 67, 43, 1]
 
-// convert color to rgba
+// convert hex to rgba
 color.from('#C4432B').rgba; // 'rgba(196, 67, 43, 1)'
 color.from(0xc4432b).rgba; // 'rgba(196, 67, 43, 1)'
-color.from('#C4432B').rgbaVal; // [196, 67, 43, 1]
+color.from('#C4432B80').rgbaVal; // [196, 67, 43, 0.5]
 
 // convert color to hsl
 color.from('#C4432B').hsl; // 'hsl(9.41, 64.02%, 46.86%, 1)'
 color.from(0xc4432b).hsl; // 'hsl(9.41, 64.02%, 46.86%, 1)'
 color.from('#C4432B').hslVal; // [9.41, 0.6402, 0.4686, 1]
+
+// convert hsl to rgb
+color.from('hsl(328, 100%, 54%)').rgb; // 'rgb(255, 20, 146)'
 
 // convert color names to hex
 color.from('rebeccapurple').hex; // '#663399'
@@ -166,12 +171,14 @@ color.from('rebeccapurple').hex; // '#663399'
 
 ## TODO / Roadmap
 
-- Adding color spaces like [Adobe](https://en.wikipedia.org/wiki/Adobe_RGB_color_space) and [Rec 709](https://en.wikipedia.org/wiki/Rec._709) to allow color mixing and lightening/darkening to use different perceptual color algorithms
+- **Planned**: Adding color spaces like [Adobe](https://en.wikipedia.org/wiki/Adobe_RGB_color_space) and [Rec 709](https://en.wikipedia.org/wiki/Rec._709) to allow color mixing and lightening/darkening to use different perceptual color algorithms
+- Currently the only array `color.from()` accepts is RGB. Would an HSL array be useful? (I’m on the fence)
 - This library currently only supports 8-bit RGB (web & apps); is 16-bit useful? (create an issue!)
 
 [color-convert]: https://github.com/Qix-/color-convert
 [computer-color]: https://www.youtube.com/watch?v=LKnqECcg6Gw&vl=en
 [hsl]: https://en.wikipedia.org/wiki/HSL_and_HSV#Disadvantages
+[hsl-rgb]: https://pow.rs/blog/dont-use-hsl-for-anything/
 [number-precision]: https://github.com/nefe/number-precision
 [sass-color]: https://sass-lang.com/documentation/modules/color
 [sass-color-scale]: https://sass-lang.com/documentation/modules/color#scale
