@@ -27,16 +27,17 @@ export function from(rawColor: Color): ColorOutput {
     get hex(): string {
       return `#${color
         .map((v, n) => {
-          // r, g, b
-          if (n < 3) return v.toString(16);
-          // alpha
+          if (n < 3) return leftPad(v.toString(16), 2);
           return v < 1 ? NP.round(255 * v, 0).toString(16) : '';
         })
         .join('')}`;
     },
     get hexVal(): number {
-      const [r, g, b, a] = color;
-      return parseInt(`0x${leftPad(r.toString(16))}${leftPad(g.toString(16))}${leftPad(b.toString(16))}${a < 1 ? leftPad((256 * a).toString(16)) : ''}`, 16);
+      const hex = color.map((v, n) => {
+        if (n < 3) return leftPad(v.toString(16), 2);
+        return v < 1 ? leftPad((256 * v).toString(16), 2) : '';
+      });
+      return parseInt(`0x${hex.join('')}`, 16);
     },
     get rgb(): string {
       if (color[3] == 1) {
@@ -216,11 +217,10 @@ export function lighten(color: Color, value: number): RGBA {
  */
 export function hslToRGB(hsl: HSL): RGBA {
   let [H, S, L, A] = hsl;
-  H = H % 360; // allow greater-than-360 values
+  H = Math.abs(H % 360); // allow < 0 and > 360
 
-  const H1 = H / 60;
   const C = (1 - Math.abs(2 * L - 1)) * S;
-  const X = C * (1 - Math.abs((H1 % 2) - 1));
+  const X = C * (1 - Math.abs(((H / 60) % 2) - 1));
 
   let R = 0;
   let G = 0;
@@ -283,6 +283,9 @@ export function rgbToHSL(rgb: RGBA): HSL {
       case B:
         H = 60 * (4 + (R - G) / C);
         break;
+    }
+    while (H < 0) {
+      H += 360;
     }
   }
 
