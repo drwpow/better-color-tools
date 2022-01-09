@@ -1,44 +1,112 @@
 import { expect } from 'chai';
+import {performance} from 'perf_hooks';
 import color from '../dist/index.js';
 
 function randomColor() {
-  return [Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255), 1];
+  const chars = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'];
+  return `#${[...new Array(6)].map(() => chars[Math.floor(Math.random() * chars.length)]).join('')}`;
 }
+
+describe('color.mix', () => {
+  const R = [1, 0, 0, 1];
+  const Y = [1, 1, 0, 1];
+  const G = [0, 1, 0, 1];
+  const C = [0, 1, 1, 1];
+  const B = [0, 0, 1, 1];
+  const M = [1, 0, 1, 1];
+
+  it('r -> y', () => {
+    expect(color.mix(R, Y, 0).rgbVal).to.deep.equal(R);
+    expect(color.mix(R, Y, 0.5).hex).to.equal('#ffba00');
+    expect(color.mix(R, Y, 1).rgbVal).to.deep.equal(Y);
+  });
+  it('r -> g', () => {
+    expect(color.mix(R, G, 0).rgbVal).to.deep.equal(R);
+    expect(color.mix(R, G, 0.5).hex).to.equal('#baba00'); // incorrect: [0.5, 0.5, 0, 1]
+    expect(color.mix(R, G, 1).rgbVal).to.deep.equal(G);
+  });
+  it('y -> g', () => {
+    expect(color.mix(Y, G, 0).rgbVal).to.deep.equal(Y);
+    expect(color.mix(Y, G, 0.5).hex).to.equal('#baff00');
+    expect(color.mix(Y, G, 1).rgbVal).to.deep.equal(G);
+  });
+  it('g -> c', () => {
+    expect(color.mix(G, C, 0).rgbVal).to.deep.equal(G);
+    expect(color.mix(G, C, 0.5).hex).to.equal('#00ffba');
+    expect(color.mix(G, C, 1).rgbVal).to.deep.equal(C);
+  });
+  it('g -> b', () => {
+    expect(color.mix(G, B, 0).rgbVal).to.deep.equal(G);
+    expect(color.mix(G, B, 0.5).hex).to.equal('#00baba');
+    expect(color.mix(G, B, 1).rgbVal).to.deep.equal(B);
+  });
+  it('c -> b', () => {
+    expect(color.mix(C, B, 0).rgbVal).to.deep.equal(C);
+    expect(color.mix(C, B, 0.5).hex).to.equal('#00baff');
+    expect(color.mix(C, B, 1).rgbVal).to.deep.equal(B);
+  });
+  it('b -> m', () => {
+    expect(color.mix(B, M, 0).rgbVal).to.deep.equal(B);
+    expect(color.mix(B, M, 0.5).hex).to.equal('#ba00ff');
+    expect(color.mix(B, M, 1).rgbVal).to.deep.equal(M);
+  });
+  it('b -> r', () => {
+    expect(color.mix(B, R, 0).rgbVal).to.deep.equal(B);
+    expect(color.mix(B, R, 0.5).hex).to.equal('#ba00ba');
+    expect(color.mix(B, R, 1).rgbVal).to.deep.equal(R);
+  });
+  it('m -> r', () => {
+    expect(color.mix(M, R, 0).rgbVal).to.deep.equal(M);
+    expect(color.mix(M, R, 0.5).hex).to.equal('#ff00ba');
+    expect(color.mix(M, R, 1).rgbVal).to.deep.equal(R);
+  });
+
+  // complements
+  it('r -> c', () => {
+    expect(color.mix(R, C, 0.5).hex).to.equal('#bababa');
+  });
+  it('g -> m', () => {
+    expect(color.mix(G, M, 0.5).hex).to.equal('#bababa');
+  });
+  it('b -> y', () => {
+    expect(color.mix(B, Y, 0.5).hex).to.equal('#bababa');
+  });
+});
 
 describe('color.from', () => {
   it('rgb -> hex', () => {
     expect(color.from('rgb(127, 255, 212)').hex).to.equal('#7fffd4');
     expect(color.from('rgba(127, 255, 212, 0.5)').hex).to.equal('#7fffd480');
     expect(color.from('rgb(127, 255, 212)').hexVal).to.equal(0x7fffd4);
-    expect(color.from([127, 255, 212]).hexVal).to.equal(0x7fffd4);
+    expect(color.from([127/255, 255/255, 212/255]).hexVal).to.equal(0x7fffd4);
     expect(color.from('rgba(127, 255, 212, 0.5)').hexVal).to.equal(0x7fffd480);
     expect(color.from('rgb(252, 9, 172)').hex).to.equal('#fc09ac');
     expect(color.from('rgb(127.5, 127.5, 127.5)').hex).to.equal('#808080');
 
     // random color test (if it fails, add a test!)
     const expected = randomColor();
-    const generated = color.from(color.from(expected).hex).rgbVal.map((n) => Math.round(n));
-    expect(generated.toString(), `rgb: ${expected} failed to generate hex`).to.equal(expected.toString());
+    const generated = color.from(color.from(expected).hex).hex;
+    expect(generated, `rgb: ${expected} failed to generate hex`).to.equal(expected);
   });
 
   it('rgb -> hsl', () => {
-    expect(color.from([173, 255, 47]).hsl).to.equal('hsl(83.654, 100%, 59.216%, 1)');
+    expect(color.from('rgb(173, 255, 47)').hsl).to.equal('hsl(83.654, 100%, 59.216%, 1)');
     expect(color.from('#C4432B').hsl).to.equal('hsl(9.412, 64.017%, 46.863%, 1)');
-    expect(color.from([173, 255, 47]).hslVal.toString()).to.equal([83.654, 1, 0.59216, 1].toString());
-    expect(color.from([162, 61, 149]).hsl).to.equal('hsl(307.723, 45.291%, 43.725%, 1)');
-    expect(color.from([220, 37, 149]).hsl).to.equal('hsl(323.279, 72.332%, 50.392%, 1)');
+    expect(color.from('rgb(173, 255, 47)').hslVal.toString()).to.equal([83.654, 1, 0.59216, 1].toString());
+    expect(color.from('rgb(162, 61, 149)').hsl).to.equal('hsl(307.723, 45.291%, 43.725%, 1)');
+    expect(color.from('rgb(220, 37, 149)').hsl).to.equal('hsl(323.279, 72.332%, 50.392%, 1)');
 
     // random test
     const expected = randomColor();
-    const generated = color.from(color.from(expected).hsl).rgbVal.map((n) => Math.round(n));
-    expect(generated.toString(), `rgb: ${expected} failed to generate HSL`).to.equal(expected.toString());
+    const generated = color.from(color.from(expected).hsl).hex;
+    expect(generated, `rgb: ${expected} failed to generate HSL`).to.equal(expected);
   });
 
   it('rgb -> p3', () => {
-    expect(color.from([255, 0, 0]).p3).to.equal('color(display-p3 1 0 0)');
-    expect(color.from([128, 128, 128]).p3).to.equal('color(display-p3 0.50196 0.50196 0.50196)');
-    expect(color.from([192, 192, 0, 0.5]).p3).to.equal('color(display-p3 0.75294 0.75294 0/0.5)');
-    expect(color.from('rgb(196, 67, 43, 0.8)').p3).to.equal('color(display-p3 0.76863 0.26275 0.16863/0.8)');
+    expect(color.from('rgb(255, 0, 0)').p3).to.equal('color(display-p3 1 0 0)');
+    expect(color.from('rgb(128, 128, 128)').p3).to.equal('color(display-p3 0.50196 0.50196 0.50196)');
+    expect(color.from('rgba(192, 192, 0, 0.5)').p3).to.equal('color(display-p3 0.75294 0.75294 0/0.5)');
+    expect(color.from('rgba(196, 67, 43, 0.8)').p3).to.equal('color(display-p3 0.76863 0.26275 0.16863/0.8)');
   });
 
   it('hex -> rgb', () => {
@@ -51,8 +119,8 @@ describe('color.from', () => {
 
     // random test
     const expected = randomColor();
-    const generated = color.from(color.from(expected).hex).rgbVal.map((n) => Math.round(n));
-    expect(generated.toString()).to.equal(expected.toString());
+    const generated = color.from(color.from(expected).hex).hex;
+    expect(generated).to.equal(expected);
   });
 
   it('hex -> hsl', () => {
@@ -60,8 +128,8 @@ describe('color.from', () => {
 
     // random test
     const expected = randomColor();
-    const generated = color.from(color.from(color.from(expected).hex).hsl).rgbVal.map((n) => Math.round(n));
-    expect(generated.toString()).to.equal(expected.toString());
+    const generated = color.from(color.from(color.from(expected).hex).hsl).hex;
+    expect(generated).to.equal(expected);
   });
 
   it('hsl -> rgb', () => {
@@ -74,8 +142,8 @@ describe('color.from', () => {
 
     // random test
     const expected = randomColor();
-    const generated = color.from(color.from(color.from(expected).hsl).hsl).rgbVal.map((n) => Math.round(n));
-    expect(generated.toString(), `rgb: ${expected} failed multiple HSL <> RGB conversions`).to.equal(expected.toString());
+    const generated = color.from(color.from(color.from(expected).hsl).hsl).hex;
+    expect(generated, `rgb: ${expected} failed multiple HSL <> RGB conversions`).to.equal(expected);
   });
 
   it('hsl -> hex', () => {
@@ -98,5 +166,34 @@ describe('color.from', () => {
   it('allows out-of-bounds values', () => {
     expect(color.from('rgb(-100, 500, -100)').hex).to.equal('#00ff00');
     expect(color.from('hsl(0, -100%, 200%)').hex).to.equal('#ffffff');
+  });
+});
+
+describe.skip('benchmark', () => {
+  it('rgb -> hex: 75,000 ops/s', () => {
+    const start = performance.now();
+    for (let n = 0; n < 75000; n ++) {
+      color.from([1, 0, 0]).hexVal;
+    }
+    const end = performance.now() - start;
+    expect(end).to.be.lessThan(1000);
+  });
+
+  it('rgb -> hsl: 75,000 ops/s', () => {
+    const start = performance.now();
+    for (let n = 0; n < 75000; n ++) {
+      color.from([1, 0, 0]).hslVal;
+    }
+    const end = performance.now() - start;
+    expect(end).to.be.lessThan(1000);
+  });
+
+  it('rgb -> p3: 75,000 ops/s', () => {
+    const start = performance.now();
+    for (let n = 0; n < 75000; n ++) {
+      color.from([1, 0, 0]).hslVal;
+    }
+    const end = performance.now() - start;
+    expect(end).to.be.lessThan(1000);
   });
 });
