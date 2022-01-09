@@ -1,5 +1,11 @@
 # better-color-tools
 
+## 0.1.0
+
+### Minor Changes
+
+- Add P3 support
+
 ## 0.0.2
 
 ### Patch Changes

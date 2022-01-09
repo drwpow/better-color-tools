@@ -16,3 +16,7 @@ export function degToRad(degrees: number): number {
 export function radToDeg(radians: number): number {
   return NP.divide(NP.times(radians, 180), Math.PI);
 }
+
+export function clamp(input: number, min: number, max: number): number {
+  return Math.min(Math.max(input, min), max);
+}

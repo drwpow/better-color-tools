@@ -1,14 +1,34 @@
 import NP from 'number-precision';
 import cssNames from './css-names.js';
-import { leftPad } from './utils.js';
+import { clamp, leftPad } from './utils.js';
 
 export type RGB = [number, number, number];
 export type RGBA = [number, number, number, number];
 export type HSL = [number, number, number, number];
+export type P3 = [number, number, number, number];
 export type Color = string | number | RGB | RGBA;
-export type ColorOutput = { hex: string; rgb: string; rgba: string; hexVal: number; rgbVal: RGBA; rgbaVal: RGBA; hsl: string; hslVal: RGBA };
+export type ColorOutput = {
+  hex: string;
+  rgb: string;
+  rgba: string;
+  hexVal: number;
+  rgbVal: RGBA;
+  rgbaVal: RGBA;
+  hsl: string;
+  hslVal: RGBA;
+  p3: string;
+};
 
 NP.enableBoundaryChecking(false); // don’t throw error on inaccurate calculation
+
+const P = 5; // standard precision: 16-bit
+const COMMA = '(\\s*,\\s*|\\s+)';
+const FLOAT = '-?[0-9]+(\\.[0-9]+)?';
+export const HEX_RE = /^#?[0-9a-f]{3,8}$/i;
+export const RGB_RE = new RegExp(`^rgba?\\(\\s*(?<R>${FLOAT})${COMMA}(?<G>${FLOAT})${COMMA}(?<B>${FLOAT})(${COMMA}(?<A>${FLOAT}))?\\s*\\)$`, 'i');
+export const HSL_RE = new RegExp(`^hsla?\\(\\s*(?<H>${FLOAT})${COMMA}(?<S>${FLOAT})%${COMMA}(?<L>${FLOAT})%(${COMMA}(?<A>${FLOAT}))?\\s*\\)$`, 'i');
+export const P3_RE = new RegExp(`^color\\(\\s*display-p3\\s+(?<R>${FLOAT})\\s+(?<G>${FLOAT})\\s+(?<B>${FLOAT})(\\s*\\/\\s*(?<A>${FLOAT}))?\\s*\\)$`, 'i');
+const { minus, round, strip, times } = NP;
 
 /**
  * Parse any valid CSS color color string and convert to:
@@ -19,6 +39,7 @@ NP.enableBoundaryChecking(false); // don’t throw error on inaccurate calculati
  * - rgba:    'rgba(255, 0, 0, 1)'
  * - rgbaVal: [255, 0, 0, 1] // alias of rgbVal
  * - hslVal:  [0, 1, 1, 1]   // 0% = 0, 100% = 1
+ * - p3:      'color(display-p3 1 0 0)'
  */
 export function from(rawColor: Color): ColorOutput {
   const color = parse(rawColor);
@@ -27,23 +48,23 @@ export function from(rawColor: Color): ColorOutput {
     get hex(): string {
       return `#${color
         .map((v, n) => {
-          if (n < 3) return leftPad(v.toString(16), 2);
-          return v < 1 ? NP.round(255 * v, 0).toString(16) : '';
+          if (n < 3) return leftPad(round(v, 0).toString(16), 2);
+          return v < 1 ? round(times(255, v), 0).toString(16) : '';
         })
         .join('')}`;
     },
     get hexVal(): number {
       const hex = color.map((v, n) => {
-        if (n < 3) return leftPad(v.toString(16), 2);
-        return v < 1 ? leftPad((256 * v).toString(16), 2) : '';
+        if (n < 3) return leftPad(round(v, 0).toString(16), 2);
+        return v < 1 ? leftPad(times(256, v).toString(16), 2) : '';
       });
       return parseInt(`0x${hex.join('')}`, 16);
     },
     get rgb(): string {
       if (color[3] == 1) {
-        return `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+        return `rgb(${round(color[0], 0)}, ${round(color[1], 0)}, ${round(color[2], 0)})`;
       } else {
-        return `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3]})`;
+        return `rgba(${round(color[0], 0)}, ${round(color[1], 0)}, ${round(color[2], 0)}, ${round(color[3], P)})`;
       }
     },
     rgbVal: color,
@@ -53,10 +74,14 @@ export function from(rawColor: Color): ColorOutput {
     rgbaVal: color,
     get hsl(): string {
       const [h, s, l, a] = rgbToHSL(color);
-      return `hsl(${h}, ${NP.strip(s * 100)}%, ${NP.strip(l * 100)}%, ${a})`;
+      return `hsl(${h}, ${strip(s * 100)}%, ${strip(l * 100)}%, ${round(a, P)})`;
     },
     get hslVal(): RGBA {
       return rgbToHSL(color);
+    },
+    get p3(): string {
+      const [r, g, b, a] = color;
+      return `color(display-p3 ${round(r / 255, P)} ${round(g / 255, P)} ${round(b / 255, P)}${a < 1 ? `/${round(a, P)}` : ''})`;
     },
   };
 }
@@ -69,35 +94,25 @@ export function from(rawColor: Color): ColorOutput {
  * Explanation: https://www.youtube.com/watch?v=LKnqECcg6Gw
  */
 export function mix(color1: Color, color2: Color, weight = 0.5): RGBA {
-  if (!(weight >= 0 && weight <= 1)) throw new Error(`Weight must be between 0 and 1, received ${weight}`);
-  const w1 = 1 - weight;
-  const w2 = weight;
+  const w = clamp(weight, 0, 1);
+  const w1 = minus(1, w);
+  const w2 = w;
   const [r1, g1, b1, a1] = from(color1).rgbVal;
   const [r2, g2, b2, a2] = from(color2).rgbVal;
-  return [Math.round(r1 ** 2 * w1 + r2 ** 2 * w2), Math.round(g1 ** 2 * w1 + g2 ** 2 * w2), Math.round(b1 ** 2 * w1 + b2 ** 2 * w2), Math.round(a1 * w1 + a2 * w2)];
+  return [round(r1 ** 2 * w1 + r2 ** 2 * w2, 0), round(g1 ** 2 * w1 + g2 ** 2 * w2, 0), round(b1 ** 2 * w1 + b2 ** 2 * w2, 0), round(a1 * w1 + a2 * w2, 0)];
 }
 
 /** Convert any number of user inputs into RGBA array */
 export function parse(rawColor: Color): RGBA {
   /** Convert 0xff0000 to RGBA array */
   function parseHexVal(hexVal: number): RGBA {
-    if (hexVal < 0 || hexVal > 0xffffffff) throw new Error(`Expected color in hex range (0xff0000), received ${hexVal.toString(16) || hexVal}`);
-    const hexStr = leftPad(hexVal.toString(16), 6); // note: 0x000001 will convert to '1'
+    const hexStr = leftPad(clamp(hexVal, 0, 0xffffffff).toString(16), 6); // note: 0x000001 will convert to '1'
     return [
       parseInt(hexStr.substring(0, 2), 16), // r
       parseInt(hexStr.substring(2, 4), 16), // g
       parseInt(hexStr.substring(4, 6), 16), // b
-      parseInt(hexStr.substring(6, 8) || 'ff', 16) / 255, // a
+      round(parseInt(hexStr.substring(6, 8) || 'ff', 16) / 255, P), // a
     ];
-  }
-
-  /** Validate RGBA array */
-  function validate(c: RGBA): RGBA {
-    if (!(c[0] >= 0 && c[0] <= 255)) throw new Error(`${rawColor} Expected r to be between 0 and 255, received ${c[0]}`);
-    if (!(c[1] >= 0 && c[1] <= 255)) throw new Error(`${rawColor} Expected g to be between 0 and 255, received ${c[1]}`);
-    if (!(c[2] >= 0 && c[2] <= 255)) throw new Error(`${rawColor} Expected b to be between 0 and 255, received ${c[2]}`);
-    if (!(c[3] >= 0 && c[3] <= 1)) throw new Error(`${rawColor} Expected alpha to be between 0 and 1, received ${c[3]}`);
-    return c;
   }
 
   // [R, G, B] or [R, G, B, A]
@@ -108,17 +123,15 @@ export function parse(rawColor: Color): RGBA {
     const color: RGBA = [0, 0, 0, 1]; // note: alpha defaults to 1
     for (let n = 0; n < rawColor.length; n++) {
       const v = rawColor[n];
-      if (n == 3 && (v < 0 || v > 1)) throw new Error(`Alpha must be between 0 and 1, received ${v}`);
-      else if (v < 0 || v > 255) throw new Error(`Color channel must be between 0 and 255, received ${v}`);
-      color[n] = rawColor[n];
+      color[n] = clamp(v, 0, n == 3 ? 1 : 255);
     }
-    return validate(color);
+    return color;
   }
 
   // 0xff0000 (number)
   if (typeof rawColor == 'number') {
     const color = parseHexVal(rawColor);
-    return validate(color);
+    return color;
   }
 
   // '#ff0000' / 'red' / 'rgb(255, 0, 0)' / 'hsl(0, 1, 1)'
@@ -129,49 +142,50 @@ export function parse(rawColor: Color): RGBA {
     // named color
     if (cssNames[strVal as keyof typeof cssNames]) {
       const color = parseHexVal(cssNames[strVal as keyof typeof cssNames] as number);
-      return validate(color);
+      return color;
     }
     // hex
-    const maybeHex = parseInt(strVal.replace(/^#/, ''), 16);
-    if (!Number.isNaN(maybeHex)) {
-      const color = parseHexVal(maybeHex);
-      return validate(color);
+    if (HEX_RE.test(strVal)) {
+      const hex = strVal.replace('#', '');
+      const hexNum = parseInt(
+        hex.length < 6
+          ? hex
+              .split('')
+              .map((d) => `${d}${d}`)
+              .join('') // handle shortcut (#fff)
+          : hex,
+        16
+      );
+      const color = parseHexVal(hexNum);
+      return color;
+    }
+    // rgb
+    if (RGB_RE.test(strVal)) {
+      const v: Record<string, string> = (RGB_RE.exec(strVal) as any).groups || {};
+      const color: RGBA = [clamp(parseFloat(v.R), 0, 255), clamp(parseFloat(v.G), 0, 255), clamp(parseFloat(v.B), 0, 255), v.A ? clamp(parseFloat(v.A), 0, 1) : 1];
+      return color;
     }
     // hsl
-    if (strVal.toLocaleLowerCase().startsWith('hsl')) {
+    if (HSL_RE.test(strVal)) {
       const hsl: HSL = [0, 0, 0, 1];
-      let [h, s, l, a] = strVal
-        .replace(/hsla?\s*\(/i, '')
-        .replace(/\)\s*$/, '')
-        .split(',');
-      hsl[0] = parseFloat(h);
-      if ((s.includes('%') && !l.includes('%')) || (!s.includes('%') && l.includes('%'))) throw new Error(`Mix of % and normalized (0–1) values in "${strVal}", prefer one or the other.`);
-      if (s.includes('%')) {
-        const sVal = parseFloat(s) / 100;
-        const lVal = parseFloat(l) / 100;
-        if (sVal < 0 || sVal > 100) throw new Error(`Saturation out of bounds for "${strVal}", must be between 0% and 100%`);
-        if (lVal < 0 || lVal > 100) throw new Error(`Lightness out of bounds for "${strVal}", must be between 0% and 100%`);
-        hsl[1] = sVal;
-        hsl[2] = lVal;
-      } else {
-        const sVal = parseFloat(s);
-        const lVal = parseFloat(l);
-        if (sVal < 0 || sVal > 1) throw new Error(`Saturation out of bounds for "${strVal}", must be between 0 and 1 (or be a %)`);
-        if (lVal < 0 || lVal > 1) throw new Error(`Lightness out of bounds for "${strVal}", must be between 0 and 1 (or be a %)`);
-        hsl[1] = sVal;
-        hsl[2] = lVal;
-      }
-      hsl[3] = parseFloat(a || '1');
+      const v: Record<string, string> = (HSL_RE.exec(strVal) as any).groups || {};
+      hsl[0] = parseFloat(v.H);
+      const isPerc = strVal.includes('%');
+      let sVal = parseFloat(v.S);
+      let lVal = parseFloat(v.L);
+      if (isPerc) sVal /= 100;
+      if (isPerc) lVal /= 100;
+      hsl[1] = clamp(sVal, 0, 1);
+      hsl[2] = clamp(lVal, 0, 1);
+      hsl[3] = v.A ? parseFloat(v.A) : 1;
       const color = hslToRGB(hsl);
-      return validate(color);
+      return color;
     }
-    // rgb (and fallbacks)
-    const rawStr = strVal.replace(/rgba?\s*\(/i, '').replace(/\)\s*$/, '');
-    const values = rawStr.includes(',') ? rawStr.split(',').filter((v) => !!v.trim()) : rawStr.split(' ').filter((v) => !!v.trim());
-    if (values.length != 3 && values.length != 4) throw new Error(`Unable to parse color "${rawColor}"`);
-    const [r, g, b, a] = values;
-    const color: RGBA = [parseInt(r, 10), parseInt(g, 10), parseInt(b, 10), parseFloat((a || '1').trim())];
-    return validate(color);
+    // p3
+    if (P3_RE.test(strVal)) {
+      const v: Record<string, string> = (P3_RE.exec(strVal) as any).groups || {};
+      return [times(clamp(parseFloat(v.R), 0, 1), 255), times(clamp(parseFloat(v.G), 0, 1), 255), times(clamp(parseFloat(v.B), 0, 1), 255), v.A ? clamp(parseFloat(v.A), 0, 1) : 1];
+    }
   }
 
   throw new Error(`Unable to parse color "${rawColor}"`);
@@ -229,7 +243,7 @@ export function hslToRGB(hsl: HSL): RGBA {
   let [H, S, L, A] = hsl;
   H = Math.abs(H % 360); // allow < 0 and > 360
 
-  const C = (1 - Math.abs(2 * L - 1)) * S;
+  const C = S * (1 - Math.abs(2 * L - 1));
   const X = C * (1 - Math.abs(((H / 60) % 2) - 1));
 
   let R = 0;
@@ -257,7 +271,7 @@ export function hslToRGB(hsl: HSL): RGBA {
   }
   const m = L - C / 2;
 
-  return [Math.round((R + m) * 255), Math.round((G + m) * 255), Math.round((B + m) * 255), A];
+  return [round((R + m) * 255, P), round((G + m) * 255, P), round((B + m) * 255, P), round(A, P)];
 }
 
 /**
@@ -304,7 +318,7 @@ export function rgbToHSL(rgb: RGBA): HSL {
     S = (M - L) / Math.min(L, 255 - L);
   }
 
-  return [NP.round(H, 2), NP.round(S, 4), NP.round(L / 255, 4), A];
+  return [round(H, P - 2), round(S, P), round(L / 255, P), A];
 }
 
 export default {

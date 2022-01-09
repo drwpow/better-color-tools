@@ -2,6 +2,12 @@
 
 Better color manipulation for Sass and JavaScript/TypeScript.
 
+Supports:
+
+- ✅ RGB / Hex
+- ✅ HSL
+- ✅ [P3]
+
 ## Installing
 
 ```
@@ -147,6 +153,12 @@ color.from('rgb(196, 67, 43)').hex; // '#c4432b'
 color.from([196, 67, 43]).hex; // '#c4432b'
 color.from('rgb(196, 67, 43)').hexVal; // 0xc4432b
 
+// convert hex to p3
+color.from('rgb(196, 67, 43, 0.8)').p3; // 'color(display-p3 0.76863 0.26275 0.16863/0.8)'
+
+// convert from p3 to hex
+color.from('color(display-p3 0.23 0.872 0.918)').hex; // #3bdeea
+
 // convert color to rgb
 color.from('#C4432B').rgb; // 'rgb(196, 67, 43)'
 color.from(0xc4432b).rgb; // 'rgb(196, 67, 43)'
@@ -169,16 +181,27 @@ color.from('hsl(328, 100%, 54%)').rgb; // 'rgb(255, 20, 146)'
 color.from('rebeccapurple').hex; // '#663399'
 ```
 
+#### A note on P3
+
+The [P3 colorspace][p3] is larger than RGB. As a result, many tools apply [gamut matrices](http://endavid.com/index.php?entry=79) to convert RGB to P3 and vice-versa. While that is needed when dealing with image editing software and white-balancing, it’s
+unnecessary for the web. Since browsers are better at this conversion (and may improve it over time), this library takes an intentional “hands-off” approach where P3 is equated with **Ideal RGB**, e.g.:
+
+| P3 Color |  Ideal RGB   |  colorjs.io  |
+| :------: | :----------: | :----------: |
+| `1 0 0`  | ✅ `255 0 0` | ❌ `250 0 0` |
+
+This approach produces better color conversion across-the-board by letting the browser make conversions rather than the library, which is also the approach
+[recommended by Apple for CSS](https://webkit.org/blog/10042/wide-gamut-color-in-css-with-display-p3/). TL;DR this library’s P3 conversion is optimized for web.
+
 ## TODO / Roadmap
 
 - **Planned**: Adding color spaces like [Adobe](https://en.wikipedia.org/wiki/Adobe_RGB_color_space) and [Rec 709](https://en.wikipedia.org/wiki/Rec._709) to allow color mixing and lightening/darkening to use different perceptual color algorithms
-- Currently the only array `color.from()` accepts is RGB. Would an HSL array be useful? (I’m on the fence)
-- This library currently only supports 8-bit RGB (web & apps); is 16-bit useful? (create an issue!)
 
 [color-convert]: https://github.com/Qix-/color-convert
 [computer-color]: https://www.youtube.com/watch?v=LKnqECcg6Gw&vl=en
 [hsl]: https://en.wikipedia.org/wiki/HSL_and_HSV#Disadvantages
 [hsl-rgb]: https://pow.rs/blog/dont-use-hsl-for-anything/
 [number-precision]: https://github.com/nefe/number-precision
+[p3]: https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color()
 [sass-color]: https://sass-lang.com/documentation/modules/color
 [sass-color-scale]: https://sass-lang.com/documentation/modules/color#scale
