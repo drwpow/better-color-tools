@@ -1,7 +1,9 @@
-@use "sass:color";
-@use "sass:math";
+@use 'sass:color';
+@use 'sass:math';
 
-@function mix($color1, $color2, $weight: 0.5) {
+@function mix($color1, $color2, $weight: 0.5, $gamma: 2.2) {
+  $tf: math.div(1, $gamma); // transfer function
+  $itf: $gamma; // inverse transfer function
   $r1: color.red($color1);
   $g1: color.green($color1);
   $b1: color.blue($color1);
@@ -16,9 +18,9 @@
   $w2: $weight;
 
   @return rgba(
-    math.sqrt(math.pow($r1, 2) * $w1 + math.pow($r2, 2) * $w2),
-    math.sqrt(math.pow($g1, 2) * $w1 + math.pow($g2, 2) * $w2),
-    math.sqrt(math.pow($b1, 2) * $w1 + math.pow($b2, 2) * $w2),
+    math.pow(math.pow($r1, $itf) * $w1, $tf) + math.pow(math.pow($r2, $itf) * $w2, $tf),
+    math.pow(math.pow($g1, $itf) * $w1, $tf) + math.pow(math.pow($g2, $itf) * $w2, $tf),
+    math.pow(math.pow($b1, $itf) * $w1, $tf) + math.pow(math.pow($b2, $itf) * $w2, $tf),
     $w1 * $a1 + $w2 * $a2
   );
 }
