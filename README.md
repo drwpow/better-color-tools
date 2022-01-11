@@ -122,7 +122,7 @@ color.from('rebeccapurple').hsl; // 'hsl(270, 50%, 40%)'
 | `hexVal` |  `number`  | `0xffffff`                  |
 | `rgb`    |  `string`  | `"rgb(255, 255, 255)"`      |
 | `rgbVal` | `number[]` | `[1, 1, 1, 1]`              |
-| `rgba`   |  `string`  | `"rgb(255, 255, 255, 1)"`   |
+| `rgba`   |  `string`  | `"rgba(255, 255, 255, 1)"`  |
 | `hsl`    |  `string`  | `"hsl(360, 0%, 100%)"`      |
 | `hslVal` | `number[]` | `[360, 0, 1, 1]"`           |
 | `p3`     |  `string`  | `"color(display-p3 1 1 1)"` |
