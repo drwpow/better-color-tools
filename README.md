@@ -104,8 +104,8 @@ color.darken(0xcf222e, 1); // 100% darker (pure black)
 
 ## Convert (JS/TS only)
 
-Color conversion between RGB and hexadecimal is a trivial 1:1 conversion, so this library isn’t better than any other in that regard. However, it should be noted that [HSL is lossy when rounding to integers][hsl-rgb], so by default this library persists
-HSL decimals to prevent rounding errors when converting back-and-forth.
+Color conversion between RGB and hexadecimal is a trivial 1:1 conversion, so this library isn’t better than any other in that regard. However, it should be noted that [HSL is lossy when rounding to integers][hsl-rgb], so this library always persists HSL
+decimals to prevent rounding errors and incorrect colors when converting back-and-forth (as opposed to other libraries either always round, or round by default).
 
 `color.from()` takes any valid CSS string, hex number, or RGBA array (values normalized to `1`) as an input, and can generate any desired output as a result:
 
