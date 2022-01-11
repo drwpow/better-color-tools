@@ -1,5 +1,11 @@
 # better-color-tools
 
+## 0.2.0
+
+### Minor Changes
+
+- 90b85ee: Improve mix(), lighten(), and darken()
+
 ## 0.1.0
 
 ### Minor Changes
