@@ -11,9 +11,14 @@
       .app {
         margin-left: auto;
         margin-right: auto;
-        max-width: 800px;
-        padding: 2rem;
-        width: 100%;
+        max-width: calc(100vw - 4rem);
+        padding: 0 2rem;
+        width: 800px;
+      }
+
+      h1 {
+        margin-bottom: 1rem;
+        margin-top: 2rem;
       }
 
       .menu {
@@ -22,23 +27,30 @@
         margin: 0 0 2rem;
         padding: 0;
       }
+      .menu--c {
+        justify-content: center;
+      }
 
       .ctrl {
         display: flex;
         flex-direction: column;
       }
-
-      .ctrl:nth-of-type(2) {
+      .ctrl--c {
+        align-items: center;
+      }
+      .ctrl--r {
         align-items: flex-end;
       }
 
-      .hex {
+      .hex,
+      .input-grad {
         font-family: -ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
         margin-top: 0.5rem;
         width: 5em;
       }
 
       .gradient {
+        background: #d0d0d0;
         display: flex;
         margin-bottom: 0.5rem;
         margin-top: 0.5rem;
@@ -53,6 +65,34 @@
         font-size: 12px;
         font-style: italic;
       }
+
+      .input-grad {
+        width: 24rem;
+      }
+
+      .linear-gradient {
+        background: #d0d0d0;
+        height: 12px;
+        margin-bottom: 0.5rem;
+        margin-top: 0.5rem;
+      }
+
+      .footer {
+        margin-top: 3rem;
+        margin-bottom: 4rem;
+        text-align: center;
+      }
+
+      .github {
+        background-image: linear-gradient(90deg, #fe44af, #df0ca3, #ba0ac7, #8a07e5, #7217ff);
+        background-image: linear-gradient(90deg, color(display-p3 0.99608 0.26667 0.68627), color(display-p3 0.8726 0.04794 0.63738), color(display-p3 0.73023 0.03993 0.78118), color(display-p3 0.5426 0.02928 0.89861), color(display-p3 0.44706 0.0902 1));
+        background-clip: text;
+        -webkit-background-clip: text;
+        text-fill-color: transparent;
+        -webkit-text-fill-color: transparent;
+        font-weight: 600;
+        text-decoration: none;
+      }
     </style>
   </head>
   <body>
@@ -63,28 +103,47 @@
           <input id="c1-picker" class="picker" type="color" value="#ff0000" />
           <input id="c1" class="hex" type="text" value="#ff0000" />
         </div>
-        <div class="ctrl">
+        <div class="ctrl ctrl--r">
           <input id="c2-picker" class="picker" type="color" value="#00ff00" />
           <input id="c2" class="hex" type="text" value="#00ff00" />
         </div>
       </menu>
-      <div id="mix-1" class="gradient"></div>
-      <div id="mix-2" class="gradient"></div>
-      <div class="explanation">top: gamma-adjusted (correct) / bottom: simple average</div>
+      <div id="mix-rgb" class="gradient"></div>
+      <div id="mix-p3" class="gradient"></div>
+      <div id="mix-z" class="gradient"></div>
+      <div class="explanation">top: gamma-adjusted (correct) / middle: gamma-adjusted P3 (Safari only, with supporting monitor) / bottom: simple average</div>
     </div>
 
     <div class="app">
       <h1>Lighten / Darken</h1>
-      <menu class="menu">
-        <div class="ctrl">
+      <menu class="menu menu--c">
+        <div class="ctrl ctrl--c">
           <input id="lum-picker" class="picker" type="color" value="#00ffff" />
           <input id="lum" class="hex" type="text" value="#00ffff" />
         </div>
       </menu>
-      <div id="lum-1" class="gradient"></div>
-      <div id="lum-2" class="gradient"></div>
-      <div class="explanation">top: gamma-adjusted (correct) / bottom: simple average</div>
+      <div id="lum-rgb" class="gradient"></div>
+      <div id="lum-p3" class="gradient"></div>
+      <div id="lum-z" class="gradient"></div>
+      <div class="explanation">top: gamma-adjusted (correct) / middle: gamma-adjusted P3 (Safari only, with supporting monitor) / bottom: simple average</div>
     </div>
+
+    <div class="app">
+      <h1>Gradient</h1>
+      <menu class="menu menu--c">
+        <div class="ctrl">
+          <input id="grad" class="input-grad" type="text" value="linear-gradient(90deg, blue, lime)" />
+        </div>
+      </menu>
+      <div id="grad-rgb" class="linear-gradient"></div>
+      <div id="grad-p3" class="linear-gradient"></div>
+      <div id="grad-z" class="linear-gradient"></div>
+      <div class="explanation">top: gamma-adjusted (correct) / middle: gamma-adjusted P3 (Safari only, with supporting monitor) / bottom: default gradient</div>
+    </div>
+
+    <footer class="footer">
+      <a class="github" href="https://github.com/drwpow/better-color-tools">GitHub</a>
+    </footer>
     <script type="module">
       import color from './index.min.js';
 
@@ -100,41 +159,54 @@
         const c1 = document.querySelector('#c1').value;
         const c2 = document.querySelector('#c2').value;
 
-        let mix1 = '';
-        let mix2 = '';
+        let mixRGB = '';
+        let mixP3 = '';
+        let mixZ = '';
 
         for (let n = 0; n <= STEPS; n++) {
-          mix1 += `<div class="gradient-block" style="background:${color.mix(c1, c2, n / STEPS).hex}"></div>`;
-          mix2 += `<div class="gradient-block" style="background:${avg(c1, c2, n / STEPS).hex}"></div>`;
+          mixRGB += `<div class="gradient-block" style="background:${color.mix(c1, c2, n / STEPS).hex}"></div>`;
+          mixP3 += `<div class="gradient-block" style="background:${color.mix(c1, c2, n / STEPS).p3}"></div>`;
+          mixZ += `<div class="gradient-block" style="background:${avg(c1, c2, n / STEPS).hex}"></div>`;
         }
-        document.querySelector('#mix-1').innerHTML = mix1;
-        document.querySelector('#mix-2').innerHTML = mix2;
+        document.querySelector('#mix-rgb').innerHTML = mixRGB;
+        document.querySelector('#mix-p3').innerHTML = mixP3;
+        document.querySelector('#mix-z').innerHTML = mixZ;
 
         // -----
 
         const lum = document.querySelector('#lum').value;
 
-        let lum1 = '';
-        let lum2 = '';
+        let lumRGB = '';
+        let lumP3 = '';
+        let lumZ = '';
         const halfSteps = Math.floor(STEPS / 2);
         for (let n = 0; n < halfSteps; n++) {
-          console.log({ n: n / halfSteps });
-          lum1 += `<div class="gradient-block" style="background:${color.darken(lum, 1 - n / halfSteps).hex}"></div>`;
-          lum2 += `<div class="gradient-block" style="background:${avg('#000', lum, n / halfSteps).hex}"></div>`;
+          lumRGB += `<div class="gradient-block" style="background:${color.darken(lum, 1 - n / halfSteps).hex}"></div>`;
+          lumP3 += `<div class="gradient-block" style="background:${color.darken(lum, 1 - n / halfSteps).p3}"></div>`;
+          lumZ += `<div class="gradient-block" style="background:${avg('#000', lum, n / halfSteps).hex}"></div>`;
         }
         for (let n = 0; n < halfSteps; n++) {
-          console.log({ n: n / halfSteps });
-          lum1 += `<div class="gradient-block" style="background:${color.lighten(lum, n / halfSteps).hex}"></div>`;
-          lum2 += `<div class="gradient-block" style="background:${avg(lum, '#fff', n / halfSteps).hex}"></div>`;
+          lumRGB += `<div class="gradient-block" style="background:${color.lighten(lum, n / halfSteps).hex}"></div>`;
+          lumP3 += `<div class="gradient-block" style="background:${color.lighten(lum, n / halfSteps).p3}"></div>`;
+          lumZ += `<div class="gradient-block" style="background:${avg(lum, '#fff', n / halfSteps).hex}"></div>`;
         }
-        document.querySelector('#lum-1').innerHTML = lum1;
-        document.querySelector('#lum-2').innerHTML = lum2;
+        document.querySelector('#lum-rgb').innerHTML = lumRGB;
+        document.querySelector('#lum-p3').innerHTML = lumP3;
+        document.querySelector('#lum-z').innerHTML = lumZ;
+
+        // -----
+
+        let input = document.querySelector('#grad').value;
+        document.querySelector('#grad-rgb').setAttribute('style', `background:${color.gradient(input)}`);
+        document.querySelector('#grad-p3').setAttribute('style', `background:${color.gradient(input, true)}`);
+        document.querySelector('#grad-z').setAttribute('style', `background:${input}`);
       }
       render();
 
       document.querySelector('#c1-picker').addEventListener('change', handlePicker);
       document.querySelector('#c2-picker').addEventListener('change', handlePicker);
       document.querySelector('#lum-picker').addEventListener('change', handlePicker);
+      document.querySelector('#grad').addEventListener('keyup', render);
       document.querySelector('#c1').addEventListener('change', handleHex);
       document.querySelector('#c2').addEventListener('change', handleHex);
       document.querySelector('#c1').addEventListener('keyup', handleHex);

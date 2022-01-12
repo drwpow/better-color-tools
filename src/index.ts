@@ -1,6 +1,6 @@
 import NP from 'number-precision';
 import cssNames from './css-names.js';
-import { clamp, leftPad } from './utils.js';
+import { clamp, leftPad, splitDistance } from './utils.js';
 
 export type RGB = [number, number, number];
 export type RGBA = [number, number, number, number];
@@ -28,6 +28,10 @@ export const HEX_RE = /^#?[0-9a-f]{3,8}$/i;
 export const RGB_RE = new RegExp(['^rgba?\\(\\s*', `(?<R>${FLOAT}%?)`, COMMA, `(?<G>${FLOAT}%?)`, COMMA, `(?<B>${FLOAT}%?)`, `(${COMMA}(?<A>${FLOAT}%?))?`, '\\s*\\)$'].join(''), 'i');
 export const HSL_RE = new RegExp(['^hsla?\\(\\s*', `(?<H>${FLOAT})`, COMMA, `(?<S>${FLOAT})%`, COMMA, `(?<L>${FLOAT})%`, `(${COMMA}(?<A>${FLOAT})%?)?`, '\\s*\\)$'].join(''), 'i');
 export const P3_RE = new RegExp(['^color\\(\\s*display-p3\\s+', `(?<R>${FLOAT}%?)`, '\\s+', `(?<G>${FLOAT}%?)`, '\\s+', `(?<B>${FLOAT}%?)`, `(\\s*\\/\\s*(?<A>${FLOAT}%?))?`, '\\s*\\)$'].join(''), 'i');
+export const LIN_GRAD_RE = /^linear-gradient\((.*)\);?$/;
+export const RAD_GRAD_RE = /^radial-gradient\((.*)\);?$/;
+export const CON_GRAD_RE = /^conic-gradient\((.*)\);?$/;
+export const STOP_POS_RE = /\s[^\s]+$/;
 const { round, strip } = NP;
 
 /**
@@ -152,6 +156,7 @@ export function parse(rawColor: Color): RGBA {
     if (!strVal) throw new Error(`Expected color, received empty string`);
 
     // named color
+    // console.log({ val: strVal, name: (cssNames as any)[strVal] });
     if (typeof cssNames[strVal.toLowerCase() as keyof typeof cssNames] === 'number') {
       return parseHexVal(cssNames[strVal as keyof typeof cssNames] as number);
     }
@@ -346,10 +351,64 @@ export function rgbToHSL(rgb: RGBA): HSL {
   return [round(H, P - 2), round(S, P), round(L, P), A];
 }
 
+/**
+ * Gradient
+ * Take any CSS gradient and correct gamma
+ */
+function gradient(input: string, p3 = false): string {
+  const gradString = input.trim();
+  let gradType: 'linear-gradient' | 'radial-gradient' | 'conic-gradient' = 'linear-gradient';
+  let position: string | undefined;
+  let stops: string[] = [];
+  if (LIN_GRAD_RE.test(gradString)) {
+    stops = (gradString.match(LIN_GRAD_RE) as RegExpMatchArray)[1].split(',').map((p) => p.trim());
+    if (stops[0].includes('deg') || stops[0].includes('turn') || stops[0].includes('to ')) {
+      position = stops.shift();
+    }
+  } else if (RAD_GRAD_RE.test(gradString)) {
+    gradType = 'radial-gradient';
+    stops = (gradString.match(RAD_GRAD_RE) as RegExpMatchArray)[1].split(',').map((p) => p.trim());
+    if (stops[0].includes('circle') || stops[0].includes('ellipse') || stops[0].includes('closest-') || stops[0].includes('farthest-')) {
+      position = stops.shift();
+    }
+  } else if (CON_GRAD_RE.test(gradString)) {
+    gradType = 'conic-gradient';
+    stops = (gradString.match(CON_GRAD_RE) as RegExpMatchArray)[1].split(',').map((p) => p.trim());
+    if (stops[0].includes('from')) {
+      position = stops.shift();
+    }
+  } else throw new Error(`Unable to parse gradient "${input}"`);
+
+  const newGradient: { color: string; pos?: string | number }[] = [];
+
+  stops.forEach((stop, n) => {
+    let color = stop;
+    let pos = '';
+    const posMatch = stop.match(STOP_POS_RE);
+    if (posMatch) {
+      pos = posMatch[0].trim();
+      color = stop.replace(pos, '').trim();
+    }
+    if (n > 0) {
+      // TODO: increase/decrease stops
+      for (let i = 1; i <= 3; i++) {
+        const p = 0.25 * i;
+        let c = mix(newGradient[n - 1].color, color, p);
+        newGradient.push({ color: p3 ? c.p3 : c.hex, pos: splitDistance(newGradient[n - 1].pos, pos, p) });
+      }
+    }
+    const c = from(color);
+    newGradient.push({ color: p3 ? c.p3 : c.hex, pos });
+  });
+
+  return `${gradType}(${[...(position ? [position] : []), ...newGradient.map(({ color, pos }) => `${color}${pos ? ` ${pos}` : ''}`)].join(',')})`;
+}
+
 export default {
   alpha,
   darken,
   from,
+  gradient,
   hslToRGB,
   lighten,
   mix,

@@ -8,6 +8,8 @@ Supports:
 - ✅ HSL
 - ✅ [P3]
 
+👉 **Playground**: https://better-color-tools.pages.dev/
+
 ## Installing
 
 ```
@@ -73,6 +75,10 @@ const mix = color.mix(0x1a7f37, 0xcf222e, 0, gamma);
 
 ## Lighten / Darken
 
+![](./.github/images/k-c.png)
+
+_Top: better-color-utils / Bottom: RGB averaging_
+
 The lighten and darken methods also use [gamma correction][gamma] for improved results (also better than Sass’ `color.lighten()` and `color.darken()`). This method is _relative_, so no matter what color you start with, `darken(…, 0.5)` will always be
 halfway to black, and `lighten(…, 0.5)` will always be halfway to white.
 
@@ -102,10 +108,26 @@ color.darken(0xcf222e, 0.25); // 25% darker
 color.darken(0xcf222e, 1); // 100% darker (pure black)
 ```
 
-## Convert (JS/TS only)
+## Gradient
 
-Color conversion between RGB and hexadecimal is a trivial 1:1 conversion, so this library isn’t better than any other in that regard. However, it should be noted that [HSL is lossy when rounding to integers][hsl-rgb], so this library always persists HSL
-decimals to prevent rounding errors and incorrect colors when converting back-and-forth (as opposed to other libraries either always round, or round by default).
+![](./.github/images/b-g-gradient.png)
+
+_Top: better-color-utils / Bottom: standard CSS gradient_
+
+CSS gradients and SVG gradients are, sadly, not gamma-optimized. But you can fix that with `color.gradient()`. While there’s no _perfect_ fix for this, this solution drastically improves gradients without bloating filesize.
+
+```ts
+// JavaScript/TypeScript
+ipmort color from 'better-color-tools';
+
+const badGradient = 'linear-gradient(90deg, red, lime)';
+const awesomeGradient = color.gradient(badGradient); // linear-gradient(90deg,#ff0000,#e08800,#baba00,#88e000,#00ff00)
+const awesomeP3Gradient = color.gradient(badGradient, true); // linear-gradient(90deg,color(display-p3 0 0 1), … )
+```
+
+`color.gradient()` takes any valid CSS gradient as its first parameter. Also specify `true` as the 2nd parameter to generate a P3 gradient instead of hex.
+
+## Conversion
 
 `color.from()` takes any valid CSS string, hex number, or RGBA array (values normalized to `1`) as an input, and can generate any desired output as a result:
 
@@ -127,12 +149,17 @@ color.from('rebeccapurple').hsl; // 'hsl(270, 50%, 40%)'
 | `hslVal` | `number[]` | `[360, 0, 1, 1]"`           |
 | `p3`     |  `string`  | `"color(display-p3 1 1 1)"` |
 
-_Note: although this library can convert FROM a CSS color name, there is no method to convert INTO one (as over 99% of colors have no standardized name). However, you may import `better-color-tools/dist/css-names.js` for an easy-to-use map for your
-purposes._
+#### A note on HSL
+
+[HSL is lossy when rounding to integers][hsl-rgb], so better-color-tools will yield better results than any library that rounds HSL, or rounds HSL by default.
+
+#### A note on CSS color names
+
+This library can convert _FROM_ a CSS color name, but can’t convert _INTO_ one (as over 99% of colors have no standardized name). However, you may import `better-color-tools/dist/css-names.js` for an easy-to-use map for your purposes.\_
 
 #### A note on P3
 
-This library converts sRGB to P3 “lazily,” meaning every channel is converted 1:1. This differs from some conversions which attempt to simulate hardware differences. Compare this library to colorjs.io:
+When converting to or from P3, this library converts “lazily,” meaning the R/G/B channels are converted 1:1. This differs from some conversions which attempt to simulate hardware differences. Compare this library to colorjs.io:
 
 | P3 Color | better-color-tools | colorjs.io |
 | :------: | :----------------: | :--------: |

@@ -26,13 +26,13 @@
   "main": "./dist/index.min.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "rm -rf dist && tsc && npm run bundle",
+    "build": "rm -rf dist && tsc && npm run bundle && cp ./dist/index.min.js example",
     "bundle": "esbuild dist/index.js --bundle --minify --outfile=dist/index.min.js --format=esm",
     "changeset": "changeset",
     "dev": "tsc -w",
     "lint": "eslint \"**/*.{js,ts}\"",
     "prepublishOnly": "npm run build",
-    "start": "npm run build && cp ./dist/index.min.js example && npx serve example",
+    "start": "npm run build && npx serve example",
     "test": "mocha --parallel"
   },
   "devDependencies": {

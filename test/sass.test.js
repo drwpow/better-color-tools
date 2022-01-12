@@ -16,7 +16,7 @@ function test(css) {
 }
 
 describe('Sass', () => {
-  describe(' color.mix', () => {
+  describe('color.mix', () => {
     // analog
     it('r -> y', () => {
       expect(test('color: mix(#ff0000, #ffff00, 0.5);')).to.equal(`color: #ffba00;`);
@@ -80,6 +80,12 @@ describe('Sass', () => {
       expect(test('color: color.mix(#0000ff, #ff00ff, 50%);')).to.equal(`color: #8000ff;`);
       expect(test('color: color.mix(#0000ff, #ff0000, 50%);')).to.equal(`color: purple;`);
       expect(test('color: color.mix(#ff00ff, #ff0000, 50%);')).to.equal(`color: #ff0080;`);
+    });
+  });
+
+  describe.skip('color.gradient', () => {
+    it('b -> g', () => {
+      expect(test('background: gradient(linear-gradient(90deg, blue, lime));')).to.equal('background: linear-gradient(90deg,#0000ff,#0088e0,#00baba,#00e088,#00ff00);');
     });
   });
 });

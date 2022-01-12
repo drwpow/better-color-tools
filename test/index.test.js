@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import {performance} from 'perf_hooks';
 import color from '../dist/index.js';
+import cssNames from '../dist/css-names.js';
 
 function randomColor() {
   const chars = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'];
@@ -177,9 +178,22 @@ describe('JS', () => {
       expect(color.from('color(display-p3 1 0 0/0)').rgb).to.equal('rgba(255, 0, 0, 0)');
     });
 
+    it('CSS names', () => {
+      for (const [name, hex] of Object.entries(cssNames)) {
+        expect(color.from(name).hexVal).to.equal(hex);
+      }
+    });
+
     it('allows out-of-bounds values', () => {
       expect(color.from('rgb(-100, 500, -100)').hex).to.equal('#00ff00');
       expect(color.from('hsl(0, -100%, 200%)').hex).to.equal('#ffffff');
+    });
+  });
+
+  describe('gradient', () => {
+    it('b -> g', () => {
+      expect(color.gradient('linear-gradient(90deg, blue, lime)')).to.equal('linear-gradient(90deg,#0000ff,#0088e0,#00baba,#00e088,#00ff00)');
+      expect(color.gradient('linear-gradient(90deg, blue, lime)', true)).to.equal('linear-gradient(90deg,color(display-p3 0 0 1),color(display-p3 0 0.53252 0.87742),color(display-p3 0 0.72974 0.72974),color(display-p3 0 0.87742 0.53252),color(display-p3 0 1 0))');
     });
   });
 
