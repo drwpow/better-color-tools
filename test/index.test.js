@@ -196,6 +196,12 @@ describe('JS', () => {
       expect(color.gammaGradient('linear-gradient(90deg, blue, lime)', true)).to.equal('linear-gradient(90deg,color(display-p3 0 0 1),color(display-p3 0 0.53252 0.87742),color(display-p3 0 0.72974 0.72974),color(display-p3 0 0.87742 0.53252),color(display-p3 0 1 0))');
     });
 
+    it('r -> o -> g', () => {
+      expect(
+        color.gammaGradient('linear-gradient(90deg, red 0%, orange 40%, lime 100%)')
+      ).to.equal('linear-gradient(90deg,#ff0000 0%,#ff3400 10%,#ff4700 20%,#ff5600 30%,#ffa500 40%,#e09c00 55%,#bac400 70%,#88e400 85%,#00ff00 100%)')
+    })/
+
     it('overlapping stops', () => {
       expect(color.gammaGradient('linear-gradient(90deg, blue, blue 8px, lime 16px)')).to.equal('linear-gradient(90deg,#0000ff,#0000ff 8px,#0088e0 10px,#00baba 12px,#00e088 14px,#00ff00 16px)');
     });

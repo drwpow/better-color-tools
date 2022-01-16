@@ -381,7 +381,7 @@ function gammaGradient(input: string, p3 = false): string {
 
   const newGradient: { color: string; pos?: string | number }[] = [];
 
-  stops.forEach((stop, n) => {
+  for (const stop of stops) {
     let pos2 = '';
     let color2 = stop;
     const posMatch = stop.match(STOP_POS_RE);
@@ -389,9 +389,9 @@ function gammaGradient(input: string, p3 = false): string {
       pos2 = posMatch[0].trim();
       color2 = stop.replace(pos2, '').trim();
     }
-    if (n > 0) {
-      const pos1 = newGradient[n - 1].pos;
-      const color1 = newGradient[n - 1].color;
+    if (newGradient.length) {
+      const prevItem = newGradient[newGradient.length - 1];
+      const { pos: pos1, color: color1 } = prevItem;
       const skipTransitions = (splitDistance(pos1, pos2) as number) <= 0 || from(color1).hex === from(color2).hex; // stops are on top of each other; skip
 
       // TODO: increase/decrease stops
@@ -405,7 +405,7 @@ function gammaGradient(input: string, p3 = false): string {
     }
     const c = from(color2);
     newGradient.push({ color: p3 ? c.p3 : c.hex, pos: pos2 });
-  });
+  }
 
   return `${gradType}(${[...(position ? [position] : []), ...newGradient.map(({ color, pos }) => `${color}${pos ? ` ${pos}` : ''}`)].join(',')})`;
 }
