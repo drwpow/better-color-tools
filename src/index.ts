@@ -352,10 +352,10 @@ export function rgbToHSL(rgb: RGBA): HSL {
 }
 
 /**
- * Gradient
+ * Gamma Gradient
  * Take any CSS gradient and correct gamma
  */
-function gradient(input: string, p3 = false): string {
+function gammaGradient(input: string, p3 = false): string {
   const gradString = input.trim();
   let gradType: 'linear-gradient' | 'radial-gradient' | 'conic-gradient' = 'linear-gradient';
   let position: string | undefined;
@@ -382,23 +382,29 @@ function gradient(input: string, p3 = false): string {
   const newGradient: { color: string; pos?: string | number }[] = [];
 
   stops.forEach((stop, n) => {
-    let color = stop;
-    let pos = '';
+    let pos2 = '';
+    let color2 = stop;
     const posMatch = stop.match(STOP_POS_RE);
     if (posMatch) {
-      pos = posMatch[0].trim();
-      color = stop.replace(pos, '').trim();
+      pos2 = posMatch[0].trim();
+      color2 = stop.replace(pos2, '').trim();
     }
     if (n > 0) {
+      const pos1 = newGradient[n - 1].pos;
+      const color1 = newGradient[n - 1].color;
+      const skipTransitions = (splitDistance(pos1, pos2) as number) <= 0 || from(color1).hex === from(color2).hex; // stops are on top of each other; skip
+
       // TODO: increase/decrease stops
-      for (let i = 1; i <= 3; i++) {
-        const p = 0.25 * i;
-        let c = mix(newGradient[n - 1].color, color, p);
-        newGradient.push({ color: p3 ? c.p3 : c.hex, pos: splitDistance(newGradient[n - 1].pos, pos, p) });
+      if (!skipTransitions) {
+        for (let i = 1; i <= 3; i++) {
+          const p = 0.25 * i;
+          let c = mix(color1, color2, p);
+          newGradient.push({ color: p3 ? c.p3 : c.hex, pos: splitDistance(pos1 || 0, pos2, p) });
+        }
       }
     }
-    const c = from(color);
-    newGradient.push({ color: p3 ? c.p3 : c.hex, pos });
+    const c = from(color2);
+    newGradient.push({ color: p3 ? c.p3 : c.hex, pos: pos2 });
   });
 
   return `${gradType}(${[...(position ? [position] : []), ...newGradient.map(({ color, pos }) => `${color}${pos ? ` ${pos}` : ''}`)].join(',')})`;
@@ -408,7 +414,7 @@ export default {
   alpha,
   darken,
   from,
-  gradient,
+  gammaGradient,
   hslToRGB,
   lighten,
   mix,

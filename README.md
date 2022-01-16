@@ -114,20 +114,46 @@ color.darken(0xcf222e, 1); // 100% darker (pure black)
 
 _Top: better-color-utils / Bottom: standard CSS gradient_
 
-CSS gradients and SVG gradients are, sadly, not gamma-optimized. But you can fix that with `color.gradient()`. While there’s no _perfect_ fix for this, this solution drastically improves gradients without bloating filesize.
+CSS gradients and SVG gradients are, sadly, not gamma-optimized. But you can fix that with `color.gammaGradient()`. While there’s no _perfect_ fix for this, this solution drastically improves gradients without bloating filesize.
 
 ```ts
 // JavaScript/TypeScript
 ipmort color from 'better-color-tools';
 
 const badGradient = 'linear-gradient(90deg, red, lime)';
-const awesomeGradient = color.gradient(badGradient); // linear-gradient(90deg,#ff0000,#e08800,#baba00,#88e000,#00ff00)
-const awesomeP3Gradient = color.gradient(badGradient, true); // linear-gradient(90deg,color(display-p3 0 0 1), … )
+const awesomeGradient = color.gammaGradient(badGradient); // linear-gradient(90deg,#ff0000,#e08800,#baba00,#88e000,#00ff00)
+const awesomeP3Gradient = color.gammaGradient(badGradient, true); // linear-gradient(90deg,color(display-p3 0 0 1), … )
 ```
 
 `color.gradient()` takes any valid CSS gradient as its first parameter. Also specify `true` as the 2nd parameter to generate a P3 gradient instead of hex.
 
+⚠️ Note: unfortunately there’s not a generator function for Sass (and may not ever be) as it’s quite hard to manipulate strings. Please try [the sandbox](https://better-color-tools.pages.dev) to generate a gradient and copy/paste into Sass for now (which
+will also let you modify it / improve it).
+
 ## Conversion
+
+### Sass
+
+Sass already has many [built-in converters][sass-convert], so this library only extends what’s there. Here are a few helpers:
+
+#### P3
+
+The `p3()` function can convert any Sass-readable color into [P3][p3]:
+
+```scss
+$green: #00ff00;
+$blue: #0000ff;
+
+color: $green; // #00ff00
+color: p3($green); // color(display-p3 0 1 0)
+
+background: linear-gradient(135deg, $green, $blue); // linear-gradient(135deg, #00ff00, #0000ff)
+background: linear-gradient(135deg, p3($green), p3($blue)); // linear-gradient(135deg, color(display-p3 0 1 0), color(dipslay-p3 0 0 1)))
+```
+
+⚠️ Be sure to always include fallback colors when using P3
+
+### JavaScript / TypeScript
 
 `color.from()` takes any valid CSS string, hex number, or RGBA array (values normalized to `1`) as an input, and can generate any desired output as a result:
 
@@ -180,3 +206,4 @@ For the most part, this approach makes P3 much more usable for web and is even [
 [p3]: https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color()
 [sass-color]: https://sass-lang.com/documentation/modules/color
 [sass-color-scale]: https://sass-lang.com/documentation/modules/color#scale
+[sass-convert]: https://sass-lang.com/documentation/values/colors

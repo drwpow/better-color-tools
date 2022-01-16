@@ -1,5 +1,7 @@
 @use 'sass:color';
+@use 'sass:list';
 @use 'sass:math';
+@use 'sass:string';
 
 @function mix($color1, $color2, $weight: 0.5, $gamma: 2.2) {
   $tf: math.div(1, $gamma); // transfer function
@@ -38,5 +40,17 @@
     @return mix($color, #000, $weight);
   } @else {
     @return lighten($color, -$weight);
+  }
+}
+
+@function p3($color) {
+  $r: math.div(color.red($color), 255);
+  $g: math.div(color.green($color), 255);
+  $b: math.div(color.blue($color), 255);
+  $a: color.alpha($color);
+  @if ($a == 1) {
+    @return #{color(display-p3 $r $g $b)};
+  } @else {
+    @return #{color(display-p3 $r $g $b/$a)};
   }
 }
