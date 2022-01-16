@@ -1,5 +1,11 @@
 # better-color-tools
 
+## 0.3.1
+
+### Patch Changes
+
+- 913f34c: Fix gammaGradient bug for gradients with many stops
+
 ## 0.3.0
 
 ### Minor Changes
