@@ -125,7 +125,7 @@ const awesomeGradient = color.gammaGradient(badGradient); // linear-gradient(90d
 const awesomeP3Gradient = color.gammaGradient(badGradient, true); // linear-gradient(90deg,color(display-p3 0 0 1), … )
 ```
 
-`color.gradient()` takes any valid CSS gradient as its first parameter. Also specify `true` as the 2nd parameter to generate a P3 gradient instead of hex.
+`color.gammaGradient()` takes any valid CSS gradient as its first parameter. Also specify `true` as the 2nd parameter to generate a P3 gradient instead of hex.
 
 ⚠️ Note: unfortunately there’s not a generator function for Sass (and may not ever be) as it’s quite hard to manipulate strings. Please try [the sandbox](https://better-color-tools.pages.dev) to generate a gradient and copy/paste into Sass for now (which
 will also let you modify it / improve it).

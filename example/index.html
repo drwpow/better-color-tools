@@ -197,8 +197,8 @@
         // -----
 
         let input = document.querySelector('#grad').value;
-        document.querySelector('#grad-rgb').setAttribute('style', `background:${color.gradient(input)}`);
-        document.querySelector('#grad-p3').setAttribute('style', `background:${color.gradient(input, true)}`);
+        document.querySelector('#grad-rgb').setAttribute('style', `background:${color.gammaGradient(input)}`);
+        document.querySelector('#grad-p3').setAttribute('style', `background:${color.gammaGradient(input, true)}`);
         document.querySelector('#grad-z').setAttribute('style', `background:${input}`);
       }
       render();
