@@ -193,7 +193,9 @@ describe('JS', () => {
   describe('gradient', () => {
     it('b -> g', () => {
       expect(color.gammaGradient('linear-gradient(90deg, blue, lime)')).to.equal('linear-gradient(90deg,#0000ff,#0088e0,#00baba,#00e088,#00ff00)');
-      expect(color.gammaGradient('linear-gradient(90deg, blue, lime)', true)).to.equal('linear-gradient(90deg,color(display-p3 0 0 1),color(display-p3 0 0.53252 0.87742),color(display-p3 0 0.72974 0.72974),color(display-p3 0 0.87742 0.53252),color(display-p3 0 1 0))');
+      expect(
+        color.gammaGradient('linear-gradient(90deg, blue, lime)', true)
+      ).to.equal('linear-gradient(90deg,color(display-p3 0 0 1),color(display-p3 0 0.53252 0.87742),color(display-p3 0 0.72974 0.72974),color(display-p3 0 0.87742 0.53252),color(display-p3 0 1 0))');
     });
 
     it('r -> o -> g', () => {
@@ -203,7 +205,10 @@ describe('JS', () => {
     })/
 
     it('overlapping stops', () => {
-      expect(color.gammaGradient('linear-gradient(90deg, blue, blue 8px, lime 16px)')).to.equal('linear-gradient(90deg,#0000ff,#0000ff 8px,#0088e0 10px,#00baba 12px,#00e088 14px,#00ff00 16px)');
+      // don’t insert the same blues over and over again
+      expect(
+        color.gammaGradient('linear-gradient(90deg, blue, blue 8px, lime 16px)')
+      ).to.equal('linear-gradient(90deg,#0000ff,#0000ff 8px,#0088e0 10px,#00baba 12px,#00e088 14px,#00ff00 16px)');
     });
   });
 
