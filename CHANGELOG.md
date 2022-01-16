@@ -1,5 +1,12 @@
 # better-color-tools
 
+## 0.3.0
+
+### Minor Changes
+
+- 61062ac: Add gradient tool
+- 9256660: Add Sass p3() function, improve gradient tool
+
 ## 0.2.0
 
 ### Minor Changes
