@@ -57,7 +57,7 @@ const mix = better.mix(0x1a7f37, 0xcf222e, 1); // 0%, 100%
 
 _Note: `0xcf222e` in JS is just another way of writing `'#cf222e'` (replacing the `#` with `0x`). Either are valid; use whichever you prefer!_
 
-### Advanced: gamma adjustment
+#### Advanced: gamma adjustment
 
 To change the gamma adjustment, you can pass in an optional 4th parameter. The default gamma is `2.2`, but you may adjust it to achieve different results (if unsure, best to always omit this option).
 
@@ -116,19 +116,22 @@ _Top: better-color-utils / Bottom: standard CSS gradient_
 
 CSS gradients and SVG gradients are, sadly, not gamma-optimized. But you can fix that with `better.gradient()`. While there’s no _perfect_ fix for this, this solution drastically improves gradients without bloating filesize.
 
+```scss
+// Sass
+
+// Coming soon!
+```
+
 ```ts
 // JavaScript/TypeScript
 import better from 'better-color-tools';
 
 const badGradient = 'linear-gradient(90deg, red, lime)';
-const awesomeGradient = better.gradient(badGradient); // linear-gradient(90deg,#ff0000,#e08800,#baba00,#88e000,#00ff00)
-const awesomeP3Gradient = better.gradient(badGradient, true); // linear-gradient(90deg,color(display-p3 0 0 1), … )
+better.gradient(badGradient); // linear-gradient(90deg,#ff0000,#e08800,#baba00,#88e000,#00ff00)
+better.gradient(badGradient, true); // linear-gradient(90deg,color(display-p3 0 0 1), … )
 ```
 
 `better.gradient()` takes any valid CSS gradient as its first parameter. Also specify `true` as the 2nd parameter to generate a P3 gradient instead of hex.
-
-⚠️ Note: unfortunately there’s not a generator function for Sass (and may not ever be) as it’s quite hard to manipulate strings. Please try [the sandbox](https://better-color-tools.pages.dev) to generate a gradient and copy/paste into Sass for now (which
-will also let you modify it / improve it).
 
 ## Perceived Lightness
 
@@ -137,29 +140,31 @@ HSL’s lightness is basically worthless as it’s distorted by the RGB colorspa
 ```js
 import better from 'better-color-tools;
 
-const DARK_PURPLE = '#542be9'
+const DARK_PURPLE = '#542be9';
 
 // lightness: get human-perceived brightness of a color (blues will appear darker than reds and yellows, e.g.)
-const lightness = better.lightness(DARK_PURPLE); // 0.3635 (~36% lightness)
+better.lightness(DARK_PURPLE); // 0.3635 (~36% lightness)
 
 // luminance: get absolute brightness of a color (this may not be what you want!)
-const luminance = better.luminance(DARK_PURPLE); // 0.0919 (~9% luminance)
+better.luminance(DARK_PURPLE); // 0.0919 (~9% luminance)
 
 // HSL (for comparison)
-const hsl = color.from(DARK_PURPLE).hslVal[3]; // 0.5412 (54%!? there’s no way this dark purple is that bright!)
+better.from(DARK_PURPLE).hslVal[3]; // 0.5412 (54%!? there’s no way this dark purple is that bright!)
 ```
 
-## Conversion
+## Color Formats
 
-### Sass
+#### Sass
 
 Sass already has many [built-in converters][sass-convert], so this library only extends what’s there. Here are a few helpers:
 
-#### P3
+##### P3
 
 The `p3()` function can convert any Sass-readable color into [P3][p3]:
 
 ```scss
+@use 'better-color-tools' as better;
+
 $green: #00ff00;
 $blue: #0000ff;
 
@@ -172,7 +177,7 @@ background: linear-gradient(135deg, better.p3($green), better.p3($blue)); // lin
 
 ⚠️ Be sure to always include fallback colors when using P3
 
-### JavaScript / TypeScript
+#### JavaScript / TypeScript
 
 `better.from()` takes any valid CSS string, hex number, or RGBA array (values normalized to `1`) as an input, and can generate any desired output as a result:
 
@@ -183,16 +188,16 @@ better.from('rgb(196, 67, 43)').hex; // '#c4432b'
 better.from('rebeccapurple').hsl; // 'hsl(270, 50%, 40%)'
 ```
 
-| Output   |    Type    | Example                     |
-| :------- | :--------: | :-------------------------- |
-| `hex`    |  `string`  | `"#ffffff"`                 |
-| `hexVal` |  `number`  | `0xffffff`                  |
-| `rgb`    |  `string`  | `"rgb(255, 255, 255)"`      |
-| `rgbVal` | `number[]` | `[1, 1, 1, 1]`              |
-| `rgba`   |  `string`  | `"rgba(255, 255, 255, 1)"`  |
-| `hsl`    |  `string`  | `"hsl(360, 0%, 100%)"`      |
-| `hslVal` | `number[]` | `[360, 0, 1, 1]"`           |
-| `p3`     |  `string`  | `"color(display-p3 1 1 1)"` |
+| Code                    |    Type    | Example                     |
+| :---------------------- | :--------: | :-------------------------- |
+| `better.from(…).hex`    |  `string`  | `"#ffffff"`                 |
+| `better.from(…).hexVal` |  `number`  | `0xffffff`                  |
+| `better.from(…).rgb`    |  `string`  | `"rgb(255, 255, 255)"`      |
+| `better.from(…).rgbVal` | `number[]` | `[1, 1, 1, 1]`              |
+| `better.from(…).rgba`   |  `string`  | `"rgba(255, 255, 255, 1)"`  |
+| `better.from(…).hsl`    |  `string`  | `"hsl(360, 0%, 100%)"`      |
+| `better.from(…).hslVal` | `number[]` | `[360, 0, 1, 1]"`           |
+| `better.from(…).p3`     |  `string`  | `"color(display-p3 1 1 1)"` |
 
 #### A note on HSL
 
@@ -200,7 +205,7 @@ better.from('rebeccapurple').hsl; // 'hsl(270, 50%, 40%)'
 
 #### A note on CSS color names
 
-This library can convert _FROM_ a CSS color name, but can’t convert _INTO_ one (as over 99% of colors have no standardized name). However, you may import `better-color-tools/dist/css-names.js` for an easy-to-use map for your purposes.\_
+This library can convert _FROM_ a CSS color name, but can’t convert _INTO_ one (as over 99% of colors have no standardized name). However, you may import `better-color-tools/dist/css-names.js` for an easy-to-use map for your purposes.
 
 #### A note on P3
 
