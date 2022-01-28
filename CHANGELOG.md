@@ -1,5 +1,11 @@
 # better-color-tools
 
+## 0.4.0
+
+### Minor Changes
+
+- ffa4509: Add perceived lightness & luminance
+
 ## 0.3.1
 
 ### Patch Changes
