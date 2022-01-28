@@ -35,24 +35,24 @@ Notice all the bottom gradients have muddy/grayed-out colors in the middle as we
 
 ```scss
 // Sass
-@use 'better-color-tools' as color;
+@use 'better-color-tools' as better;
 
-$mix: color.mix(#1a7f37, #cf222e, 0); // 100% color 1, 0% color 2
-$mix: color.mix(#1a7f37, #cf222e, 0.25); // 75%, 25%
-$mix: color.mix(#1a7f37, #cf222e, 0.5); // 50%, 50%
-$mix: color.mix(#1a7f37, #cf222e, 0.75); // 25%, 75%
-$mix: color.mix(#1a7f37, #cf222e, 1); // 0%, 100%
+$mix: better.mix(#1a7f37, #cf222e, 0); // 100% color 1, 0% color 2
+$mix: better.mix(#1a7f37, #cf222e, 0.25); // 75%, 25%
+$mix: better.mix(#1a7f37, #cf222e, 0.5); // 50%, 50%
+$mix: better.mix(#1a7f37, #cf222e, 0.75); // 25%, 75%
+$mix: better.mix(#1a7f37, #cf222e, 1); // 0%, 100%
 ```
 
 ```ts
 // JavaScript / TypeScript
-import color from 'better-color-tools';
+import better from 'better-color-tools';
 
-const mix = color.mix(0x1a7f37, 0xcf222e, 0); // 100% color 1, 0% color 2
-const mix = color.mix(0x1a7f37, 0xcf222e, 0.25); // 75%, 25%
-const mix = color.mix(0x1a7f37, 0xcf222e, 0.5); // 50%, 50%
-const mix = color.mix(0x1a7f37, 0xcf222e, 0.75); // 25%, 75%
-const mix = color.mix(0x1a7f37, 0xcf222e, 1); // 0%, 100%
+const mix = better.mix(0x1a7f37, 0xcf222e, 0); // 100% color 1, 0% color 2
+const mix = better.mix(0x1a7f37, 0xcf222e, 0.25); // 75%, 25%
+const mix = better.mix(0x1a7f37, 0xcf222e, 0.5); // 50%, 50%
+const mix = better.mix(0x1a7f37, 0xcf222e, 0.75); // 25%, 75%
+const mix = better.mix(0x1a7f37, 0xcf222e, 1); // 0%, 100%
 ```
 
 _Note: `0xcf222e` in JS is just another way of writing `'#cf222e'` (replacing the `#` with `0x`). Either are valid; use whichever you prefer!_
@@ -64,13 +64,13 @@ To change the gamma adjustment, you can pass in an optional 4th parameter. The d
 ```scss
 // Sass
 $gamma: 2.2; // default
-$mix: color.mix(#1a7f37, #cf222e, 0, $gamma);
+$mix: better.mix(#1a7f37, #cf222e, 0, $gamma);
 ```
 
 ```ts
 // JavaScript / TypeScript
 const gamma = 2.2; // default
-const mix = color.mix(0x1a7f37, 0xcf222e, 0, gamma);
+const mix = better.mix(0x1a7f37, 0xcf222e, 0, gamma);
 ```
 
 ## Lighten / Darken
@@ -84,28 +84,28 @@ halfway to black, and `lighten(…, 0.5)` will always be halfway to white.
 
 ```scss
 // Sass
-@use 'better-color-tools' as color;
+@use 'better-color-tools' as better;
 
-$lighter: color.lighten(#cf222e, 0); // 0% lighter (original color)
-$lighter: color.lighten(#cf222e, 0.25); // 25% lighter
-$lighter: color.lighten(#cf222e, 1); // 100% lighter (pure white)
+$lighter: better.lighten(#cf222e, 0); // 0% lighter (original color)
+$lighter: better.lighten(#cf222e, 0.25); // 25% lighter
+$lighter: better.lighten(#cf222e, 1); // 100% lighter (pure white)
 
-$darker: color.darken(#cf222e, 0); // 0% darker (original color)
-$darker: color.darken(#cf222e, 0.25); // 25% darker
-$darker: color.darken(#cf222e, 1); // 100% darker (pure black)
+$darker: better.darken(#cf222e, 0); // 0% darker (original color)
+$darker: better.darken(#cf222e, 0.25); // 25% darker
+$darker: better.darken(#cf222e, 1); // 100% darker (pure black)
 ```
 
 ```ts
 // JavaScript / TypeScript
-import color from 'better-color-tools';
+import better from 'better-color-tools';
 
-color.lighten(0xcf222e, 0); // 0% lighter (original color)
-color.lighten(0xcf222e, 0.25); // 25% lighter
-color.lighten(0xcf222e, 1); // 100% lighter (pure white)
+better.lighten(0xcf222e, 0); // 0% lighter (original color)
+better.lighten(0xcf222e, 0.25); // 25% lighter
+better.lighten(0xcf222e, 1); // 100% lighter (pure white)
 
-color.darken(0xcf222e, 0); // 0% darker (original color)
-color.darken(0xcf222e, 0.25); // 25% darker
-color.darken(0xcf222e, 1); // 100% darker (pure black)
+better.darken(0xcf222e, 0); // 0% darker (original color)
+better.darken(0xcf222e, 0.25); // 25% darker
+better.darken(0xcf222e, 1); // 100% darker (pure black)
 ```
 
 ## Gradient
@@ -114,21 +114,40 @@ color.darken(0xcf222e, 1); // 100% darker (pure black)
 
 _Top: better-color-utils / Bottom: standard CSS gradient_
 
-CSS gradients and SVG gradients are, sadly, not gamma-optimized. But you can fix that with `color.gammaGradient()`. While there’s no _perfect_ fix for this, this solution drastically improves gradients without bloating filesize.
+CSS gradients and SVG gradients are, sadly, not gamma-optimized. But you can fix that with `better.gradient()`. While there’s no _perfect_ fix for this, this solution drastically improves gradients without bloating filesize.
 
 ```ts
 // JavaScript/TypeScript
-ipmort color from 'better-color-tools';
+import better from 'better-color-tools';
 
 const badGradient = 'linear-gradient(90deg, red, lime)';
-const awesomeGradient = color.gammaGradient(badGradient); // linear-gradient(90deg,#ff0000,#e08800,#baba00,#88e000,#00ff00)
-const awesomeP3Gradient = color.gammaGradient(badGradient, true); // linear-gradient(90deg,color(display-p3 0 0 1), … )
+const awesomeGradient = better.gradient(badGradient); // linear-gradient(90deg,#ff0000,#e08800,#baba00,#88e000,#00ff00)
+const awesomeP3Gradient = better.gradient(badGradient, true); // linear-gradient(90deg,color(display-p3 0 0 1), … )
 ```
 
-`color.gammaGradient()` takes any valid CSS gradient as its first parameter. Also specify `true` as the 2nd parameter to generate a P3 gradient instead of hex.
+`better.gradient()` takes any valid CSS gradient as its first parameter. Also specify `true` as the 2nd parameter to generate a P3 gradient instead of hex.
 
 ⚠️ Note: unfortunately there’s not a generator function for Sass (and may not ever be) as it’s quite hard to manipulate strings. Please try [the sandbox](https://better-color-tools.pages.dev) to generate a gradient and copy/paste into Sass for now (which
 will also let you modify it / improve it).
+
+## Perceived Lightness
+
+HSL’s lightness is basically worthless as it’s distorted by the RGB colorspace and has no bearing in actual color brightness or human perception. **Don’t use HSL for lightness!** Instead, use the following:
+
+```js
+import better from 'better-color-tools;
+
+const DARK_PURPLE = '#542be9'
+
+// lightness: get human-perceived brightness of a color (blues will appear darker than reds and yellows, e.g.)
+const lightness = better.lightness(DARK_PURPLE); // 0.3635 (~36% lightness)
+
+// luminance: get absolute brightness of a color (this may not be what you want!)
+const luminance = better.luminance(DARK_PURPLE); // 0.0919 (~9% luminance)
+
+// HSL (for comparison)
+const hsl = color.from(DARK_PURPLE).hslVal[3]; // 0.5412 (54%!? there’s no way this dark purple is that bright!)
+```
 
 ## Conversion
 
@@ -145,23 +164,23 @@ $green: #00ff00;
 $blue: #0000ff;
 
 color: $green; // #00ff00
-color: p3($green); // color(display-p3 0 1 0)
+color: better.p3($green); // color(display-p3 0 1 0)
 
 background: linear-gradient(135deg, $green, $blue); // linear-gradient(135deg, #00ff00, #0000ff)
-background: linear-gradient(135deg, p3($green), p3($blue)); // linear-gradient(135deg, color(display-p3 0 1 0), color(dipslay-p3 0 0 1)))
+background: linear-gradient(135deg, better.p3($green), better.p3($blue)); // linear-gradient(135deg, color(display-p3 0 1 0), color(dipslay-p3 0 0 1)))
 ```
 
 ⚠️ Be sure to always include fallback colors when using P3
 
 ### JavaScript / TypeScript
 
-`color.from()` takes any valid CSS string, hex number, or RGBA array (values normalized to `1`) as an input, and can generate any desired output as a result:
+`better.from()` takes any valid CSS string, hex number, or RGBA array (values normalized to `1`) as an input, and can generate any desired output as a result:
 
 ```ts
-import color from 'better-color-tools';
+import better from 'better-color-tools';
 
-color.from('rgb(196, 67, 43)').hex; // '#c4432b'
-color.from('rebeccapurple').hsl; // 'hsl(270, 50%, 40%)'
+better.from('rgb(196, 67, 43)').hex; // '#c4432b'
+better.from('rebeccapurple').hsl; // 'hsl(270, 50%, 40%)'
 ```
 
 | Output   |    Type    | Example                     |
@@ -195,8 +214,8 @@ For the most part, this approach makes P3 much more usable for web and is even [
 
 ## TODO / Roadmap
 
-- **Planned**: Adding color spaces like [Adobe](https://en.wikipedia.org/wiki/Adobe_RGB_color_space) and [Rec 709](https://en.wikipedia.org/wiki/Rec._709) to allow color mixing and lightening/darkening to use different perceptual color algorithms
-- **Planned**: Generate nice, gamma-corrected CSS gradients (with P3 enhancements for Safari)
+- **Planned**: LAB conversion
+- **Planned**: Sass function for Gamma-corrected gradients
 
 [color-convert]: https://github.com/Qix-/color-convert
 [hsl]: https://en.wikipedia.org/wiki/HSL_and_HSV#Disadvantages

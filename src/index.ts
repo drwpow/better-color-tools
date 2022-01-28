@@ -266,6 +266,24 @@ export function lighten(color: Color, value: number): ColorOutput {
 }
 
 /**
+ * Luminance
+ * Get absolute brightness of a color (hint: you may want "lightness")
+ */
+export function luminance(color: Color): number {
+  const [r, g, b] = parse(color);
+  return NP.round(0.2126 * Math.pow(r, 2.2) + 0.7152 * Math.pow(g, 2.2) + 0.0722 * Math.pow(b, 2.2), P);
+}
+
+/**
+ * Lightness
+ * Get perceived lightness of a color according to human vision (not to be confused with HSL!)
+ */
+export function lightness(color: Color): number {
+  const luma = luminance(color);
+  return NP.round((luma <= 216 / 24389 ? luma * (24389 / 27) : Math.pow(luma, 1 / 3) * 116 - 16) / 100, P);
+}
+
+/**
  * HSL to RGB
  * Convert RGBA array to HSL
  */
@@ -355,7 +373,7 @@ export function rgbToHSL(rgb: RGBA): HSL {
  * Gamma Gradient
  * Take any CSS gradient and correct gamma
  */
-function gammaGradient(input: string, p3 = false): string {
+function gradient(input: string, p3 = false): string {
   const gradString = input.trim();
   let gradType: 'linear-gradient' | 'radial-gradient' | 'conic-gradient' = 'linear-gradient';
   let position: string | undefined;
@@ -409,14 +427,19 @@ function gammaGradient(input: string, p3 = false): string {
 
   return `${gradType}(${[...(position ? [position] : []), ...newGradient.map(({ color, pos }) => `${color}${pos ? ` ${pos}` : ''}`)].join(',')})`;
 }
+/** @deprecated (use gradient instead) */
+export const gammaGradient = gradient;
 
 export default {
   alpha,
   darken,
   from,
   gammaGradient,
+  gradient,
   hslToRGB,
   lighten,
+  lightness,
+  luminance,
   mix,
   parse,
   rgbToHSL,

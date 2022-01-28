@@ -1,6 +1,7 @@
 @use 'sass:color';
 @use 'sass:list';
 @use 'sass:math';
+@use 'sass:meta';
 @use 'sass:string';
 
 @function mix($color1, $color2, $weight: 0.5, $gamma: 2.2) {
@@ -53,4 +54,12 @@
   } @else {
     @return #{color(display-p3 $r $g $b/$a)};
   }
+}
+
+@function gradient($colorList) {
+  @if meta.type($colorList) != 'list' {
+    @error "Must supply comma-separated colors";
+  }
+  $gradient: ();
+  @return $gradient;
 }

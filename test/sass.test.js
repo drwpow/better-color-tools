@@ -84,7 +84,7 @@ describe('mix', () => {
 
 describe.skip('gradient', () => {
   it('b -> g', () => {
-    expect(test('background: gradient(linear-gradient(90deg, blue, lime));')).to.equal('background: linear-gradient(90deg,#0000ff,#0088e0,#00baba,#00e088,#00ff00);');
+    expect(test('background: linear-gradient(90deg, #{gradient(blue, lime)});')).to.equal('background: linear-gradient(90deg, #0000ff, #0088e0, #00baba, #00e088, #00ff00);');
   });
 });
 
