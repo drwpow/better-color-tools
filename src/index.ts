@@ -1,6 +1,6 @@
 import NP from 'number-precision';
 import cssNames from './css-names.js';
-import { clamp, leftPad, splitDistance } from './utils.js';
+import { clamp, leftPad } from './utils.js';
 
 export type RGB = [number, number, number];
 export type RGBA = [number, number, number, number];
@@ -18,6 +18,7 @@ export type ColorOutput = {
   hslVal: RGBA;
   p3: string;
 };
+export type GradientStop = { color: RGBA; position: number };
 
 NP.enableBoundaryChecking(false); // don’t throw error on inaccurate calculation
 
@@ -28,10 +29,9 @@ export const HEX_RE = /^#?[0-9a-f]{3,8}$/i;
 export const RGB_RE = new RegExp(['^rgba?\\(\\s*', `(?<R>${FLOAT}%?)`, COMMA, `(?<G>${FLOAT}%?)`, COMMA, `(?<B>${FLOAT}%?)`, `(${COMMA}(?<A>${FLOAT}%?))?`, '\\s*\\)$'].join(''), 'i');
 export const HSL_RE = new RegExp(['^hsla?\\(\\s*', `(?<H>${FLOAT})`, COMMA, `(?<S>${FLOAT})%`, COMMA, `(?<L>${FLOAT})%`, `(${COMMA}(?<A>${FLOAT})%?)?`, '\\s*\\)$'].join(''), 'i');
 export const P3_RE = new RegExp(['^color\\(\\s*display-p3\\s+', `(?<R>${FLOAT}%?)`, '\\s+', `(?<G>${FLOAT}%?)`, '\\s+', `(?<B>${FLOAT}%?)`, `(\\s*\\/\\s*(?<A>${FLOAT}%?))?`, '\\s*\\)$'].join(''), 'i');
-export const LIN_GRAD_RE = /^linear-gradient\((.*)\);?$/;
-export const RAD_GRAD_RE = /^radial-gradient\((.*)\);?$/;
-export const CON_GRAD_RE = /^conic-gradient\((.*)\);?$/;
-export const STOP_POS_RE = /\s[^\s]+$/;
+export const LIN_GRAD_RE = /^linear-gradient\s*\((.*)\);?$/;
+export const RAD_GRAD_RE = /^radial-gradient\s*\((.*)\);?$/;
+export const CON_GRAD_RE = /^conic-gradient\s*\((.*)\);?$/;
 const { round, strip } = NP;
 
 /**
@@ -269,9 +269,9 @@ export function lighten(color: Color, value: number): ColorOutput {
  * Luminance
  * Get absolute brightness of a color (hint: you may want "lightness")
  */
-export function luminance(color: Color): number {
+export function luminance(color: Color, γ = 2.2): number {
   const [r, g, b] = parse(color);
-  return NP.round(0.2126 * Math.pow(r, 2.2) + 0.7152 * Math.pow(g, 2.2) + 0.0722 * Math.pow(b, 2.2), P);
+  return NP.round(0.2126 * Math.pow(r, γ) + 0.7152 * Math.pow(g, γ) + 0.0722 * Math.pow(b, γ), P);
 }
 
 /**
@@ -370,72 +370,77 @@ export function rgbToHSL(rgb: RGBA): HSL {
 }
 
 /**
- * Gamma Gradient
- * Take any CSS gradient and correct gamma
+ * Parse CSS gradient
+ * Parse any valid CSS gradient and convert to stops
  */
-function gradient(input: string, p3 = false): string {
+export function parseGradient(input: string): { type: 'linear-gradient' | 'radial-gradient' | 'conic-gradient'; position?: string; stops: GradientStop[] } {
   const gradString = input.trim();
   let gradType: 'linear-gradient' | 'radial-gradient' | 'conic-gradient' = 'linear-gradient';
   let position: string | undefined;
-  let stops: string[] = [];
+  let rawStops: string[] = [];
   if (LIN_GRAD_RE.test(gradString)) {
-    stops = (gradString.match(LIN_GRAD_RE) as RegExpMatchArray)[1].split(',').map((p) => p.trim());
-    if (stops[0].includes('deg') || stops[0].includes('turn') || stops[0].includes('to ')) {
-      position = stops.shift();
+    rawStops = (gradString.match(LIN_GRAD_RE) as RegExpMatchArray)[1].split(',').map((p) => p.trim());
+    if (rawStops[0].includes('deg') || rawStops[0].includes('turn') || rawStops[0].includes('to ')) {
+      position = rawStops.shift();
     }
   } else if (RAD_GRAD_RE.test(gradString)) {
     gradType = 'radial-gradient';
-    stops = (gradString.match(RAD_GRAD_RE) as RegExpMatchArray)[1].split(',').map((p) => p.trim());
-    if (stops[0].includes('circle') || stops[0].includes('ellipse') || stops[0].includes('closest-') || stops[0].includes('farthest-')) {
-      position = stops.shift();
+    rawStops = (gradString.match(RAD_GRAD_RE) as RegExpMatchArray)[1].split(',').map((p) => p.trim());
+    if (rawStops[0].includes('circle') || rawStops[0].includes('ellipse') || rawStops[0].includes('closest-') || rawStops[0].includes('farthest-')) {
+      position = rawStops.shift();
     }
   } else if (CON_GRAD_RE.test(gradString)) {
     gradType = 'conic-gradient';
-    stops = (gradString.match(CON_GRAD_RE) as RegExpMatchArray)[1].split(',').map((p) => p.trim());
-    if (stops[0].includes('from')) {
-      position = stops.shift();
+    rawStops = (gradString.match(CON_GRAD_RE) as RegExpMatchArray)[1].split(',').map((p) => p.trim());
+    if (rawStops[0].includes('from')) {
+      position = rawStops.shift();
     }
   } else throw new Error(`Unable to parse gradient "${input}"`);
+  if (rawStops.length < 2) {
+    throw new Error('Gradient must have at least 2 stops');
+  }
+  let unitCount = 0;
+  for (const unit of ['%', 'px', 'em', 'rem', 'pt', 'ch', 'cm', 'in', 'mm', 'vh', 'vm']) {
+    if (gradString.includes(unit)) unitCount += 1;
+  }
+  if (unitCount > 1) throw new Error(`Can’t normalize gradients with mixed units`);
 
-  const newGradient: { color: string; pos?: string | number }[] = [];
+  const stops: GradientStop[] = [];
 
-  for (const stop of stops) {
-    let pos2 = '';
-    let color2 = stop;
-    const posMatch = stop.match(STOP_POS_RE);
-    if (posMatch) {
-      pos2 = posMatch[0].trim();
-      color2 = stop.replace(pos2, '').trim();
+  const rawPositions = rawStops.map((s) => parseFloat(s.substring(s.indexOf(' '))) || -Infinity);
+  const max = Math.max(...rawPositions);
+
+  for (let n = 0; n < rawStops.length; n++) {
+    // color is easy
+    stops[n].color = from(rawStops[n].split(' ')[0]).rgbVal;
+
+    // position is not (if omitted, we’ll have to figure out averages)
+    if (rawPositions[n] >= 0) {
+      stops[n].position = Math.min(rawPositions[n] / max, 1);
+      continue;
+    } else if (n === 0) {
+      stops[n].position = 0;
+      continue;
+    } else if (n === rawStops.length - 1) {
+      stops[n].position = 1;
     }
-    if (newGradient.length) {
-      const prevItem = newGradient[newGradient.length - 1];
-      const { pos: pos1, color: color1 } = prevItem;
-      const skipTransitions = (splitDistance(pos1, pos2) as number) <= 0 || from(color1).hex === from(color2).hex; // stops are on top of each other; skip
-
-      // TODO: increase/decrease stops
-      if (!skipTransitions) {
-        for (let i = 1; i <= 3; i++) {
-          const p = 0.25 * i;
-          let c = mix(color1, color2, p);
-          newGradient.push({ color: p3 ? c.p3 : c.hex, pos: splitDistance(pos1 || 0, pos2, p) });
-        }
-      }
-    }
-    const c = from(color2);
-    newGradient.push({ color: p3 ? c.p3 : c.hex, pos: pos2 });
+    let startPosition = stops[n - 1].position;
+    let endPosition = rawStops.findIndex((s) => parseFloat(s.substring(s.indexOf(' '))) > 0);
+    if (endPosition === -1) endPosition = rawStops.length - 1;
+    stops[n].position = (endPosition - startPosition) / endPosition;
   }
 
-  return `${gradType}(${[...(position ? [position] : []), ...newGradient.map(({ color, pos }) => `${color}${pos ? ` ${pos}` : ''}`)].join(',')})`;
+  return {
+    type: gradType,
+    position,
+    stops,
+  };
 }
-/** @deprecated (use gradient instead) */
-export const gammaGradient = gradient;
 
 export default {
   alpha,
   darken,
   from,
-  gammaGradient,
-  gradient,
   hslToRGB,
   lighten,
   lightness,

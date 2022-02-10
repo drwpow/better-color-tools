@@ -1,2 +1,3 @@
 src/css-names.ts
 test/**/*.js
+/README.md

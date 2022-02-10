@@ -2,17 +2,20 @@ import { expect } from 'chai';
 import fs from 'fs';
 import { default as sass } from 'sass';
 
+const SEMI_RE = /;?$/
+const CB_CLOSE_RE = /}$/
+
 const colorUtils = fs.readFileSync(new URL('../index.scss', import.meta.url));
 
 function test(css) {
   const input = `${colorUtils}
 
 .sel {
-  ${css.replace(/;?$/, ';')}
+  ${css.replace(SEMI_RE, ';')}
 }`;
   const result = sass.compileString(input);
   const [, output] = result.css.split('.sel {');
-  return output.replace(/}$/, '').trim();
+  return output.replace(CB_CLOSE_RE, '').trim();
 }
 
 describe('mix', () => {
@@ -84,12 +87,74 @@ describe('mix', () => {
 
 describe.skip('gradient', () => {
   it('b -> g', () => {
-    expect(test('background: linear-gradient(90deg, #{gradient(blue, lime)});')).to.equal('background: linear-gradient(90deg, #0000ff, #0088e0, #00baba, #00e088, #00ff00);');
+    expect(test(
+      'background: linear-gradient(90deg, #{gradient(blue 0%, lime 100%)});'
+    )).to.equal(
+      'background: linear-gradient(90deg, #0000ff, #0088e0, #00baba, #00e088, #00ff00);'
+    );
+  });
+
+  it('r -> o -> g', () => {
+    expect(test(
+      'linear-gradient(90deg, #{gradient(red 0%, orange 40%, lime 100%)})'
+    )).to.equal(
+      'linear-gradient(90deg,#ff0000 0%,#ff3400 10%,#ff4700 20%,#ff5600 30%,#ffa500 40%,#e09c00 55%,#bac400 70%,#88e400 85%,#00ff00 100%)'
+    );
+  })/
+
+  it('overlapping stops', () => {
+    // don’t insert the same blues over and over again
+    expect(test(
+      'linear-gradient(90deg, #{gradient(blue 0px, blue, 8px, lime 16px)})'
+    )).to.equal(
+      'linear-gradient(90deg,#0000ff,#0000ff 8px,#0088e0 10px,#00baba 12px,#00e088 14px,#00ff00 16px)'
+    );
   });
 });
 
 describe('p3', () => {
   it('g', () => {
     expect(test('color: p3(#00ff00);')).to.equal('color: color(display-p3 0 1 0);')
+  });
+});
+
+describe('fallback', () => {
+  it('color', () => {
+    expect(test('@include fallback(color, p3(#00ffff), #00ffff)')).to.equal('color: #00ffff;\n  color: color(display-p3 0 1 1);');
+  });
+});
+
+describe('lightness', () => {
+  // note: opacity is only a way to store the value for comparison
+  it('R', () => {
+    expect(test('opacity: lightness(#f00)')).to.equal('opacity: 0.5323288179;');
+  });
+
+  it('Y', () => {
+    expect(test('opacity: lightness(#ff0)')).to.equal('opacity: 0.9713824698;');
+  });
+
+  it('G', () => {
+    expect(test('opacity: lightness(#0f0)')).to.equal('opacity: 0.8773703347;');
+  });
+
+  it('C', () => {
+    expect(test('opacity: lightness(#0ff)')).to.equal('opacity: 0.9111652111;');
+  });
+
+  it('B', () => {
+    expect(test('opacity: lightness(#00f)')).to.equal('opacity: 0.3230258667;');
+  });
+
+  it('M', () => {
+    expect(test('opacity: lightness(#f0f)')).to.equal('opacity: 0.6031993366;');
+  });
+
+  it('K', () => {
+    expect(test('opacity: lightness(#000)')).to.equal('opacity: 0;');
+  });
+
+  it('W', () => {
+    expect(test('opacity: lightness(#fff)')).to.equal('opacity: 1;');
   });
 });

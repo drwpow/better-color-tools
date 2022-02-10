@@ -128,19 +128,6 @@
       <div class="explanation">top: gamma-adjusted (correct) / middle: gamma-adjusted P3 (Safari only, with supporting monitor) / bottom: simple average</div>
     </div>
 
-    <div class="app">
-      <h1>Gradient</h1>
-      <menu class="menu menu--c">
-        <div class="ctrl">
-          <input id="grad" class="input-grad" type="text" value="linear-gradient(90deg, blue, lime)" />
-        </div>
-      </menu>
-      <div id="grad-rgb" class="linear-gradient"></div>
-      <div id="grad-p3" class="linear-gradient"></div>
-      <div id="grad-z" class="linear-gradient"></div>
-      <div class="explanation">top: gamma-adjusted (correct) / middle: gamma-adjusted P3 (Safari only, with supporting monitor) / bottom: default gradient</div>
-    </div>
-
     <footer class="footer">
       <a class="github" href="https://github.com/drwpow/better-color-tools">GitHub</a>
     </footer>
@@ -193,20 +180,12 @@
         document.querySelector('#lum-rgb').innerHTML = lumRGB;
         document.querySelector('#lum-p3').innerHTML = lumP3;
         document.querySelector('#lum-z').innerHTML = lumZ;
-
-        // -----
-
-        let input = document.querySelector('#grad').value;
-        document.querySelector('#grad-rgb').setAttribute('style', `background:${color.gammaGradient(input)}`);
-        document.querySelector('#grad-p3').setAttribute('style', `background:${color.gammaGradient(input, true)}`);
-        document.querySelector('#grad-z').setAttribute('style', `background:${input}`);
       }
       render();
 
       document.querySelector('#c1-picker').addEventListener('change', handlePicker);
       document.querySelector('#c2-picker').addEventListener('change', handlePicker);
       document.querySelector('#lum-picker').addEventListener('change', handlePicker);
-      document.querySelector('#grad').addEventListener('keyup', render);
       document.querySelector('#c1').addEventListener('change', handleHex);
       document.querySelector('#c2').addEventListener('change', handleHex);
       document.querySelector('#c1').addEventListener('keyup', handleHex);

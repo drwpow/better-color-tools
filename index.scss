@@ -4,6 +4,13 @@
 @use 'sass:meta';
 @use 'sass:string';
 
+/// Gamma-adjusted (“correct”) color mixing. Produces better results than sass.mix().
+///
+/// @param {color} $color1
+/// @param {color} $color2
+/// @param {float} $weight [0.5] Mix strength (`0` = $color1, `0.5` = 50–50, `1` = $color2)
+/// @param {float} $gamma [2.2] Gamma adjustment. Best to ignore unless you’re sure!
+/// @returns {color} Mix result
 @function mix($color1, $color2, $weight: 0.5, $gamma: 2.2) {
   $tf: math.div(1, $gamma); // transfer function
   $itf: $gamma; // inverse transfer function
@@ -28,6 +35,11 @@
   );
 }
 
+/// Gamma-adjusted (“correct”) color lightening. Produces better results than sass.lighten().
+///
+/// @param {color} $color
+/// @param {float} $weight [0.5] Lightness strength (`0` = $color; `1` = white; `-1` = black)
+/// @returns {color} Lightened color
 @function lighten($color, $weight: 0.5) {
   @if ($weight >= 0) {
     @return mix($color, #fff, $weight);
@@ -36,6 +48,11 @@
   }
 }
 
+/// Gamma-adjusted (“correct”) color darkening. Produces better results than sass.darken().
+///
+/// @param {color} $color
+/// @param {float} $weight [0.5] Darkness strength (`0` = $color; `1` = black; `-1` = white)
+/// @returns {color} Darkened color
 @function darken($color, $weight: 0.5) {
   @if ($weight >= 0) {
     @return mix($color, #000, $weight);
@@ -44,6 +61,11 @@
   }
 }
 
+/// Turn any color into P3 (supporting browsers only)
+/// (https://webkit.org/blog/10042/wide-gamut-color-in-css-with-display-p3/)
+///
+/// @param {color} $color
+/// @returns {string} P3 color string
 @function p3($color) {
   $r: math.div(color.red($color), 255);
   $g: math.div(color.green($color), 255);
@@ -56,10 +78,35 @@
   }
 }
 
-@function gradient($colorList) {
-  @if meta.type($colorList) != 'list' {
-    @error "Must supply comma-separated colors";
+/// Get perceived lightness of a color. Produces far better results than HSL.
+///
+/// @param {color} $color
+/// @returns {float} Perceived lightness from `0` (dark) to `1`
+@function lightness($color) {
+  $gamma: 2.2;
+  $r: 0.2126 * math.pow(math.div(color.red($color), 255), $gamma);
+  $g: 0.7152 * math.pow(math.div(color.green($color), 255), $gamma);
+  $b: 0.0722 * math.pow(math.div(color.blue($color), 255), $gamma);
+  $luminance: $r + $g + $b;
+  $threshold: math.div(216, 24389);
+
+  @if $luminance <= $threshold {
+    @return math.div($luminance * math.div(24389, 27), 100);
+  } @else {
+    @return math.div(math.pow($luminance, math.div(1, 3)) * 116 - 16, 100);
   }
-  $gradient: ();
-  @return $gradient;
+}
+
+/// Quickly generate fallbacks for a CSS property. Useful for experimental syntax and partial support.
+/// ex: `@include better.fallback(color, better.p3(#c4432b), #c4432b);`
+///
+/// @param {string} $property - The CSS property
+/// @param {string} $values... - Specify desired values in decreasing order of preference
+@mixin fallback($property, $values...) {
+  @if list.length($values) < 2 {
+    @error "Must specify at least 2 values for fallback()";
+  }
+  @for $i from list.length($values) through 1 {
+    #{$property}: list.nth($values, $i);
+  }
 }
