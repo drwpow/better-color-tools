@@ -1,5 +1,11 @@
 # better-color-tools
 
+## 0.5.0
+
+### Minor Changes
+
+- ad44c9b: Add fallback Sass function
+
 ## 0.4.0
 
 ### Minor Changes
