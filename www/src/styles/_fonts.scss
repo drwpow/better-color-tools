@@ -1,0 +1,22 @@
+@font-face {
+  font-family: 'Neue Montreal';
+  font-weight: 1 999;
+  src: url('https://drewhost.s3.amazonaws.com/PPNeueMontrealVariable.ttf') format('truetype');
+}
+
+@for $i from 1 through 9 {
+  $wgt: $i * 100;
+
+  @font-face {
+    font-family: 'Jet Brains Mono';
+    font-weight: $wgt;
+    src: url('https://drewhost.s3.amazonaws.com/jetbrains-mono-#{$wgt}.woff2') format('woff2'), url('https://drewhost.s3.amazonaws.com/jetbrains-mono-#{$wgt}.woff') format('woff');
+  }
+
+  @font-face {
+    font-family: 'Jet Brains Mono';
+    font-style: italic;
+    font-weight: $wgt;
+    src: url('https://drewhost.s3.amazonaws.com/jetbrains-mono-#{$wgt}-italic.woff2') format('woff2'), url('https://drewhost.s3.amazonaws.com/jetbrains-mono-#{$wgt}-italic.woff') format('woff');
+  }
+}

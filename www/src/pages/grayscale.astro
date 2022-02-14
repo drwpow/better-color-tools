@@ -1,0 +1,196 @@
+---
+import Head from '../components/Head.astro';
+import Nav from '../components/Nav.astro';
+---
+<html>
+<head>
+  <Head title="" />
+  <style lang="scss">
+    .info {
+      display: flex;
+      justify-content: space-between;
+      padding: 1rem 1.25rem 1rem 1.25rem;
+      width: 100%;
+
+      &-colors {
+        align-items: center;
+        display: grid;
+        grid-template-columns: min-content min-content min-content;
+        grid-gap: 1rem;
+      }
+    }
+
+    .input {
+      font-size: 14px;
+
+      input {
+        border: 1px solid #d0d0d0;
+        border-radius: 2px;
+        font-family: var(--monospace);
+        font-size: 13px;
+        font-weight: 300;
+        height: 24px;
+        line-height: 24px;
+        margin-left: 0.5rem;
+        padding: 0;
+        text-indent: 0.5em;
+        width: 3rem;
+      }
+
+      select {
+        border: 1px solid #d0d0d0;
+        border-radius: 2px;
+        font-family: var(--body);
+        font-size: 14px;
+        font-weight: 450;
+        height: 24px;
+        line-height: 24px;
+        margin-left: 0.5rem;
+        padding: 0 0.25rem;
+      }
+    }
+
+    .color {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+  </style>
+</head>
+<body>
+  <Nav />
+
+  <main>
+    <div class="info pad1">
+      Generate a smooth grayscale palette
+
+      <div class="info-colors">
+        <label class="picker">
+          <input id="start" type="color" value="#000000" />
+          <span id="start-value">#000000</span>
+        </label>
+        →
+        <label class="picker">
+          <input id="end" type="color" value="#ffffff" />
+          <span id="end-value">#ffffff</span>
+        </label>
+      </div>
+
+      <div class="info-steps">
+        <label class="input">Steps <input id="steps" type="text" inputmode="numeric" value="7"></label>
+      </div>
+
+      <div class="info-space">
+        <label class="input">
+          Color Space
+          <select id="color-space">
+            <option value="lab" selected>Lab (human-perceived)</option>
+            <option value="linear">Linear RGB (mathematical)</option>
+            <option value="srgb">sRGB (pls don’t use except for comparison)</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <div class="color"></div>
+  </main>
+
+  <script type="module">
+    import NP from 'number-precision';
+    import better from '../lib/better.min.js';
+
+    NP.enableBoundaryChecking(false); // don’t throw error on inaccurate calculation
+
+    const start = document.querySelector('#start');
+    const startValue = document.querySelector('#start-value');
+    const end = document.querySelector('#end');
+    const endValue = document.querySelector('#end-value');
+    const steps = document.querySelector('#steps');
+    const palette = document.querySelector('.color');
+    const colorSpace = document.querySelector('#color-space');
+
+    function colorData(color) {
+      const rgb = color.rgbVal.slice(0, 3).map((v) => Math.round(v * 255)).join(' ');
+      const hsl = color.hslVal.slice(0, 3).map((v, n) => n === 0 ? n : `${100 * v}%`).join(' ');
+      const p3 = [NP.round(color.rgbVal[0], 5), NP.round(color.rgbVal[1], 5), NP.round(color.rgbVal[2], 5)].join(' ');
+      return `<div class="color-block-info">Hex: ${color.hex}<br />
+RGB: ${rgb}<br />
+HSL: ${hsl}<br />
+P3: &nbsp;${p3}<br />
+<br />
+Lightness: ${better.lightness(color.hex)}<br />
+Luminance: ${better.luminance(color.hex)}
+`;
+    }
+
+    function render() {
+      let stepCount = parseInt(steps.value, 10);
+      if (stepCount > 0 === false) return; // invalid step count
+      const lastStep = stepCount + 1 // add one for last stop
+
+      // sync values
+      startValue.innerHTML = start.value;
+      endValue.innerHTML = end.value;
+      search.set('start', start.value);
+      search.set('end', end.value);
+      search.set('steps', steps.value);
+      search.set('color-space', colorSpace.value);
+
+      let blocks = [];
+
+      for (let n = 0; n <= lastStep; n++) {
+        console.log(n/lastStep);
+        const color = better.mix(start.value, end.value, n/lastStep);
+        console.log(`${n/lastStep} ${color.hex}`);
+        const block = document.createElement('div');
+        block.classList.add('color-block', 'color-block--s');
+        block.style.backgroundColor = color.hex;
+
+        const lightness = better.lightness(color.hex);
+        if (lightness >= 0.5) {
+          block.classList.remove('dark');
+          block.classList.add('light');
+        } else {
+          block.classList.add('dark');
+          block.classList.remove('light');
+        }
+        block.innerHTML = `<div class="color-block-info">${colorData(color)}</div>`;
+        blocks.push(block);
+      }
+
+      // erase HTML (safely)
+      while (palette.firstChild) {
+        palette.removeChild(palette.firstChild);
+      }
+      // update HTML
+      palette.append(...blocks);
+
+      // update URL
+      window.location.hash = `#${search.toString()}`;
+    }
+
+    // init
+    const search = new URLSearchParams(window.location.hash.substring(1));
+    if (search.get('start')) {
+      start.value = search.get('start');
+      startValue.innerHTML = search.get('start');
+    }
+    if (search.get('end')) {
+      start.value = search.get('start');
+      startValue.innerHTML = search.get('start');
+    }
+    if (search.get('steps')) {
+      steps.value = search.get('steps');
+    }
+    if (search.get('color-space')) {
+      colorSpace.value = search.get('color-space');
+    }
+    render();
+
+    // update
+    start.addEventListener('change', render);
+    end.addEventListener('change', render);
+    steps.addEventListener('keyup', render);
+    colorSpace.addEventListener('change', render);
+  </script>
+</body>
+</html>

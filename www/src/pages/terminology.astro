@@ -1,0 +1,170 @@
+---
+import Head from '../components/Head.astro';
+import Nav from '../components/Nav.astro';
+---
+<html>
+<head>
+  <Head title="" />
+  <style lang="scss">
+    .color {
+      display: grid;
+      min-height: 75vh;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .color-selection {
+      align-items: center;
+      display: flex;
+    }
+
+    .wrapper {
+      max-width: 58em;
+      padding-bottom: 8rem;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+      width: 100%;
+    }
+
+    .lead {
+      color: rgba(0, 0, 0, 0.6);
+      font-size: 18px;
+      font-weight: 400;
+      font-variation-settings: 'ital' 900;
+      font-style: normal;
+      margin-top: 2em;
+    }
+  </style>
+</head>
+<body>
+  <Nav />
+
+  <main>
+    <div class="wrapper">
+      <h3 class="lead">Fancy-schmancy color terms explained in common language</h3>
+      <h1><a name="#srgb">sRGB</a></h1>
+      <p>
+        Probably what you think of when you think of “RGB.” While the generic
+        term <em>RGB</em> refers broadly to an approach to color, <em>sRGB</em>
+        is the specific implementation of RGB for web and most graphics programs
+        that we’re most familiar with. Arguably the most common implementation
+        of sRGB is <strong>8-bit sRGB</strong>, which refers to the
+        2<sup>8</sup> (256) possible values per R, G, and B channels (which
+        combined result in  <strong>16.7 million possible colors</strong>, or
+        256<sup>3</sup>). It’s typically expressed as an integer between
+        <code>0</code> and <code>255</code> (not <code>256</code>, because
+        <code>0</code> counts as
+        one).
+      </p>
+      <p>
+        Hearing “8-bit” you may be reminded of <em>8-bit video gaming</em> a la
+        <em>Super Mario</em> or the <em>NES</em>. But “8-bit” only generically
+        refers to the number 2<sup>8</sup> (256). While <em>8-bit</em> in RGB
+        refers to the number of values per-channel, <em>8-bit</em> in gaming
+        refers to the old 8-bit microprocessors which had a capacity of 256
+        bytes of memory (and thus were only capable of a few colors). So don’t
+        think 8-bit is low quality!
+      </p>
+      <p>
+        Naturally, it follows that sRGB can go beyond 8-bit, at which point more
+        than 16.7m colors are available. While this is beyond what some browsers
+        and monitors can display, <a
+        href="https://webkit.org/blog/10042/wide-gamut-color-in-css-with-display-p3/"
+        target="_blank">higher-fidelity color is possible on the web today</a>,
+        and will only become more common with time. So rather than think in
+        concrete <code>0</code> – <code>255</code> values, it’s more helpful to
+        think in terms of RGB percentages (<code>0%</code> – <code>100%</code>
+        per channel), which assuming infinite decimal places can represent any
+        possible fidelity of RGB color reproduction.
+      </p>
+      <h1><a name="#linear-rgb">Linear RGB</a></h1>
+      <p>
+        Linear RGB is “true RGB” or “uncompressed sRGB.” An (incorrect)
+        assumption many people have working with the standard <code>0</code> –
+        <code>255</code> 8-bit sRGB values is that a linear space when in fact,
+        it’s not. Naturally, you might deduce that if sRGB is <em>not</em>
+        linear, it’d be nice to have a space that <em>is</em>. And here we are.
+      </p>
+      <p>
+        sRGB is not <em>linear</em> in that very time you go up by
+        <code>1</code>, the brightness increases exponentially. There’s a
+        significantly larger jump from <code>254,254,254</code> to
+        <code>255,255,255</code> than from <code>0,0,0</code> to
+        <code>1,1,1</code>. This is very handy for displaying color because
+        humans are more sensitive to differences in low light, but it makes
+        mixing colors incrediblly annoying (Minute Physics’ <a
+        href="https://www.youtube.com/watch?v=LKnqECcg6Gw"
+        target="_blank"><em>Computer Color is Broken</em></a> video gives a
+        fantastic 4-minute explanation of this concept in more detail).
+      </p>
+      <p>
+        Converting to the Linear RGB space more-or-less requires raising all
+        values to the power of <a
+        href="https://en.wikipedia.org/wiki/Gamma_correction#Computer_displays"
+        target="_blank">2.2</a> so that operations become more uniform. When
+        mixing any two colors <strong>they must be converted to Linear RGB to
+        mix</strong> and then back to sRGB afterwards, otherwise the result will
+        be off (typically “muddy” or “dark”). The saddest part is most
+        implementations of color mixing such as CSS and SVG gradients do this
+        incorrectly (at least until <a
+        href="https://www.w3.org/TR/css-color-5/#color-function"
+        target="_blank">browsers add support for color spaces</a>).
+      </p>
+      <p>
+        Lastly, it’s worth noting that Linear RGB <strong>does not take human
+        color perception into account</strong>. Using the Linear RGB space to
+        mix colors means they will be correct <em>mathematically</em> but
+        doesn’t mean they will be correct <em>perceptually</em> for most people.
+        To use a color space designed for consistent color perception, use <a
+        href="#lab">Lab</a>.
+      </p>
+      <h1><a name="hsl">HSL</a></h1>
+      <p>
+        A <a href="https://pow.rs/blog/dont-use-hsl-for-anything/"
+        target="_blank">garbage color format</a> that should no longer be used.
+      </p>
+      <p>
+        Good color spaces fall into one of 2 categories:
+        <strong>mathematically-correct</strong> (quantitative) or
+        <strong>perceptually-correct</strong> (qualitative). Generally-speaking,
+        color starts out in a mathematically-correct space to represent visible
+        light in a predictable way, then gets transformed into a
+        perceptually-correct space that tricks us into perceiving pixels as
+        actual human vision. <a
+        href="https://en.wikipedia.org/wiki/HSL_and_HSV#Disadvantages"
+        target="_blank">HSL does neither well</a>. While on the surface it
+        appears to be a perceptual hue/saturation/lightness format, but in
+        reality it makes no adjustments from RGB to account for human vision,
+        resulting in a format that’s neither good for color mixing nor
+        mathematical calculation.
+      </p>
+      <p>
+        Instead, use <a href="#lch">LCH</a> which operates on the same
+        principles as HSL but takes human perception into account.
+      </p>
+      <h1><a name="xyz">XYZ (or CIE XYZ)</a></h1>
+      <p>
+        The XYZ color space has a fascinating history dating back to the
+        pre-digital era of the <a
+        href="https://en.wikipedia.org/wiki/CIE_1931_color_space#Definition_of_the_CIE_XYZ_color_space"
+        target="_blank">1920s</a> and some of the first modern, scientific
+        studies on human vision. “Why do we need <em>XYZ</em> when <em>RGB</em>
+        works well enough?” you may ask. The reason is because XYZ
+        <em>predates</em> RGB! It was developed in the pursuit of discovering
+        how the human eye works, and was developed before we had a more modern
+        understanding of <a href="https://en.wikipedia.org/wiki/Trichromacy"
+        target="_blank">our eyes’ natural R G B cones</a>. And it was reliable
+        and close enough that it’s become the basis of most computer color,
+        including RGB.
+      </p>
+      <p>
+        So while the XYZ space is not directly useful for common color
+        operations, and it’s not a very human-friendly format, for historical
+        reasons it’s the mathematical cornerstone of many color calculations
+        (such as <a href="#lab">Lab</a>). You’ll probably only encounter XYZ if
+        you’re using it as a half-step toward converting between color spaces
+        rather than using it directly.
+      </p>
+    </div>
+  </main>
+</body>
+</html>

@@ -15,8 +15,20 @@ const G = [0, 1, 0, 1];
 const C = [0, 1, 1, 1];
 const B = [0, 0, 1, 1];
 const M = [1, 0, 1, 1];
+const K = [0, 0, 0, 1];
+const W = [1, 1, 1, 1];
 
 describe('better.mix', () => {
+  const tests = [
+    ['r -> y', R, Y, '#ffba00'],
+    ['r -> g', R, G, '#baba00'],
+    ['y -> g', Y, G, '#baff00'],
+    ['g -> c', G, C, '#00ffba'],
+    ['g -> b', R, Y, '#ffba00'],
+    ['c -> b', R, Y, '#ffba00'],
+    ['r -> y', R, Y, '#ffba00'],
+  ];
+
   it('r -> y', () => {
     expect(better.mix(R, Y, 0).rgbVal).to.deep.equal(R);
     expect(better.mix(R, Y, 0.5).hex).to.equal('#ffba00');
@@ -104,66 +116,37 @@ describe('better.from', () => {
     expect(generated, `rgb: ${expected} failed to generate hex`).to.equal(expected);
   });
 
-  it('rgb -> hsl', () => {
-    expect(better.from('rgb(173, 255, 47)').hsl).to.equal('hsl(83.654, 100%, 59.216%, 1)');
-    expect(better.from('#C4432B').hsl).to.equal('hsl(9.412, 64.017%, 46.863%, 1)');
-    expect(better.from('rgb(173, 255, 47)').hslVal.toString()).to.equal([83.654, 1, 0.59216, 1].toString());
-    expect(better.from('rgb(162, 61, 149)').hsl).to.equal('hsl(307.723, 45.291%, 43.725%, 1)');
-    expect(better.from('rgb(220, 37, 149)').hsl).to.equal('hsl(323.279, 72.332%, 50.392%, 1)');
-
-    // random test
-    const expected = randomColor();
-    const generated = better.from(better.from(expected).hsl).hex;
-    expect(generated, `rgb: ${expected} failed to generate HSL`).to.equal(expected);
-  });
-
   it('rgb -> p3', () => {
-    expect(better.from('rgb(255, 0, 0)').p3).to.equal('color(display-p3 1 0 0)');
-    expect(better.from('rgb(128, 128, 128)').p3).to.equal('color(display-p3 0.50196 0.50196 0.50196)');
-    expect(better.from('rgba(192, 192, 0, 0.5)').p3).to.equal('color(display-p3 0.75294 0.75294 0/0.5)');
-    expect(better.from('rgba(196, 67, 43, 0.8)').p3).to.equal('color(display-p3 0.76863 0.26275 0.16863/0.8)');
+    const tests = [
+      ['rgb(255, 0, 0)', 'color(display-p3 1 0 0)'],
+      ['rgb(128, 128, 128)', 'color(display-p3 0.50196 0.50196 0.50196)'],
+      ['rgba(192, 192, 0, 0.5)', 'color(display-p3 0.75294 0.75294 0/0.5)'],
+      ['rgba(196, 67, 43, 0.8)', 'color(display-p3 0.76863 0.26275 0.16863/0.8)'],
+    ];
+
+    for (const [given, want] of tests) {
+      expect(better.from(given).p3).to.equal(want);
+    }
   });
 
   it('hex -> rgb', () => {
-    expect(better.from('#f00').rgb).to.equal('rgb(255, 0, 0)');
-    expect(better.from('#888').rgb).to.equal('rgb(136, 136, 136)');
-    expect(better.from('#4b0082').rgb).to.equal('rgb(75, 0, 130)');
-    expect(better.from('#ffffff80').rgb).to.equal('rgba(255, 255, 255, 0.50196)');
-    expect(better.from(0x4b008240).rgb).to.equal('rgba(75, 0, 130, 0.25098)');
-    expect(better.from(0x000001).rgb).to.equal('rgb(0, 0, 1)');
+    const tests = [
+      ['#f00', 'rgb(255, 0, 0)'],
+      ['#888', 'rgb(136, 136, 136)'],
+      ['#4b0082', 'rgb(75, 0, 130)'],
+      ['#ffffff80', 'rgba(255, 255, 255, 0.50196)'],
+      [0x4b008240, 'rgba(75, 0, 130, 0.25098)'],
+      [0x000001, 'rgb(0, 0, 1)'],
+    ];
+
+    for (const [given, want] of tests) {
+      expect(better.from(given).rgb).to.equal(want);
+    }
 
     // random test
     const expected = randomColor();
     const generated = better.from(better.from(expected).hex).hex;
     expect(generated).to.equal(expected);
-  });
-
-  it('hex -> hsl', () => {
-    expect(better.from('#fa8072').hsl).to.equal('hsl(6.176, 93.151%, 71.373%, 1)');
-
-    // random test
-    const expected = randomColor();
-    const generated = better.from(better.from(better.from(expected).hex).hsl).hex;
-    expect(generated).to.equal(expected);
-  });
-
-  it('hsl -> rgb', () => {
-    expect(better.from('hsl(328, 100%, 54%)').rgb).to.equal('rgb(255, 20, 146)');
-    expect(better.from('hsl(328, 100%, 54%, 0.8)').rgb).to.equal('rgba(255, 20, 146, 0.8)');
-    expect(better.from('hsl(323.279, 72.3%, 50.4%)').rgb).to.equal('rgb(220, 37, 149)');
-    expect(better.from('hsl(361, 100%, 50%)').rgb).to.equal('rgb(255, 4, 0)');
-    expect(better.from('hsl(-361, 100%, 50%)').rgb).to.equal('rgb(255, 4, 0)');
-    expect(better.from('hsl(178, 0%, 0%)').rgb).to.equal('rgb(0, 0, 0)');
-
-    // random test
-    const expected = randomColor();
-    const generated = better.from(better.from(better.from(expected).hsl).hsl).hex;
-    expect(generated, `rgb: ${expected} failed multiple HSL <> RGB conversions`).to.equal(expected);
-  });
-
-  it('hsl -> hex', () => {
-    expect(better.from('hsl(40, 100%, 97%)').hex).to.equal('#fffaf0');
-    expect(better.from('hsl(40, 100%, 97%, 0.75)').hex).to.equal('#fffaf0bf');
   });
 
   it('name -> hex', () => {
@@ -187,6 +170,32 @@ describe('better.from', () => {
   it('allows out-of-bounds values', () => {
     expect(better.from('rgb(-100, 500, -100)').hex).to.equal('#00ff00');
     expect(better.from('hsl(0, -100%, 200%)').hex).to.equal('#ffffff');
+  });
+
+  it('rgb -> oklab', () => {
+    const tests = [
+      ['#7ae573', 'color(oklab 0.83195 -0.14445 0.11064)'],
+      ['#5a659a', 'color(oklab 0.52054 0.00614 -0.08466)'],
+      ['#9d0cab', 'color(oklab 0.50093 0.18528 -0.13592)'],
+      ['#978d9a', 'color(oklab 0.65626 0.016602 -0.01474)'],
+    ];
+
+    for (const [given, want] of tests) {
+      expect(better.from(given).oklab).to.equal(want);
+    }
+  });
+
+  it('rgb -> oklch', () => {
+    const tests = [
+      ['#1cfb45', 'color(oklch 0.83195 0.26967 144.43573)'],
+      ['#2df4f7', 'color(oklch 0.87965 0.14363 196.51326)'],
+      ['#054828', 'color(oklch 0.35432 0.08340 155.63368)'],
+      ['#f83f74', 'color(oklch 0.65646 0.22070 9.1864)'],
+    ];
+
+    for (const [given, want] of tests) {
+      expect(better.from(given).oklab).to.equal(want);
+    }
   });
 });
 
@@ -231,41 +240,26 @@ describe.skip('gradient', () => {
 });
 
 describe('lightness', () => {
-  it('R', () => {
-    expect(better.lightness(R)).to.equal(0.53233);
-  });
+  const tests = [
+    ['R', R, 0.62796],
+    ['Y', Y, 0.96798],
+    ['G', G, 0.86644],
+    ['C', C, 0.9054],
+    ['B', B, 0.45201],
+    ['M', M, 0.70167],
+    ['K', K, 0],
+    ['W', W, 1],
+  ];
 
-  it('Y', () => {
-    expect(better.lightness(Y)).to.equal(0.97138);
-  });
-
-  it('G', () => {
-    expect(better.lightness(G)).to.equal(0.87737);
-  });
-
-  it('C', () => {
-    expect(better.lightness(C)).to.equal(0.91117);
-  });
-
-  it('B', () => {
-    expect(better.lightness(B)).to.equal(0.32303);
-  });
-
-  it('M', () => {
-    expect(better.lightness(M)).to.equal(0.6032);
-  });
-
-  it('K', () => {
-    expect(better.lightness([0,0,0])).to.equal(0);
-  });
-
-  it('W', () => {
-    expect(better.lightness([1,1,1])).to.equal(1);
-  });
+  for (const [name, given, want] of tests) {
+    it(name, () => {
+      expect(better.lightness(given)).to.equal(want);
+    });
+  }
 });
 
 describe.skip('benchmark', () => {
-  it('rgb -> hex: 80,000 ops/s', () => {
+  it('rgb -> hex: 80k ops/s', () => {
     const start = performance.now();
     for (let n = 0; n < 80000; n ++) {
       better.from([1, 0, 0]).hexVal;
@@ -274,19 +268,10 @@ describe.skip('benchmark', () => {
     expect(end).to.be.lessThan(1000);
   });
 
-  it('rgb -> hsl: 80,000 ops/s', () => {
+  it('rgb -> p3: 80k ops/s', () => {
     const start = performance.now();
     for (let n = 0; n < 80000; n ++) {
-      better.from([1, 0, 0]).hslVal;
-    }
-    const end = performance.now() - start;
-    expect(end).to.be.lessThan(1000);
-  });
-
-  it('rgb -> p3: 80,000 ops/s', () => {
-    const start = performance.now();
-    for (let n = 0; n < 80000; n ++) {
-      better.from([1, 0, 0]).hslVal;
+      better.from([1, 0, 0]).p3;
     }
     const end = performance.now() - start;
     expect(end).to.be.lessThan(1000);

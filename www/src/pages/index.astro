@@ -1,0 +1,102 @@
+---
+import Head from '../components/Head.astro';
+import Nav from '../components/Nav.astro';
+---
+<html>
+<head>
+  <Head title="" />
+  <style lang="scss">
+    .info {
+      display: grid;
+      grid-template-columns: auto min-content;
+      padding: 1rem 0 1rem 1.25rem;
+      width: 50%;
+    }
+
+    .color {
+      display: grid;
+      min-height: 75vh;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .color-selection {
+      align-items: center;
+      display: flex;
+    }
+  </style>
+</head>
+<body>
+  <Nav />
+
+  <main>
+    <div class="info">
+      Analyze an individual color
+
+      <label class="picker">
+        <input id="color" type="color" value="#000000" />
+        <span id="color-value">#000000</span>
+      </label>
+    </div>
+
+    <div class="color">
+      <div id="color-block" class="color-block">
+        <div class="color-block-info"></div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import NP from 'number-precision';
+    import better from '../lib/better.min.js';
+
+    NP.enableBoundaryChecking(false); // don’t throw error on inaccurate calculation
+
+    const color = document.querySelector('#color');
+    const colorValue = document.querySelector('#color-value');
+    const block = document.querySelector('.color-block');
+    const data = block.querySelector('.color-block-info');
+
+    function render() {
+      // sync
+      search.set('c', color.value);
+      colorValue.innerHTML = color.value;
+      block.style.backgroundColor = color.value;
+
+      const c = better.from(color.value);
+      const rgb = c.rgbVal.slice(0, 3).map((v) => Math.round(v * 255)).join(' ');
+      const p3 = c.rgbVal.slice(0, 3).map((v) => NP.round(v, 5)).join(' ');
+      const [L, C, h] = c.oklchVal;
+
+      if (L >= 0.5) {
+        block.classList.remove('dark');
+        block.classList.add('light');
+      } else {
+        block.classList.add('dark');
+        block.classList.remove('light');
+      }
+
+      // update color
+      data.innerHTML = `Hex: ${c.hex}<br />
+RGB: ${rgb}<br />
+P3: &nbsp;${p3}<br />
+<br />
+Lightness: ${NP.round(L, 5)}<br />
+Chroma: &nbsp;&nbsp;&nbsp;${NP.round(C, 5)}<br />
+Hue: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${NP.round(h, 5)}
+`;
+
+      // update URL
+      window.location.hash = `#${search.toString()}`;
+    }
+
+    // init
+    const search = new URLSearchParams(window.location.hash.substring(1));
+    if (search.get('c')) color.value = search.get('c');
+    else color.value = better.from([Math.random(), Math.random(), Math.random()]).hex;
+    render();
+
+    // update
+    color.addEventListener('change', render);
+  </script>
+</body>
+</html>

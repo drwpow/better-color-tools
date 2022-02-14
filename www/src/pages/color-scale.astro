@@ -1,0 +1,37 @@
+---
+import Head from '../components/Head.astro';
+import Nav from '../components/Nav.astro';
+---
+<html>
+<head>
+  <Head title="" />
+  <style lang="scss">
+    .info {
+      display: grid;
+      grid-template-columns: auto min-content;
+      padding: 1rem 0 1rem 1.25rem;
+      width: 50%;
+    }
+
+    .color {
+      display: grid;
+      min-height: 75vh;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .color-selection {
+      align-items: center;
+      display: flex;
+    }
+  </style>
+</head>
+<body>
+  <Nav />
+
+  <main>
+    <div class="info">
+      Generate a smooth color scale from a base color
+    </div>
+  </main>
+</body>
+</html>

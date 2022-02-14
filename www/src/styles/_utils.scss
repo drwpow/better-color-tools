@@ -1,0 +1,47 @@
+.pad1 {
+  padding: 1rem;
+}
+
+.picker {
+  align-items: center;
+  display: flex;
+  font-family: var(--monospace);
+  font-size: 13px;
+  font-weight: 300;
+}
+
+.color-block {
+  background-color: #242424;
+  color: white;
+  font-size: 14px;
+  height: 0;
+  padding-top: 100%;
+  position: relative;
+  transition: background-color 67ms linear, color 67ms linear;
+  width: 100%;
+
+  &.light {
+    color: rgba(0, 0, 0, 0.8);
+  }
+
+  &.dark {
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  &-info {
+    bottom: 0;
+    font-family: var(--monospace);
+    font-weight: 200;
+    height: 100%;
+    left: 0;
+    line-height: 1.75;
+    opacity: 0.8;
+    padding: 1.5rem;
+    position: absolute;
+    width: 100%;
+  }
+
+  &--s {
+    font-size: 12px;
+  }
+}
