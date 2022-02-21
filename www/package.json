@@ -11,6 +11,6 @@
     "morphdom": "^2.6.1"
   },
   "dependencies": {
-    "number-precision": "^1.5.1"
+    "number-precision": "^1.5.2"
   }
 }

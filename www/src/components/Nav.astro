@@ -19,6 +19,7 @@
 
     &:hover {
       color: blue;
+      color: color(display-p3 0 0 1);
     }
 
     &[aria-current="page"] {
@@ -69,6 +70,7 @@
   <nav id="nav" class="nav">
     <a class="link" href="/" aria-current={Astro.request.url.pathname === '/' ? 'page' : undefined}>Analyze</a>
     <a class="link" href="/grayscale" aria-current={Astro.request.url.pathname === '/grayscale' ? 'page' : undefined}>Grayscale</a>
+    <a class="link" href="/mix" aria-current={Astro.request.url.pathname === '/mix' ? 'page' : undefined}>Mix</a>
     <a class="link" href="/color-scale" aria-current={Astro.request.url.pathname === '/color-scale' ? 'page' : undefined}>Color Scale</a>
     <a class="link" href="/terminology" aria-current={Astro.request.url.pathname === '/terminology' ? 'page' : undefined}>Terminology</a>
   </nav>

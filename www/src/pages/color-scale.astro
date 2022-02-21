@@ -8,20 +8,51 @@ import Nav from '../components/Nav.astro';
   <style lang="scss">
     .info {
       display: grid;
-      grid-template-columns: auto min-content;
-      padding: 1rem 0 1rem 1.25rem;
-      width: 50%;
+      grid-template-columns: 1fr 1fr 1fr;
+      padding: 1rem 1.25rem 1rem 1.25rem;
+      width: 100%;
+
+      &-colors {
+        align-items: center;
+        display: grid;
+        grid-gap: 1rem;
+        grid-template-columns: min-content min-content min-content;
+        justify-content: center;
+      }
+
+      &-steps {
+        text-align: right;
+      }
     }
 
-    .color {
-      display: grid;
-      min-height: 75vh;
-      grid-template-columns: 1fr 1fr;
-    }
+    .input {
+      font-size: 14px;
 
-    .color-selection {
-      align-items: center;
-      display: flex;
+      input {
+        border: 1px solid #d0d0d0;
+        border-radius: 2px;
+        font-family: var(--monospace);
+        font-size: 13px;
+        font-weight: 300;
+        height: 24px;
+        line-height: 24px;
+        margin-left: 0.5rem;
+        padding: 0;
+        text-indent: 0.5em;
+        width: 3rem;
+      }
+
+      select {
+        border: 1px solid #d0d0d0;
+        border-radius: 2px;
+        font-family: var(--body);
+        font-size: 14px;
+        font-weight: 450;
+        height: 24px;
+        line-height: 24px;
+        margin-left: 0.5rem;
+        padding: 0 0.25rem;
+      }
     }
   </style>
 </head>
@@ -29,9 +60,123 @@ import Nav from '../components/Nav.astro';
   <Nav />
 
   <main>
-    <div class="info">
+    <div class="info pad1">
       Generate a smooth color scale from a base color
+
+      <div class="info-colors">
+        <label class="picker">
+          <input id="base" type="color" value="#000000" />
+          <input id="base-string" value="#000000">
+        </label>
+      </div>
+
+      <div class="info-steps">
+        <label class="input">Steps <input id="steps" type="text" inputmode="numeric" value="7"></label>
+      </div>
     </div>
+
+    <div class="color"></div>
+
+    <section class="wrapper">
+      <h2>Explanation</h2>
+    </section>
   </main>
+
+  <script type="module">
+    import NP from 'number-precision';
+    import better from '../lib/better.min.js';
+
+    NP.enableBoundaryChecking(false); // don’t throw error on inaccurate calculation
+
+    const base = document.querySelector('#base');
+    const baseString = document.querySelector('#base-string');
+    const steps = document.querySelector('#steps');
+    const palette = document.querySelector('.color');
+
+    function render() {
+      let stepCount = parseInt(steps.value, 10);
+      if (stepCount > 0 === false) return; // invalid step count
+      const lastStep = stepCount + 1 // add one for last stop
+
+      // sync values
+      search.set('base', base.value);
+      search.set('steps', steps.value);
+
+      let rows = [];
+
+      const colorSpaces = ['oklab', 'oklch', 'linearRGB', 'sRGB'];
+
+      for (let row = 0; row < colorSpaces.length; row++) {
+        const colorSpace = document.createElement('div');
+        colorSpace.classList.add('color-scale');
+        colorSpace.innerHTML = `<h2 class="color-scale-title">${colorSpaces[row]}${row === 0 ? '<sup>Best</sup>' : ''}</h2>`
+
+        for (let col = 0; col <= lastStep; col++) {
+          const lightness = col/lastStep - 0.5;
+          const color = better.lighten(base.value, lightness, colorSpaces[row]);
+          const block = document.createElement('div');
+          block.classList.add('color-block', 'color-block--s');
+          block.setAttribute('style', `background:${color.hex};background:${color.p3}`);
+
+          const [L] = color.oklchVal;
+          if (L >= 0.5) {
+            block.classList.remove('dark');
+            block.classList.add('light');
+          } else {
+            block.classList.add('dark');
+            block.classList.remove('light');
+          }
+          block.innerHTML = `<div class="color-block-info">${color.hex}<br />L: ${NP.round(L * 100, 2)}%</div>`;
+          colorSpace.append(block);
+        }
+
+        rows.push(colorSpace);
+      }
+
+      // erase HTML (safely)
+      while (palette.firstChild) {
+        palette.removeChild(palette.firstChild);
+      }
+      // update HTML
+      palette.append(...rows);
+
+      // update URL
+      window.location.hash = `#${search.toString()}`;
+    }
+
+    // init
+    const search = new URLSearchParams(window.location.hash.substring(1));
+    if (search.get('base')) {
+      base.value = search.get('base');
+      baseString.value = search.get('base');
+    } else {
+      const rand  = better.from([Math.random(), Math.random(), Math.random()]).hex;
+      base.value = rand;
+      baseString.value = rand;
+    }
+    if (search.get('steps')) {
+      steps.value = search.get('steps');
+    }
+    render();
+
+    // update
+    base.addEventListener('change', (evt) => {
+      startString.value = evt.target.value;
+      render();
+    });
+    baseString.addEventListener('keyup', (evt) => {
+      try {
+        const c = better.from(evt.target.value);
+        base.value = c.hex;
+        render();
+      } catch {
+        // ignore
+      }
+    });
+    steps.addEventListener('keyup', (evt) => {
+      if (parseInt(evt.target.value) > 0 === false) return;
+      render();
+    });
+  </script>
 </body>
 </html>

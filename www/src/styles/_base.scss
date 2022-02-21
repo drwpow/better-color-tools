@@ -15,11 +15,30 @@ body {
 
 a[href] {
   color: blue;
+  color: color(display-p3 0 0 1);
 }
 
 img {
   height: auto;
   max-width: 100%;
+}
+
+input {
+  border-radius: 2px;
+  border: 1px solid #d0d0d0;
+  color: inherit;
+  font-family: var(--monospace);
+  font-size: 14px;
+  height: 24px;
+  line-height: 24px;
+  padding: 0;
+  text-indent: 0.25em;
+  width: 8rem;
+
+  &:focus {
+    border-color: blue;
+    border-color: color(display-p3);
+  }
 }
 
 em,
@@ -42,6 +61,13 @@ h1 {
   font-weight: 650;
   font-size: 32px;
   margin-top: 1.5em;
+  margin-bottom: 1em;
+}
+
+h2 {
+  font-weight: 500;
+  font-size: 28px;
+  margin-top: 0;
   margin-bottom: 1em;
 }
 

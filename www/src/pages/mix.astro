@@ -61,17 +61,17 @@ import Nav from '../components/Nav.astro';
 
   <main>
     <div class="info pad1">
-      Generate a smooth grayscale palette
+      Blend 2 colors smoothly
 
       <div class="info-colors">
         <label class="picker">
-          <input id="start" type="color" value="#100800" />
-          <input id="start-string" type="text" value="#100800" />
+          <input id="start" type="color" value="#ff00ff" />
+          <input id="start-string" type="text" value="#ff00ff">
         </label>
         →
         <label class="picker">
-          <input id="end" type="color" value="#ffffff" />
-          <input id="end-string" type="text" value="#ffffff" />
+          <input id="end" type="color" value="#00ff00" />
+          <input id="end-string" type="text" value="#00ff00">
         </label>
       </div>
 
@@ -84,15 +84,10 @@ import Nav from '../components/Nav.astro';
 
     <section class="wrapper">
       <h2>Explanation</h2>
-      <p>
-        True grayscale palettes are the closet sRGB ever gets to being correct. Some may even prefer the spread of sRGB to oklch, and that’s OK!
-      </p>
-      <p>
-        Linear RGB performs the worst here when dealing with high contrast. But when dealing with fully-saturated colors, linear RGB will often yield much better results than sRGB.
-      </p>
-      <p>
-        You’ll also find that oklch and oklab are identical when one or both colors are desaturated. But introduce some color (i.e. cool or warm grays) and you’ll see the two start to diverge slightly (with oklch usually having a slight advantage, but you can be the judge of that).
-      </p>
+      <p>Mixing colors is where sRGB really shows its flaws. For colors of similar hues, you won’t notice an issue. But when mixing across the color wheel, sRGB will get muddy. Oklab has a distinct advantage here.</p>
+      <p>Linear RGB fixes the muddiness of sRGB for colors of similar lightness, but the more difference in contrast, the more it will skew towards being too light or desaturated.</p>
+      <p>Oklch handles contrast differences well, and has the unique ability to preserve saturation. This means Oklch will produce more vibrant colors than any other method. But for some blends the midtones may appear unexpected.</p>
+      <p>Oklab is the best of both worlds in that it handles color better than sRGB, handles lightness better than linear RGB, and will never produce unexpected colors like Oklch.</p>
     </section>
   </main>
 
@@ -119,7 +114,6 @@ import Nav from '../components/Nav.astro';
       search.set('steps', steps.value);
 
       let rows = [];
-
       const colorSpaces = ['oklab', 'oklch', 'linearRGB', 'sRGB'];
 
       for (let row = 0; row < colorSpaces.length; row++) {
@@ -137,9 +131,17 @@ import Nav from '../components/Nav.astro';
           if (L >= 0.5) {
             block.classList.remove('dark');
             block.classList.add('light');
+            if (col === 0) {
+              palette.classList.remove('dark');
+              palette.classList.add('light');
+            }
           } else {
-            block.classList.add('dark');
             block.classList.remove('light');
+            block.classList.add('dark');
+            if (col === 0) {
+              palette.classList.remove('light');
+              palette.classList.add('dark');
+            }
           }
           block.innerHTML = `<div class="color-block-info">${color.hex}<br />L: ${NP.round(L * 100, 2)}%</div>`;
           colorSpace.append(block);
@@ -164,10 +166,18 @@ import Nav from '../components/Nav.astro';
     if (search.get('start')) {
       start.value = search.get('start');
       startString.value = search.get('start');
+    } else {
+      const rand = better.from([Math.random(), Math.random(), Math.random()]).hex;
+      start.value = rand;
+      startString.value = rand;
     }
     if (search.get('end')) {
       end.value = search.get('end');
       endString.value = search.get('end');
+    } else {
+      const rand = better.from([Math.random(), Math.random(), Math.random()]).hex;
+      end.value = rand;
+      endString.value = rand;
     }
     if (search.get('steps')) {
       steps.value = search.get('steps');

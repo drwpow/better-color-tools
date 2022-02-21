@@ -18,59 +18,47 @@ function test(css) {
   return output.replace(CB_CLOSE_RE, '').trim();
 }
 
-describe('mix', () => {
-  // analog
-  it('r -> y', () => {
-    expect(test('color: mix(#ff0000, #ffff00, 0.5);')).to.equal(`color: #ffba00;`);
-  });
-  it('r -> g', () => {
-    expect(test('color: mix(#ff0000, #00ff00, 0.5);')).to.equal(`color: #baba00;`);
-  });
-  it('y -> g', () => {
-    expect(test('color: mix(#ffff00, #00ff00, 0.5);')).to.equal(`color: #baff00;`);
-  });
-  it('g -> c', () => {
-    expect(test('color: mix(#00ff00, #00ffff, 0.5);')).to.equal(`color: #00ffba;`);
-  });
-  it('g -> b', () => {
-    expect(test('color: mix(#00ff00, #0000ff, 0.5);')).to.equal(`color: #00baba;`);
-  });
-  it('c -> b', () => {
-    expect(test('color: mix(#00ffff, #0000ff, 0.5);')).to.equal(`color: #00baff;`);
-  });
-  it('b -> m', () => {
-    expect(test('color: mix(#0000ff, #ff00ff, 0.5);')).to.equal(`color: #ba00ff;`);
-  });
-  it('b -> r', () => {
-    expect(test('color: mix(#0000ff, #ff0000, 0.5);')).to.equal(`color: #ba00ba;`);
-  });
-  it('m -> r', () => {
-    expect(test('color: mix(#ff00ff, #ff0000, 0.5);')).to.equal(`color: #ff00ba;`);
-  });
+const R = '#ff0000';
+const Y = '#ffff00';
+const G = '#00ff00';
+const C = '#00ffff';
+const B = '#0000ff';
+const M = '#ff00ff';
+const K = 'black';
+const W = 'white';
 
-  // complements
-  it('r -> c', () => {
-    expect(test('color: mix(#ff0000, #00ffff, 0.5);')).to.equal(`color: #bababa;`);
-  });
-  it('g -> m', () => {
-    expect(test('color: mix(#00ff00, #ff00ff, 0.5);')).to.equal(`color: #bababa;`);
-  });
-  it('b -> y', () => {
-    expect(test('color: mix(#0000ff, #ffff00, 0.5);')).to.equal(`color: #bababa;`);
-  });
+describe('better.mix', () => {
+  const tests = [
+    ['r -> y', R, Y, '#ffa000'],
+    ['r -> g', R, G, '#d0a800'],
+    ['r -> c', R, C, '#d2a993'],
+    ['y -> g', Y, G, '#b0ff00'],
+    ['g -> c', G, C, '#00ffa9'],
+    ['g -> b', G, B, '#00aabf'],
+    ['g -> m', G, M, '#c6b4b4'],
+    ['c -> b', C, B, '#00a0ff'],
+    ['b -> m', B, M, '#9038ff'],
+    ['b -> r', B, R, '#8c53a2'],
+    ['b -> y', B, Y, '#6cabc7'],
+    ['m -> r', M, R, '#fd2d9b'],
+    ['k -> w', K, W, '#646362'],
+  ];
+
+  for (const [name, c1, c2, mid] of tests) {
+    it(name, () => {
+      expect(test(`color: mix(${c1}, ${c2}, 0);`)).to.equal(`color: ${c1};`);
+      expect(test(`color: mix(${c1}, ${c2}, 0.5);`)).to.equal(`color: ${mid};`);
+      expect(test(`color: mix(${c1}, ${c2}, 1);`)).to.equal(`color: ${c2};`);
+    });
+  }
 
   // grayscale
-  it('k -> w', () => {
-    expect(test('color: mix(black, white, 0.1);')).to.equal('color: #5a5a5a;');
-    expect(test('color: mix(black, white, 0.2);')).to.equal('color: #7b7b7b;');
-    expect(test('color: mix(black, white, 0.3);')).to.equal('color: #949494;');
-    expect(test('color: mix(black, white, 0.4);')).to.equal('color: #a8a8a8;');
-    expect(test('color: mix(black, white, 0.5);')).to.equal('color: #bababa;');
-    expect(test('color: mix(black, white, 0.6);')).to.equal('color: #cacaca;');
-    expect(test('color: mix(black, white, 0.7);')).to.equal('color: #d9d9d9;');
-    expect(test('color: mix(black, white, 0.8);')).to.equal('color: #e6e6e6;');
-    expect(test('color: mix(black, white, 0.9);')).to.equal('color: #f3f3f3;');
-  });
+  const grayscale = ['black', '#030303', '#161616', '#2e2e2d', '#484847', '#646362', '#81807f', '#9f9e9d', '#bebdbc', '#dfdedc', 'white'];
+  for (let n = 0; n < grayscale.length; n++) {
+    it (`k -> w (${n * 10}%)`, () => {
+      expect(test(`color: mix(black, white, ${n/10})`)).to.equal(`color: ${grayscale[n]};`);
+    });
+  }
 
   it('Sass works as expected', () => {
     expect(test('color: color.mix(#ff0000, #ffff00, 50%);')).to.equal(`color: #ff8000;`);
@@ -82,33 +70,6 @@ describe('mix', () => {
     expect(test('color: color.mix(#0000ff, #ff00ff, 50%);')).to.equal(`color: #8000ff;`);
     expect(test('color: color.mix(#0000ff, #ff0000, 50%);')).to.equal(`color: purple;`);
     expect(test('color: color.mix(#ff00ff, #ff0000, 50%);')).to.equal(`color: #ff0080;`);
-  });
-});
-
-describe.skip('gradient', () => {
-  it('b -> g', () => {
-    expect(test(
-      'background: linear-gradient(90deg, #{gradient(blue 0%, lime 100%)});'
-    )).to.equal(
-      'background: linear-gradient(90deg, #0000ff, #0088e0, #00baba, #00e088, #00ff00);'
-    );
-  });
-
-  it('r -> o -> g', () => {
-    expect(test(
-      'linear-gradient(90deg, #{gradient(red 0%, orange 40%, lime 100%)})'
-    )).to.equal(
-      'linear-gradient(90deg,#ff0000 0%,#ff3400 10%,#ff4700 20%,#ff5600 30%,#ffa500 40%,#e09c00 55%,#bac400 70%,#88e400 85%,#00ff00 100%)'
-    );
-  })/
-
-  it('overlapping stops', () => {
-    // don’t insert the same blues over and over again
-    expect(test(
-      'linear-gradient(90deg, #{gradient(blue 0px, blue, 8px, lime 16px)})'
-    )).to.equal(
-      'linear-gradient(90deg,#0000ff,#0000ff 8px,#0088e0 10px,#00baba 12px,#00e088 14px,#00ff00 16px)'
-    );
   });
 });
 
@@ -125,36 +86,21 @@ describe('fallback', () => {
 });
 
 describe('lightness', () => {
+  const lightness = [
+    ['r', R, '0.6337714281'],
+    ['y', Y, '0.9678103203'],
+    ['g', G, '0.8671007367'],
+    ['c', C, '0.9067133452'],
+    ['b', B, '0.4538660491'],
+    ['m', M, '0.7034243341'],
+    ['k', K, '0'],
+    ['w', W, '0.9999999978'],
+  ];
+
   // note: opacity is only a way to store the value for comparison
-  it('R', () => {
-    expect(test('opacity: lightness(#f00)')).to.equal('opacity: 0.5323288179;');
-  });
-
-  it('Y', () => {
-    expect(test('opacity: lightness(#ff0)')).to.equal('opacity: 0.9713824698;');
-  });
-
-  it('G', () => {
-    expect(test('opacity: lightness(#0f0)')).to.equal('opacity: 0.8773703347;');
-  });
-
-  it('C', () => {
-    expect(test('opacity: lightness(#0ff)')).to.equal('opacity: 0.9111652111;');
-  });
-
-  it('B', () => {
-    expect(test('opacity: lightness(#00f)')).to.equal('opacity: 0.3230258667;');
-  });
-
-  it('M', () => {
-    expect(test('opacity: lightness(#f0f)')).to.equal('opacity: 0.6031993366;');
-  });
-
-  it('K', () => {
-    expect(test('opacity: lightness(#000)')).to.equal('opacity: 0;');
-  });
-
-  it('W', () => {
-    expect(test('opacity: lightness(#fff)')).to.equal('opacity: 1;');
-  });
+  for (const [name, given, want] of lightness) {
+    it(name, () => {
+      expect(test(`opacity: lightness(${given})`)).to.equal(`opacity: ${want};`);
+    });
+  }
 });

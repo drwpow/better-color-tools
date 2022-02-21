@@ -1,6 +1,13 @@
 ---
 import Head from '../components/Head.astro';
 import Nav from '../components/Nav.astro';
+import better from '../lib/better.min.js';
+
+const w100 = better.from(`color(oklab 1 0 0`).hex;
+const w75 = better.from(`color(oklab 0.75 0 0`).hex;
+const w50 = better.from(`color(oklab 0.5 0 0`).hex;
+const w25 = better.from(`color(oklab 0.25 0 0`).hex;
+const w0 = better.from(`color(oklab 0 0 0`).hex;
 ---
 <html>
 <head>
@@ -23,6 +30,25 @@ import Nav from '../components/Nav.astro';
       align-items: center;
       display: flex;
     }
+
+    .color-compare {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .table {
+      display: grid;
+      grid-template-columns: min-content auto;
+      grid-column-gap: 1.5em;
+      margin: 0;
+      padding: 0;
+
+      dl,
+      dd {
+        margin: 0;
+        padding: 0;
+      }
+    }
   </style>
 </head>
 <body>
@@ -33,14 +59,29 @@ import Nav from '../components/Nav.astro';
       Analyze an individual color
 
       <label class="picker">
-        <input id="color" type="color" value="#000000" />
-        <span id="color-value">#000000</span>
+        <input id="picker" type="color" value="#000000" />
+        <input id="color-string" type="text" value="#000000">
       </label>
     </div>
 
     <div class="color">
       <div id="color-block" class="color-block">
-        <div class="color-block-info"></div>
+        <div class="color-block-info">
+          <dl class="table">
+            <dt>Hex</dt><dd id="hex"></dd>
+            <dt>RGB</dt><dd id="rgb"></dd>
+            <dt>P3</dt><dd id="p3"></dd>
+            <dt>Oklab</dt><dd id="oklab"></dd>
+            <dt>Oklch</dt><dd id="oklch"></dd>
+          </dl>
+        </div>
+      </div>
+      <div class="color-compare">
+        <div class="color-block" style={`color:black;background:${w100}`}><div class="color-block-info">100%</div></div>
+        <div class="color-block" style={`color:black;background:${w75}`}><div class="color-block-info">75%</div></div>
+        <div class="color-block" style={`background:${w50}`}><div class="color-block-info">50%</div></div>
+        <div class="color-block" style={`background:${w25}`}><div class="color-block-info">25%</div></div>
+        <div class="color-block" style={`background:${w0}`}><div class="color-block-info">0%</div></div>
       </div>
     </div>
   </main>
@@ -51,23 +92,18 @@ import Nav from '../components/Nav.astro';
 
     NP.enableBoundaryChecking(false); // don’t throw error on inaccurate calculation
 
-    const color = document.querySelector('#color');
-    const colorValue = document.querySelector('#color-value');
+    const picker = document.querySelector('#picker');
+    const colorString = document.querySelector('#color-string');
     const block = document.querySelector('.color-block');
     const data = block.querySelector('.color-block-info');
 
     function render() {
-      // sync
-      search.set('c', color.value);
-      colorValue.innerHTML = color.value;
-      block.style.backgroundColor = color.value;
+      const c = better.from(picker.value);
+      search.set('c', picker.value);
 
-      const c = better.from(color.value);
-      const rgb = c.rgbVal.slice(0, 3).map((v) => Math.round(v * 255)).join(' ');
-      const p3 = c.rgbVal.slice(0, 3).map((v) => NP.round(v, 5)).join(' ');
-      const [L, C, h] = c.oklchVal;
+      block.style.backgroundColor = c.hex;
 
-      if (L >= 0.5) {
+      if (c.oklabVal[0] >= 0.5) {
         block.classList.remove('dark');
         block.classList.add('light');
       } else {
@@ -75,28 +111,48 @@ import Nav from '../components/Nav.astro';
         block.classList.remove('light');
       }
 
-      // update color
-      data.innerHTML = `Hex: ${c.hex}<br />
-RGB: ${rgb}<br />
-P3: &nbsp;${p3}<br />
-<br />
-Lightness: ${NP.round(L, 5)}<br />
-Chroma: &nbsp;&nbsp;&nbsp;${NP.round(C, 5)}<br />
-Hue: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${NP.round(h, 5)}
-`;
+      document.querySelector('#hex').innerHTML = c.hex;
+      document.querySelector('#rgb').innerHTML = c.rgb;
+      document.querySelector('#p3').innerHTML = c.p3;
+      document.querySelector('#oklab').innerHTML = c.oklab;
+      document.querySelector('#oklch').innerHTML = c.oklch;
 
-      // update URL
       window.location.hash = `#${search.toString()}`;
     }
 
     // init
     const search = new URLSearchParams(window.location.hash.substring(1));
-    if (search.get('c')) color.value = search.get('c');
-    else color.value = better.from([Math.random(), Math.random(), Math.random()]).hex;
+    if (search.get('c')) {
+      try {
+        const c = better.from(search.get('c'));
+        picker.value = c.hex
+        colorString.value = search.get('c');
+      } catch {
+        const rand = better.from([Math.random(), Math.random(), Math.random()]).hex;
+        picker.value = rand;
+        colorString.value = rand;
+      }
+    } else {
+      const rand = better.from([Math.random(), Math.random(), Math.random()]).hex;
+      picker.value = rand;
+      colorString.value = rand;
+    }
     render();
 
     // update
-    color.addEventListener('change', render);
+    picker.addEventListener('change', (evt) => {
+      colorString.value = evt.target.value;
+      render();
+    });
+    colorString.addEventListener('keyup', (evt) => {
+      try {
+        const c = better.from(evt.target.value);
+        picker.value = c.hex;
+        render();
+      } catch {
+        // ignore
+      }
+    });
   </script>
 </body>
 </html>
