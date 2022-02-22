@@ -6,11 +6,11 @@
     "build": "astro build",
     "dev": "astro dev"
   },
+  "dependencies": {
+    "number-precision": "^1.5.2"
+  },
   "devDependencies": {
     "astro": "0.22.20",
     "morphdom": "^2.6.1"
-  },
-  "dependencies": {
-    "number-precision": "^1.5.2"
   }
 }
