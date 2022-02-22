@@ -1,0 +1,85 @@
+:root {
+  --body: 'Neue Montreal', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  --monospace: 'Jet Brains Mono', ui-monospace, 'SF Mono', 'Monaco', 'Cascadia Mono', 'Cascadia Code', 'Consolas', 'monospace';
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--body);
+  line-height: 1.5;
+}
+
+a[href] {
+  color: blue;
+  color: color(display-p3 0 0 1);
+}
+
+img {
+  height: auto;
+  max-width: 100%;
+}
+
+input {
+  border-radius: 2px;
+  border: 1px solid #d0d0d0;
+  color: inherit;
+  font-family: var(--monospace);
+  font-size: 14px;
+  height: 24px;
+  line-height: 24px;
+  padding: 0;
+  text-indent: 0.25em;
+  width: 8rem;
+
+  &:focus {
+    border-color: blue;
+    border-color: color(display-p3);
+  }
+}
+
+em,
+i {
+  font-variation-settings: 'ital' 900;
+  font-style: normal;
+}
+
+pre,
+code {
+  background-color: rgba(0, 0, 0, 0.04);
+  display: inline-block;
+  font-family: var(--monospace);
+  font-size: 0.875em;
+  font-weight: 300;
+  padding: 0.125em 0.25em;
+}
+
+h1 {
+  font-weight: 650;
+  font-size: 32px;
+  margin-top: 1.5em;
+  margin-bottom: 1em;
+}
+
+h2 {
+  font-weight: 500;
+  font-size: 28px;
+  margin-top: 0;
+  margin-bottom: 1em;
+}
+
+p {
+  font-size: 18px;
+  line-height: 1.75;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+[type='color'] {
+  height: 1.5rem;
+  margin-right: 0.5rem;
+  width: 1.5rem;
+}

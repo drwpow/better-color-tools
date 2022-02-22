@@ -1,9 +1,10 @@
-.eslint*
+.changeset/
 .github/
+.eslint*
 .prettier*
-example/
 .eslintignore
 .eslintrc.cjs
+www/
 test/
 tsconfig.json
 

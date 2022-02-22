@@ -1,0 +1,210 @@
+---
+import Head from '../components/Head.astro';
+import Nav from '../components/Nav.astro';
+---
+<html>
+<head>
+  <Head title="" />
+  <style lang="scss">
+    .info {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      padding: 1rem 1.25rem 1rem 1.25rem;
+      width: 100%;
+
+      &-colors {
+        align-items: center;
+        display: grid;
+        grid-gap: 1rem;
+        grid-template-columns: min-content min-content min-content;
+        justify-content: center;
+      }
+
+      &-steps {
+        text-align: right;
+      }
+    }
+
+    .input {
+      font-size: 14px;
+
+      input {
+        border: 1px solid #d0d0d0;
+        border-radius: 2px;
+        font-family: var(--monospace);
+        font-size: 13px;
+        font-weight: 300;
+        height: 24px;
+        line-height: 24px;
+        margin-left: 0.5rem;
+        padding: 0;
+        text-indent: 0.5em;
+        width: 3rem;
+      }
+
+      select {
+        border: 1px solid #d0d0d0;
+        border-radius: 2px;
+        font-family: var(--body);
+        font-size: 14px;
+        font-weight: 450;
+        height: 24px;
+        line-height: 24px;
+        margin-left: 0.5rem;
+        padding: 0 0.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <Nav />
+
+  <main>
+    <div class="info pad1">
+      Generate a smooth grayscale palette
+
+      <div class="info-colors">
+        <label class="picker">
+          <input id="start" type="color" value="#100800" />
+          <input id="start-string" type="text" value="#100800" />
+        </label>
+        →
+        <label class="picker">
+          <input id="end" type="color" value="#ffffff" />
+          <input id="end-string" type="text" value="#ffffff" />
+        </label>
+      </div>
+
+      <div class="info-steps">
+        <label class="input">Steps <input id="steps" type="text" inputmode="numeric" value="7"></label>
+      </div>
+    </div>
+
+    <div class="color"></div>
+
+    <section class="wrapper">
+      <h2>Explanation</h2>
+      <p>
+        True grayscale palettes are the closet sRGB ever gets to being correct. Some may even prefer the spread of sRGB to oklch, and that’s OK!
+      </p>
+      <p>
+        Linear RGB performs the worst here when dealing with high contrast. But when dealing with fully-saturated colors, linear RGB will often yield much better results than sRGB.
+      </p>
+      <p>
+        You’ll also find that oklch and oklab are identical when one or both colors are desaturated. But introduce some color (i.e. cool or warm grays) and you’ll see the two start to diverge slightly (with oklch usually having a slight advantage, but you can be the judge of that).
+      </p>
+    </section>
+  </main>
+
+  <script type="module">
+    import NP from 'number-precision';
+    import better from '../lib/better.min.js';
+
+    NP.enableBoundaryChecking(false); // don’t throw error on inaccurate calculation
+
+    const start = document.querySelector('#start');
+    const startString = document.querySelector('#start-string');
+    const end = document.querySelector('#end');
+    const endString = document.querySelector('#end-string');
+    const steps = document.querySelector('#steps');
+    const palette = document.querySelector('.color');
+
+    function render() {
+      let stepCount = parseInt(steps.value, 10);
+      const lastStep = stepCount + 1 // add one for last stop
+
+      // sync values
+      search.set('start', start.value);
+      search.set('end', end.value);
+      search.set('steps', steps.value);
+
+      let rows = [];
+
+      const colorSpaces = ['oklab', 'oklch', 'linearRGB', 'sRGB'];
+
+      for (let row = 0; row < colorSpaces.length; row++) {
+        const colorSpace = document.createElement('div');
+        colorSpace.classList.add('color-scale');
+        colorSpace.innerHTML = `<h2 class="color-scale-title">${colorSpaces[row]}${row === 0 ? '<sup>Best</sup>' : ''}</h2>`
+
+        for (let col = 0; col <= lastStep; col++) {
+          const color = better.mix(start.value, end.value, col/lastStep, colorSpaces[row]);
+          const block = document.createElement('div');
+          block.classList.add('color-block', 'color-block--s');
+          block.setAttribute('style', `background:${color.hex};background:${color.p3}`);
+
+          const [L] = color.oklchVal;
+          if (L >= 0.5) {
+            block.classList.remove('dark');
+            block.classList.add('light');
+          } else {
+            block.classList.add('dark');
+            block.classList.remove('light');
+          }
+          block.innerHTML = `<div class="color-block-info">${color.hex}<br />L: ${NP.round(L * 100, 2)}%</div>`;
+          colorSpace.append(block);
+        }
+
+        rows.push(colorSpace);
+      }
+
+      // erase HTML (safely)
+      while (palette.firstChild) {
+        palette.removeChild(palette.firstChild);
+      }
+      // update HTML
+      palette.append(...rows);
+
+      // update URL
+      window.location.hash = `#${search.toString()}`;
+    }
+
+    // init
+    const search = new URLSearchParams(window.location.hash.substring(1));
+    if (search.get('start')) {
+      start.value = search.get('start');
+      startString.value = search.get('start');
+    }
+    if (search.get('end')) {
+      end.value = search.get('end');
+      endString.value = search.get('end');
+    }
+    if (search.get('steps')) {
+      steps.value = search.get('steps');
+    }
+    render();
+
+    // update
+    start.addEventListener('change', (evt) => {
+      startString.value = evt.target.value;
+      render();
+    });
+    startString.addEventListener('keyup', (evt) => {
+      try {
+        const c = better.from(evt.target.value);
+        start.value = c.hex;
+        render();
+      } catch {
+        // ignore
+      }
+    });
+    end.addEventListener('change', (evt) => {
+      endString.value = evt.target.value;
+      render();
+    });
+    endString.addEventListener('keyup', (evt) => {
+       try {
+        const c = better.from(evt.target.value);
+        end.value = c.hex;
+        render();
+      } catch {
+        // ignore
+      }
+    });
+    steps.addEventListener('keyup', (evt) => {
+      if (parseInt(evt.target.value) > 0 === false) return;
+      render();
+    });
+  </script>
+</body>
+</html>

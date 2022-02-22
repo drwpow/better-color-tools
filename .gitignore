@@ -2,4 +2,3 @@
 .dccache
 dist
 node_modules
-example/index.min.js

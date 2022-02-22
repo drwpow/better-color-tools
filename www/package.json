@@ -1,0 +1,16 @@
+{
+  "name": "better-color-tools-playground",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "astro build",
+    "dev": "astro dev"
+  },
+  "devDependencies": {
+    "astro": "0.22.20",
+    "morphdom": "^2.6.1"
+  },
+  "dependencies": {
+    "number-precision": "^1.5.2"
+  }
+}
