@@ -1,8 +1,8 @@
 # better-color-tools
 
-Better color manipulation through **the power of science!** 🧪 Uses [Oklab](https://bottosson.github.io/posts/oklab/)/Oklch for better color operations.
+Color parser and better color manipulation through **the power of science!** 🧪 Uses [Oklab](https://bottosson.github.io/posts/oklab/)/Oklch for better color operations.
 
-The JS version of this libray is fast (`80,000` ops/s), dependency-free, and lightweight (`4.4 kB` gzip). The Sass version… is Sass (which has no runtime).
+The JS version of this libray is fast (`> 200k` ops/s), lightweight (`4 kB` gzip), and dependency-free. The Sass version… is Sass (which has no runtime).
 
 👉 **Playground**: https://better-color-tools.pages.dev/
 
@@ -22,16 +22,29 @@ import better from 'better-color-utils';
 
 #### Quick guide
 
-| Code                              | Description                                                                                                                                        | Docs                 |
-| :-------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
-| `better.from('red')`              | Parse any valid CSS color (including [color()][css-color])                                                                                         | [Docs](./docs/js.md) |
-| `better.from('red').[format]`     | Reformat color in any format such as hex, RGB, [P3][p3] (Safari), Oklab, Oklch, and more.                                                          | [Docs](./docs/js.md) |
-| `better.mix('red', 'lime', 0.35)` | Mix `red` and `lime` 35%, i.e. more red. Uses Oklch for better color mixing than any Sass builtin ([why?][faq]).                                   | [Docs](./docs/js.md) |
-| `better.lighten('red', 0.5)`      | Lighten color by 50%, i.e. halfway to white (100% is white; 0% is original color). Better than Sass’ builtin.                                      | [Docs](./docs/js.md) |
-| `better.darken('red', 0.5)`       | Darken color by 50%, i.e. halfway to black (100% is black; 0% is original color). Better than Sass’ builtin.                                       | [Docs](./docs/js.md) |
-| `better.lightness('red', 0.5)`    | Get the human-perceived value of lightness from `0` (pure black) to `1` (pure white). Alias for `better.from().oklabVal`’s lightness (first value) | [Docs](./docs/js.md) |
+| Code                              | Description                                                                                                                                        |
+| :-------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `better.from('red')`              | Parse any valid CSS color (including [color()][css-color])                                                                                         |
+| `better.from('red').[colorspace]` | Convert color to [another colorspace](#supported-colorspaces)                                                                                      |
+| `better.mix('red', 'lime', 0.35)` | Mix `red` and `lime` 35%, i.e. more red. Uses Oklab for better color mixing.                                                                       |
+| `better.lighten('red', 0.5)`      | Lighten color by 50%, i.e. halfway to white (100% is white; 0% is original color). Better than Sass’ builtin.                                      |
+| `better.darken('red', 0.5)`       | Darken color by 50%, i.e. halfway to black (100% is black; 0% is original color). Better than Sass’ builtin.                                       |
+| `better.lightness('red', 0.5)`    | Get the human-perceived value of lightness from `0` (pure black) to `1` (pure white). Alias for `better.from().oklabVal`’s lightness (first value) |
 
-[JS Docs](./docs/js.md)
+#### Supported colorspaces
+
+| Colorspace  | Type       | Example                                            |
+| :---------- | :--------- | :------------------------------------------------- |
+| `.hex`      | `string`   | `'#ff0000'`                                        |
+| `.hexVal`   | `number`   | `0xff0000`                                         |
+| `.rgb`      | `string`   | `'rgb(255, 0, 0)'`                                 |
+| `.rgbVal`   | `number[]` | `[1, 0, 0, 1]` (R, G, B, alpha)                    |
+| `.p3`       | `string`   | `'color(display-p3 1 0 0)'`                        |
+| `.p3Val`    | `number[]` | (alias for `rgbVal`)                               |
+| `.oklab`    | `string`   | `'color(oklab 0.62796 0.22486 0.12585)'`           |
+| `.oklabVal` | `number[]` | `[0.62796, 0.22486, 0.12585, 1]` (L, a, b, alpha)  |
+| `.oklch`    | `string`   | `'color(oklch 0.62796 0.25768 29.23389)'`          |
+| `.oklchVal` | `number[]` | `[0.62796, 0.25768, 29.23389, 1]` (L, C, h, alpha) |
 
 ### Sass
 
@@ -43,18 +56,16 @@ Works with any version of [Dart Sass](https://sass-lang.com/dart-sass) (the curr
 
 #### Quick guide
 
-| Code                                                | Description                                                                                                                                        | Docs                   |
-| :-------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| `better.p3('red')`                                  | Reformat any Sass-parseable color as [P3][p3] (Safari)                                                                                             | [Docs](./docs/sass.md) |
-| `better.oklab('red')`                               | Reformat any Sass-parseable color as `color(oklab …)` ([CSS Module 5][css-color])                                                                  | [Docs](./docs/sass.md) |
-| `better.oklch('red')`                               | Reformat any Sass-parseable color as `color(oklch …)` ([CSS Module 5][css-color])                                                                  | [Docs](./docs/sass.md) |
-| `better.fallback('color', better.p3('red'), 'red')` | Easy fallback constructor (meant for color, but may be used for anything).                                                                         | [Docs](./docs/sass.md) |
-| `better.mix('red', 'lime', 0.35)`                   | Mix `red` and `lime` 35%, i.e. more red. Uses Oklch for true color mixing ([why?][faq]).                                                           | [Docs](./docs/sass.md) |
-| `better.lighten('red', 0.5)`                        | Lighten color by 50%, i.e. halfway to white (100% is white; 0% is original color)                                                                  | [Docs](./docs/sass.md) |
-| `better.darken('red', 0.5)`                         | Darken color by 50%, i.e. halfway to black (100% is black; 0% is original color)                                                                   | [Docs](./docs/sass.md) |
-| `better.lightness('red', 0.5)`                      | Get the human-perceived value of lightness from `0` (pure black) to `1` (pure white). Alias for `better.from().oklabVal`’s lightness (first value) | [Docs](./docs/sass.md) |
-
-[Sass Docs](./docs/sass.md)
+| Code                                                            | Description                                                                           |
+| :-------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `better.p3(#f00)`                                               | Convert RGB color to [P3][p3] (`color(display-p3 …)`) ([CSS Module 5][css-color])     |
+| `better.rgbToOklab(#f00)`                                       | Convert RGB to Oklab `color(oklab …)` ([CSS Module 5][css-color])                     |
+| `better.oklabToRGB(('l': 0.87421, 'a': -0.19121, 'b': 0.1174))` | Convert Oklab map of `l`, `a`, `b` to Sass color (with all values normalized to `1`). |
+| `better.fallback('color', better.p3(#f00), #f00)`               | Easy fallback constructor (meant for color, but may be used for anything).            |
+| `better.mix(red, lime, 0.35)`                                   | Mix `red` and `lime` 35%, i.e. more red. Uses Oklab for improved mixing.              |
+| `better.lighten(#f00, 0.5)`                                     | Lighten color by 50%, i.e. halfway to white (`1` is white; `0` is original color)     |
+| `better.darken(#f00, 0.5)`                                      | Darken color by 50%, i.e. halfway to black (`1` is black; `0` is original color)      |
+| `better.lightness(#f00, 0.5)`                                   | Get the human-perceived value of lightness from `0` (pure black) to `1` (pure white). |
 
 ## Project summary
 

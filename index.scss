@@ -5,6 +5,8 @@
 @use 'sass:meta';
 @use 'sass:string';
 
+$ONE_THIRD: math.div(1, 3);
+
 /// Mix colors through the Oklab space
 ///
 /// @param {color} $color1
@@ -41,23 +43,22 @@
 /// @returns {map} Map of l, a, b
 @function rgbToOklab($color) {
   // sRGB -> Linear RGB
-  $r: __degamma(math.div(color.red($color), 255));
-  $g: __degamma(math.div(color.green($color), 255));
-  $b: __degamma(math.div(color.blue($color), 255));
+  $red: __degamma(math.div(color.red($color), 255));
+  $green: __degamma(math.div(color.green($color), 255));
+  $blue: __degamma(math.div(color.blue($color), 255));
 
   // Linear RGB -> LMS
   $lms: (
-    'l': 0.4122214708 * $r + 0.5363325363 * $g + 0.0514459929 * $b,
-    'm': 0.2119034982 * $r + 0.6806995451 * $g + 0.1073969566 * $b,
-    's': 0.0883024619 * $r + 0.2817188376 * $g + 0.6299787005 * $b,
+    'l': 0.4122214708 * $red + 0.5363325363 * $green + 0.0514459929 * $blue,
+    'm': 0.2119034982 * $red + 0.6806995451 * $green + 0.1073969566 * $blue,
+    's': 0.0883024619 * $red + 0.2817188376 * $green + 0.6299787005 * $blue,
   );
 
   // LMS -> Oklab
-  $l: map.get($lms, 'l');
-  $m: map.get($lms, 'm');
-  $s: map.get($lms, 's');
-  $third: math.div(1, 3);
-  @return ('l': math.pow(0.2104542553 * $l + 0.793617785 * $m - 0.0040720468 * $s, $third), 'a': math.pow(1.9779984951 * $l - 2.428592205 * $m + 0.4505937099 * $s, $third), 'b': math.pow(0.0259040371 * $l + 0.7827717662 * $m - 0.808675766 * $s, $third));
+  $l: 0.2104542553 * map.get($lms, 'l') + 0.793617785 * map.get($lms, 'm') - 0.0040720468 * map.get($lms, 's');
+  $a: 1.9779984951 * map.get($lms, 'l') - 2.428592205 * map.get($lms, 'm') + 0.4505937099 * map.get($lms, 's');
+  $b: 0.0259040371 * map.get($lms, 'l') + 0.7827717662 * map.get($lms, 'm') - 0.808675766 * map.get($lms, 's');
+  @return ('l': __cbrt($l), 'a': __cbrt($a), 'b': __cbrt($b));
 }
 
 /// Convert Oklab map to sRGB
@@ -70,40 +71,21 @@
   }
 
   // Oklab -> LMS
-  $l: map.get($oklab, 'l');
-  $a: map.get($oklab, 'a');
-  $b: map.get($oklab, 'b');
   $lms: (
-    'l': math.pow($l + 0.3963377774 * $a + 0.2158037573 * $b, 3),
-    'm': math.pow($l - 0.1055613458 * $a - 0.0638541728 * $b, 3),
-    's': math.pow($l - 0.0894841775 * $a - 1.291485548 * $b, 3),
+    'l': math.pow(map.get($oklab, 'l') + 0.3963377774 * map.get($oklab, 'a') + 0.2158037573 * map.get($oklab, 'b'), 3),
+    'm': math.pow(map.get($oklab, 'l') - 0.1055613458 * map.get($oklab, 'a') - 0.0638541728 * map.get($oklab, 'b'), 3),
+    's': math.pow(map.get($oklab, 'l') - 0.0894841775 * map.get($oklab, 'a') - 1.291485548 * map.get($oklab, 'b'), 3),
   );
 
   // LMS -> Linear RGB
-  $l: map.get($lms, 'l'); // overwrite but whatever
-  $m: map.get($lms, 'm');
-  $s: map.get($lms, 's');
+  $r: math.max(4.0767416621 * map.get($lms, 'l') - 3.3077115913 * map.get($lms, 'm') + 0.2309699292 * map.get($lms, 's'), 0);
+  $g: math.max(-1.2684380046 * map.get($lms, 'l') + 2.6097574011 * map.get($lms, 'm') - 0.3413193965 * map.get($lms, 's'), 0);
+  $b: math.max(-0.0041960863 * map.get($lms, 'l') - 0.7034186147 * map.get($lms, 'm') + 1.707614701 * map.get($lms, 's'), 0);
 
-  $r: math.max(4.0767416621 * $l - 3.3077115913 * $m + 0.2309699292 * $s, 0);
-  $g: math.max(-1.2684380046 * $l + 2.6097574011 * $m - 0.3413193965 * $s, 0);
-  $b: math.max(-0.0041960863 * $l - 0.7034186147 * $m + 1.707614701 * $s, 0);
+  @debug $r, $g, $b;
 
   // Linear RGB -> sRGB
   @return rgb(__gamma($r) * 255, __gamma($g) * 255, __gamma($b) * 255);
-}
-
-@function __degamma($value) {
-  @if $value <= 0.04045 {
-    @return math.div($value, 12.92);
-  }
-  @return math.pow(math.div($value + 0.055, 1.055), 2.4);
-}
-
-@function __gamma($value) {
-  @if $value <= 0.0031308 {
-    @return math.clamp($value * 12.92, 0, 1);
-  }
-  @return math.clamp(1.055 * math.pow($value, math.div(1, 2.4)) - 0.055, 0, 1);
 }
 
 /// Relatively lighten color via Oklab. Produces better results than Sass’ lighten().
@@ -169,5 +151,33 @@
   }
   @for $i from list.length($values) through 1 {
     #{$property}: list.nth($values, $i);
+  }
+}
+
+// utils
+
+// convert sRGB to Linear RGB
+@function __degamma($value) {
+  @if $value <= 0.04045 {
+    @return math.div($value, 12.92);
+  }
+  @return math.pow(math.div($value + 0.055, 1.055), 2.4);
+}
+
+// convert Linear RGB to sRGB
+@function __gamma($value) {
+  @if $value <= 0.0031308 {
+    @return math.clamp($value * 12.92, 0, 1);
+  }
+  @return math.clamp(1.055 * math.pow($value, math.div(1, 2.4)) - 0.055, 0, 1);
+}
+
+/// Calculate cube root of a number (allows negative numbers, which Sass doesn’t allow)
+@function __cbrt($num) {
+  $cbrt: math.pow(math.abs($num), $ONE_THIRD);
+  @if $num < 0 {
+    @return -1 * $cbrt;
+  } @else {
+    @return $cbrt;
   }
 }
