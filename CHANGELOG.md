@@ -1,5 +1,15 @@
 # better-color-tools
 
+## 0.6.0
+
+### Minor Changes
+
+- 13bfe18: Reorg library around Oklab colorspace
+
+### Patch Changes
+
+- 4b27c6b: improve performance
+
 ## 0.5.0
 
 ### Minor Changes
