@@ -1,11 +1,8 @@
-import type { Color, LRGB, Oklab, Oklch, sRGB } from './colorspace.js';
+import type { Color, LinearRGB, Oklab, Oklch, sRGB } from './colorspace.js';
 
-import NP from 'number-precision';
-import { hslTosRGB, labToLCH, lchToLAB, LMSToLRGB, LMSToOklab, LRGBToLMS, LRGBTosRGB, OklabToLMS, sRGBToLRGB } from './colorspace.js';
+import { hslTosRGB, linearRGBTosRGB, luvTosRGB, oklabTosRGB, oklchTosRGB, sRGBToLinearRGB, sRGBToOklab, sRGBToOklch } from './colorspace.js';
 import cssNames from './css-names.js';
-import { clamp, leftPad } from './utils.js';
-
-NP.enableBoundaryChecking(false); // don’t throw error on inaccurate calculation
+import { clamp, colorFn, leftPad, rgbFn, round } from './utils.js';
 
 export interface ColorOutput {
   /** `#000000` */
@@ -21,7 +18,11 @@ export interface ColorOutput {
   /** [R, G, B, alpha] */
   rgbaVal: sRGB;
   /** [R, G, B, alpha] */
-  linearRGB: LRGB;
+  linearRGB: LinearRGB;
+  /** `color(luv 0 0 0/1)` */
+  // luv: string; // TODO: fix bug
+  /** [L, u, v, alpha] */
+  // luvVal: LUV;
   /** `color(display-p3 0 0 0/1)` */
   p3: string;
   /** [R, G, B, alpha] */
@@ -38,7 +39,6 @@ export interface ColorOutput {
 }
 
 // constants
-const P = 5; // standard precision: 16-bit
 const FLOAT_RE = /[0-9.-]+%?/g;
 const HEX_RE = /^#?[0-9a-f]{3,8}$/i;
 
@@ -60,65 +60,53 @@ export function from(rawColor: Color): ColorOutput {
 
   const outputs = {
     get hex(): string {
-      return `#${color
-        .map((v, n) => {
-          if (n < 3) return leftPad(NP.round(v * 255, 0).toString(16), 2);
-          return v < 1 ? NP.round(v * 255, 0).toString(16) : '';
-        })
-        .join('')}`;
+      let hexString = '#';
+      hexString += leftPad(Math.round(color[0] * 255).toString(16), 2); // r
+      hexString += leftPad(Math.round(color[1] * 255).toString(16), 2); // g
+      hexString += leftPad(Math.round(color[2] * 255).toString(16), 2); // b
+      if (color[3] < 1) hexString += leftPad(Math.round(color[3] * 255).toString(16), 2); // a
+      return hexString;
     },
     get hexVal(): number {
-      const hex = color.map((v, n) => {
-        if (n < 3) return leftPad(NP.round(v * 255, 0).toString(16), 2);
-        return v < 1 ? leftPad((v * 256).toString(16), 2) : '';
-      });
-      return parseInt(`0x${hex.join('')}`, 16);
+      const r = Math.round(color[0] * 255);
+      const g = Math.round(color[1] * 255);
+      const b = Math.round(color[2] * 255);
+      const a = Math.round(color[3] * 255);
+      if (color[3] < 1) return r + 256 ** 3 + g + 256 ** 2 + b + 256 + a;
+      return r + 256 ** 2 + g + 256 + b;
     },
+    // get luv(): string {
+    //   return colorFn('luv', sRGBToLuv(color));
+    // },
+    // get luvVal(): LUV {
+    //   return sRGBToLuv(color);
+    // },
     get rgb(): string {
-      if (color[3] == 1) {
-        return `rgb(${NP.round(color[0] * 255, 0)}, ${NP.round(color[1] * 255, 0)}, ${NP.round(color[2] * 255, 0)})`;
-      } else {
-        return `rgba(${NP.round(color[0] * 255, 0)}, ${NP.round(color[1] * 255, 0)}, ${NP.round(color[2] * 255, 0)}, ${NP.round(color[3], P)})`;
-      }
+      return rgbFn(color);
     },
     rgbVal: color,
     get rgba(): string {
-      return `rgba(${NP.round(color[0] * 255, 0)}, ${NP.round(color[1] * 255, 0)}, ${NP.round(color[2] * 255, 0)}, ${NP.round(color[3], P)})`;
+      return rgbFn(color);
     },
     rgbaVal: color,
     get linearRGB(): sRGB {
-      return sRGBToLRGB(color);
+      return sRGBToLinearRGB(color);
     },
     get p3(): string {
-      const [r, g, b, a] = color;
-      return `color(display-p3 ${NP.round(r, P)} ${NP.round(g, P)} ${NP.round(b, P)}${a < 1 ? `/${NP.round(a, P)}` : ''})`;
+      return colorFn('display-p3', color);
     },
     p3Val: color,
     get oklab(): string {
-      const lrgb = sRGBToLRGB(color);
-      const lms = LRGBToLMS(lrgb);
-      const [l, a, b, alpha] = LMSToOklab(lms);
-      return `color(oklab ${NP.round(l, P)} ${NP.round(a, P)} ${NP.round(b, P)}${alpha < 1 ? `/${NP.round(alpha, P)}` : ''})`;
+      return colorFn('oklab', sRGBToOklab(color));
     },
     get oklabVal(): Oklab {
-      const lrgb = sRGBToLRGB(color);
-      const lms = LRGBToLMS(lrgb);
-      const oklab = LMSToOklab(lms);
-      return oklab;
+      return sRGBToOklab(color);
     },
     get oklch(): string {
-      const lrgb = sRGBToLRGB(color);
-      const lms = LRGBToLMS(lrgb);
-      const oklab = LMSToOklab(lms);
-      const [l, c, h, alpha] = labToLCH(oklab);
-      return `color(oklch ${NP.round(l, P)} ${NP.round(c, P)} ${NP.round(h, P)}${alpha < 1 ? `/${NP.round(alpha, P)}` : ''})`;
+      return colorFn('oklch', sRGBToOklch(color));
     },
     get oklchVal(): Oklch {
-      const lrgb = sRGBToLRGB(color);
-      const lms = LRGBToLMS(lrgb);
-      const oklab = LMSToOklab(lms);
-      const lch = labToLCH(oklab);
-      return lch;
+      return sRGBToOklch(color);
     },
   };
 
@@ -188,15 +176,19 @@ function parse(rawColor: Color): sRGB {
     // hex
     if (HEX_RE.test(strVal)) {
       const hex = strVal.replace('#', '');
-      const hexNum = parseInt(
-        hex.length < 6
-          ? hex
-              .split('')
-              .map((d) => `${d}${d}`)
-              .join('') // handle shortcut (#fff)
-          : hex,
-        16
-      );
+      let hexNum = 0;
+      // according to spec, any shortened hex should have characters doubled
+      if (hex.length < 6) {
+        let expandedHex = '';
+        for (let n = 0; n < hex.length; n++) {
+          let c = hex.substring(n, n + 1);
+          expandedHex += c;
+          expandedHex += c;
+        }
+        hexNum = parseInt(expandedHex, 16);
+      } else {
+        hexNum = parseInt(hex, 16);
+      }
       return parseHexVal(hexNum);
     }
 
@@ -212,7 +204,7 @@ function parse(rawColor: Color): sRGB {
       }
       case 'srgb-linear': {
         const [r, g, b, a] = parseValueStr(rest, [255, 255, 255]);
-        return LRGBTosRGB([clamp(r, 0, 1), clamp(g, 0, 1), clamp(b, 0, 1), clamp(a, 0, 1)]);
+        return linearRGBTosRGB([clamp(r, 0, 1), clamp(g, 0, 1), clamp(b, 0, 1), clamp(a, 0, 1)]);
       }
       case 'hsl': {
         const [h, s, l, a] = parseValueStr(rest, [Infinity, 1, 1]);
@@ -223,18 +215,14 @@ function parse(rawColor: Color): sRGB {
         const [r, g, b, a] = parseValueStr(rest, [1, 1, 1]);
         return [clamp(r, 0, 1), clamp(g, 0, 1), clamp(b, 0, 1), clamp(a, 0, 1)];
       }
+      case 'luv': {
+        return luvTosRGB(parseValueStr(rest, [1, 1, 1]));
+      }
       case 'oklab': {
-        const lab = parseValueStr(rest, [1, 1, 1]); // note: Lab allows negative values but this library is unable to preserve those
-        const lms = OklabToLMS(lab);
-        const lrgb = LMSToLRGB(lms);
-        return LRGBTosRGB(lrgb);
+        return oklabTosRGB(parseValueStr(rest, [1, 1, 1]));
       }
       case 'oklch': {
-        const lch = parseValueStr(rest, [1, 1, Infinity]);
-        const lab = lchToLAB(lch);
-        const lms = OklabToLMS(lab);
-        const lrgb = LMSToLRGB(lms);
-        return LRGBTosRGB(lrgb);
+        return oklchTosRGB(parseValueStr(rest, [1, 1, Infinity]));
       }
     }
   }
@@ -247,5 +235,5 @@ function parse(rawColor: Color): sRGB {
  * Shortcut of "L” from oklab
  */
 export function lightness(color: Color): number {
-  return NP.round(from(color).oklabVal[0], 5); // l == lightness
+  return round(from(color).oklabVal[0], 5); // l == lightness
 }

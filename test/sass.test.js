@@ -18,11 +18,11 @@ function test(css) {
   return output.replace(CB_CLOSE_RE, '').trim();
 }
 
-const R = '#ff0000';
-const Y = '#ffff00';
-const G = '#00ff00';
-const C = '#00ffff';
-const B = '#0000ff';
+const R = 'red';
+const Y = 'yellow';
+const G = 'lime';
+const C = 'aqua';
+const B = 'blue';
 const M = '#ff00ff';
 const K = 'black';
 const W = 'white';

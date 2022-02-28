@@ -1,7 +1,4 @@
 import type { sRGB } from './index';
-import NP from 'number-precision';
-
-NP.enableBoundaryChecking(false);
 
 /** you know it, you love it */
 export function leftPad(input: string, min = 2): string {
@@ -13,15 +10,20 @@ export function leftPad(input: string, min = 2): string {
 }
 
 export function degToRad(degrees: number): number {
-  return NP.times(degrees, NP.divide(Math.PI, 180));
+  return degrees * (Math.PI / 180);
 }
 
 export function radToDeg(radians: number): number {
-  return NP.times(radians, NP.divide(180, Math.PI));
+  return radians * (180 / Math.PI);
 }
 
 export function clamp(input: number, min: number, max: number): number {
   return Math.min(Math.max(input, min), max);
+}
+
+/** CSS Color Module 5 function */
+export function colorFn(colorSpace: string, rgb: sRGB): string {
+  return `color(${colorSpace} ${round(rgb[0], 5)} ${round(rgb[1], 5)} ${round(rgb[2], 5)}${rgb[3] < 1 ? `/${round(rgb[3], 5)}` : ''})`;
 }
 
 /** multiply 3x1 color matrix with colorspace */
@@ -35,4 +37,17 @@ export function multiplyColorMatrix(color: sRGB, matrix: number[][]): sRGB {
     product[row] = sum;
   }
   return product;
+}
+
+export function round(number: number, precision = 2): number {
+  const factor = 10 ** precision;
+  return Math.round(number * factor) / factor;
+}
+
+export function rgbFn(rgb: sRGB): string {
+  const channels = `${Math.round(rgb[0] * 255)}, ${Math.round(rgb[1] * 255)}, ${Math.round(rgb[2] * 255)}`;
+  if (rgb[3] < 1) {
+    return `rgba(${channels}, ${round(rgb[3], 5)})`;
+  }
+  return `rgb(${channels})`;
 }
