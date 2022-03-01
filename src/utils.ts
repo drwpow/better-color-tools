@@ -46,7 +46,7 @@ export function round(number: number, precision = 2): number {
 
 export function rgbFn(rgb: sRGB): string {
   const channels = `${Math.round(rgb[0] * 255)}, ${Math.round(rgb[1] * 255)}, ${Math.round(rgb[2] * 255)}`;
-  if (rgb[3] < 1) {
+  if (rgb[3] !== 1) {
     return `rgba(${channels}, ${round(rgb[3], 5)})`;
   }
   return `rgb(${channels})`;

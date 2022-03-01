@@ -4,8 +4,8 @@ import better from '../dist/index.js';
 
 const OPS_PER_S = 200000;
 
-// note: run `test:benchmark` script! otherwise this won’t be accurate
-describe('benchmark', () => {
+// note: unskip, and run `test:benchmark` script! otherwise this won’t be accurate
+describe.skip('benchmark', () => {
   it('rgb -> hex: 200k ops/s', () => {
     const start = performance.now();
     for (let n = 0; n < OPS_PER_S; n ++) {

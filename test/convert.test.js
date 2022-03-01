@@ -13,8 +13,14 @@ const colors = [
   { hex: '#0000ff', rgb: [0, 0, 1, 1], luv: [0, 0, 0, 0], oklab: [0.45201, -0.03246, -0.31153, 1], oklch: [0.45201, 0.31321, 264.05202, 1] },
   { hex: '#ff00ff', rgb: [1, 0, 1, 1], luv: [0, 0, 0, 0], oklab: [0.70167,  0.27457, -0.16916, 1], oklch: [0.70167, 0.32249, 328.36342, 1] },
 
-  // more?
+  // alpha 50%
+  { hex: '#00000080', rgb: [0, 0, 0, 0.50196], luv: [0, 0, 0, 0.50196], p3: 'color(display-p3 0 0 0/0.50196)', oklab: [0, 0, 0, 0.50196], oklch: [0, 0, 0, 0.50196] },
 ];
+
+// add p3 (don’t manage manually)
+for (const c of colors) {
+  c.p3 = colorFn('display-p3', c.rgb);
+}
 
 function roundAll(arr) {
   return arr.map((v) => round(v, 5));
@@ -67,6 +73,23 @@ describe('hex <-> oklch', () => {
     const want = c.hex;
     it(given, () => {
       expect(better.from(given).hex).to.equal(want);
+    });
+  }
+});
+
+describe('hex <-> p3', () => {
+  for (const c of colors) {
+    const given = c.hex;
+    const want = c.p3;
+    it(given, () => {
+      expect(better.from(given).p3).to.deep.equal(want);
+    });
+  }
+  for (const c of colors) {
+    const given = colorFn('display-p3', c.rgb);
+    const want = c.hex;
+    it(given, () => {
+      expect(better.from(given).hex).to.deep.equal(want);
     });
   }
 });

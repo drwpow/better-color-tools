@@ -39,8 +39,11 @@ export interface ColorOutput {
 }
 
 // constants
-const FLOAT_RE = /[0-9.-]+%?/g;
+const FLOAT_RE = /-?[0-9.]+%?/g;
 const HEX_RE = /^#?[0-9a-f]{3,8}$/i;
+const R_RANGE = 256 ** 2;
+const G_RANGE = 256;
+const B_RANGE = 0;
 
 /**
  * Parse any valid CSS color color string and convert to:
@@ -118,15 +121,12 @@ export function from(rawColor: Color): ColorOutput {
 
 /** Convert any number of user inputs into RGBA array */
 function parse(rawColor: Color): sRGB {
-  /** Convert 0xff0000 to RGBA array */
-  function parseHexVal(hexVal: number): sRGB {
-    const hexStr = leftPad(clamp(hexVal, 0, 0xffffffff).toString(16), 6); // note: 0x000001 will convert to '1'
-    return [
-      parseInt(hexStr.substring(0, 2), 16) / 255, // r
-      parseInt(hexStr.substring(2, 4), 16) / 255, // g
-      parseInt(hexStr.substring(4, 6), 16) / 255, // b
-      parseInt(hexStr.substring(6, 8) || 'ff', 16) / 255, // a
-    ];
+  /** hex num to sRGB (note: doesn’t support alpha!) */
+  function hexNumTosRGB(hex: number): sRGB {
+    const r = Math.max(hex - R_RANGE, 0) / 256;
+    const g = Math.max(hex - G_RANGE, 0) / 256;
+    const b = Math.max(hex - B_RANGE, 0) / 256;
+    return [r, g, b, 1];
   }
 
   /** only grabs numbers from a color string (ignores spaces, commas, slashes, etc.) */
@@ -140,7 +140,7 @@ function parse(rawColor: Color): sRGB {
       // unbounded
       else if (normalize[n] === Infinity) values[n] = parseFloat(value);
       // bounded
-      else values[n] = parseFloat(value) / normalize[n];
+      else values[n] = parseFloat(value) / (normalize[n] || 1);
     });
     return values;
   }
@@ -158,8 +158,9 @@ function parse(rawColor: Color): sRGB {
   }
 
   // 0xff0000 (number)
+  // !note: doesn’t support alpha
   if (typeof rawColor == 'number') {
-    return parseHexVal(rawColor);
+    return hexNumTosRGB(rawColor);
   }
 
   // '#ff0000' / 'red' / 'rgb(255, 0, 0)' / 'hsl(0, 1, 1)'
@@ -169,60 +170,68 @@ function parse(rawColor: Color): sRGB {
 
     // named color
     // console.log({ val: strVal, name: (cssNames as any)[strVal] });
-    // note: 0 (black) is a valid color! so don’t check for “truthy” here
-    if (typeof cssNames[strVal.toLowerCase() as keyof typeof cssNames] === 'number') {
-      return parseHexVal(cssNames[strVal as keyof typeof cssNames] as number);
+    if (cssNames[strVal.toLowerCase()]) {
+      return cssNames[strVal.toLowerCase()];
     }
+
     // hex
     if (HEX_RE.test(strVal)) {
       const hex = strVal.replace('#', '');
-      let hexNum = 0;
-      // according to spec, any shortened hex should have characters doubled
-      if (hex.length < 6) {
-        let expandedHex = '';
-        for (let n = 0; n < hex.length; n++) {
-          let c = hex.substring(n, n + 1);
-          expandedHex += c;
-          expandedHex += c;
+      const rgb: sRGB = [0, 0, 0, 1];
+      if (hex.length >= 6) {
+        for (let n = 0; n < hex.length / 2; n++) {
+          const start = n * 2;
+          const end = start + 2;
+          const value = hex.substring(start, end);
+          rgb[n] = parseInt(value, 16) / 255;
         }
-        hexNum = parseInt(expandedHex, 16);
-      } else {
-        hexNum = parseInt(hex, 16);
       }
-      return parseHexVal(hexNum);
+      // according to spec, any shortened hex should have characters doubled
+      else {
+        for (let n = 0; n < hex.length; n++) {
+          const value = hex.charAt(n);
+          rgb[n] = parseInt(`${value}${value}`, 16) / 255;
+        }
+      }
+      return rgb;
     }
 
     // color functions
-    let [colorspace, rest] = strVal.split('(');
-    if (colorspace === 'color') colorspace = rest.split(' ')[0];
+    let [colorspace, valueStr] = strVal.split('(');
+    if (colorspace === 'color') {
+      // if color() function, then split string by first occurrence of space
+      const spaceI = valueStr.indexOf(' ');
+      colorspace = valueStr.substring(0, spaceI);
+      valueStr = valueStr.substring(spaceI);
+    }
     switch (colorspace) {
       case 'rgb':
       case 'rgba':
       case 'srgb': {
-        const [r, g, b, a] = parseValueStr(rest, [255, 255, 255]);
+        const [r, g, b, a] = parseValueStr(valueStr, [255, 255, 255, 1]);
         return [clamp(r, 0, 1), clamp(g, 0, 1), clamp(b, 0, 1), clamp(a, 0, 1)];
       }
       case 'srgb-linear': {
-        const [r, g, b, a] = parseValueStr(rest, [255, 255, 255]);
+        const [r, g, b, a] = parseValueStr(valueStr, [255, 255, 255, 1]);
         return linearRGBTosRGB([clamp(r, 0, 1), clamp(g, 0, 1), clamp(b, 0, 1), clamp(a, 0, 1)]);
       }
       case 'hsl': {
-        const [h, s, l, a] = parseValueStr(rest, [Infinity, 1, 1]);
+        const [h, s, l, a] = parseValueStr(valueStr, [Infinity, 1, 1, 1]);
         return hslTosRGB([h, clamp(s, 0, 1), clamp(l, 0, 1), clamp(a, 0, 1)]);
       }
       case 'p3':
       case 'display-p3': {
-        const [r, g, b, a] = parseValueStr(rest, [1, 1, 1]);
+        const [r, g, b, a] = parseValueStr(valueStr, [1, 1, 1, 1]);
         return [clamp(r, 0, 1), clamp(g, 0, 1), clamp(b, 0, 1), clamp(a, 0, 1)];
       }
       case 'luv': {
-        return luvTosRGB(parseValueStr(rest, [1, 1, 1]));
+        return luvTosRGB(parseValueStr(valueStr, [1, 1, 1, 1]));
       }
       case 'oklab': {
-        return oklabTosRGB(parseValueStr(rest, [1, 1, 1]));
+        return oklabTosRGB(parseValueStr(valueStr, [1, 1, 1, 1]));
       }
       case 'oklch': {
-        return oklchTosRGB(parseValueStr(rest, [1, 1, Infinity]));
+        return oklchTosRGB(parseValueStr(valueStr, [1, 1, Infinity, 1]));
       }
     }
   }
