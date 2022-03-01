@@ -1,5 +1,11 @@
 # better-color-tools
 
+## 0.6.1
+
+### Patch Changes
+
+- 7ecdf62: fix hex rounding error, color() fn parse error, improve perf
+
 ## 0.6.0
 
 ### Minor Changes
