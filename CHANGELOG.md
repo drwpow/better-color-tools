@@ -1,5 +1,11 @@
 # better-color-tools
 
+## 0.6.3
+
+### Patch Changes
+
+- 1f108f4: fix: bug in hexVal output
+
 ## 0.6.2
 
 ### Patch Changes
