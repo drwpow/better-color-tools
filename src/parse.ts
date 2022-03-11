@@ -72,12 +72,11 @@ export function from(rawColor: Color): ColorOutput {
       return hexString;
     },
     get hexVal(): number {
+      if (color[3] < 1) console.warn(`hexVal converted a semi-transparent color (${color[3] * 100}%) to fully opaque`);
       const r = Math.round(color[0] * 255);
       const g = Math.round(color[1] * 255);
       const b = Math.round(color[2] * 255);
-      const a = Math.round(color[3] * 255);
-      if (color[3] < 1) return r + 256 ** 3 + g + 256 ** 2 + b + 256 + a;
-      return r + 256 ** 2 + g + 256 + b;
+      return r * R_FACTOR + g * G_FACTOR + b;
     },
     // get luv(): string {
     //   return colorFn('luv', sRGBToLuv(color));

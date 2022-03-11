@@ -28,6 +28,7 @@ function roundAll(arr) {
 
 
 describe('hex <-> rgb', () => {
+  // hex -> rgb
   for (const c of colors) {
     const given = c.hex;
     const want = rgbFn(c.rgb);
@@ -35,6 +36,7 @@ describe('hex <-> rgb', () => {
       expect(better.from(given).rgb).to.deep.equal(want);
     });
   }
+  // rgb -> hex
   for (const c of colors) {
     const given = rgbFn(c.rgb);
     const want = c.hex;
@@ -42,27 +44,39 @@ describe('hex <-> rgb', () => {
       expect(better.from(given).hex).to.equal(want);
     });
   }
-  // shorthand (#fff)
+  // shorthand (#f00)
   for (const c of colors) {
-    if (c.hex[1] === c.hex[2] && c.hex[3] === c.hex[4] && c.hex[5] === c.hex[6]) {
-      const given = `#${c.hex[1]}${c.hex[3]}${c.hex[5]}`;
-      const want = c.hex;
-      it(given, () => {
-        expect(better.from(given).hex).to.equal(want);
-      });
-    }
+    const canBeShortened = c.hex[1] === c.hex[2] && c.hex[3] === c.hex[4] && c.hex[5] === c.hex[6] && c.hex[7] === c.hex[8];
+    if (!canBeShortened) continue;
+    const given = `#${c.hex[1]}${c.hex[3]}${c.hex[5]}`;
+    const want = c.hex;
+    it(given, () => {
+      expect(better.from(given).hex).to.equal(want);
+    });
   }
 });
 
 describe('hex int', () => {
+  // hex int -> hex
   for (const c of colors) {
-    if (c.rgb[3] !== 1) continue; // can’t handle alpha
+    if (c.rgb[3] !== 1) continue; // skip alpha
 
-    const intStr = c.hex.replace('#', '0x')
+    const intStr = c.hex.replace('#', '0x');
     const given = parseInt(intStr, 16);
     const want = c.hex;
     it(intStr, () => {
       expect(better.from(given).hex).to.equal(want);
+    });
+  }
+  // hex -> hex int -> hex
+  for (const c of colors) {
+    if (c.rgb[3] !== 1) continue; // skip alpha
+
+    const given = c.hex;
+    const intStr = given.replace('#', '0x');
+    const want = parseInt(intStr, 16);
+    it(`${intStr} (output)`, () => {
+      expect(better.from(given).hexVal).to.equal(want);
     });
   }
 })
