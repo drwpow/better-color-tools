@@ -26,6 +26,7 @@ function roundAll(arr) {
   return arr.map((v) => round(v, 5));
 }
 
+
 describe('hex <-> rgb', () => {
   for (const c of colors) {
     const given = c.hex;
@@ -41,7 +42,30 @@ describe('hex <-> rgb', () => {
       expect(better.from(given).hex).to.equal(want);
     });
   }
+  // shorthand (#fff)
+  for (const c of colors) {
+    if (c.hex[1] === c.hex[2] && c.hex[3] === c.hex[4] && c.hex[5] === c.hex[6]) {
+      const given = `#${c.hex[1]}${c.hex[3]}${c.hex[5]}`;
+      const want = c.hex;
+      it(given, () => {
+        expect(better.from(given).hex).to.equal(want);
+      });
+    }
+  }
 });
+
+describe('hex int', () => {
+  for (const c of colors) {
+    if (c.rgb[3] !== 1) continue; // can’t handle alpha
+
+    const intStr = c.hex.replace('#', '0x')
+    const given = parseInt(intStr, 16);
+    const want = c.hex;
+    it(intStr, () => {
+      expect(better.from(given).hex).to.equal(want);
+    });
+  }
+})
 
 describe('hex <-> oklab', () => {
   for (const c of colors) {

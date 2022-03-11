@@ -41,9 +41,10 @@ export interface ColorOutput {
 // constants
 const FLOAT_RE = /-?[0-9.]+%?/g;
 const HEX_RE = /^#?[0-9a-f]{3,8}$/i;
-const R_RANGE = 256 ** 2;
-const G_RANGE = 256;
-const B_RANGE = 0;
+const RGB_RANGE = 16 ** 6;
+const R_FACTOR = 16 ** 4; // base 16, starting after 4 digits (GGBB)
+const G_FACTOR = 16 ** 2; // base 16, starting after 2 digits (BB)
+// B_FACTOR = 1 (16 ** 0); not really needed
 
 /**
  * Parse any valid CSS color color string and convert to:
@@ -119,32 +120,39 @@ export function from(rawColor: Color): ColorOutput {
   return outputs;
 }
 
+/**
+ * hex num to sRGB (doesn’t support alpha as 0x000000 == 0x00000000)
+ * V8 handles number ops ~ 2x faster than parseInt(hex, 16) with string manipulations
+ */
+export function hexNumTosRGB(hex: number): sRGB {
+  if (hex > RGB_RANGE) throw new Error('better-color-tools can’t parse hex numbers with alpha (0x0000000 is indistinguishable from 0x00000000). Please use hex string, or another color method');
+  let remaining = hex;
+  const r = Math.floor(remaining / R_FACTOR); // Math.floor gets rid of G + B
+  remaining -= r * R_FACTOR;
+  const g = Math.floor(remaining / G_FACTOR); // Math.floor gets rid of B
+  remaining -= g * G_FACTOR;
+  const b = remaining;
+  return [r / 255, g / 255, b / 255, 1];
+}
+
+/** only grabs numbers from a color string (ignores spaces, commas, slashes, etc.) */
+function parseValueStr(colorStr: string, normalize: number[]): [number, number, number, number] {
+  const matches = colorStr.match(FLOAT_RE);
+  if (!matches) throw new Error(`Unexpected color format: ${colorStr}`);
+  const values: [number, number, number, number] = [0, 0, 0, 1]; // always start alpha at 1 unless overridden
+  matches.forEach((value, n) => {
+    // percentage (already normalized)
+    if (value.includes('%')) values[n] = parseFloat(value) / 100;
+    // unbounded
+    else if (normalize[n] === Infinity) values[n] = parseFloat(value);
+    // bounded
+    else values[n] = parseFloat(value) / (normalize[n] || 1);
+  });
+  return values;
+}
+
 /** Convert any number of user inputs into RGBA array */
-function parse(rawColor: Color): sRGB {
-  /** hex num to sRGB (note: doesn’t support alpha!) */
-  function hexNumTosRGB(hex: number): sRGB {
-    const r = Math.max(hex - R_RANGE, 0) / 256;
-    const g = Math.max(hex - G_RANGE, 0) / 256;
-    const b = Math.max(hex - B_RANGE, 0) / 256;
-    return [r, g, b, 1];
-  }
-
-  /** only grabs numbers from a color string (ignores spaces, commas, slashes, etc.) */
-  function parseValueStr(colorStr: string, normalize: number[]): [number, number, number, number] {
-    const matches = colorStr.match(FLOAT_RE);
-    if (!matches) throw new Error(`Unexpected color format: ${colorStr}`);
-    const values: [number, number, number, number] = [0, 0, 0, 1]; // always start alpha at 1 unless overridden
-    matches.forEach((value, n) => {
-      // percentage (already normalized)
-      if (value.includes('%')) values[n] = parseFloat(value) / 100;
-      // unbounded
-      else if (normalize[n] === Infinity) values[n] = parseFloat(value);
-      // bounded
-      else values[n] = parseFloat(value) / (normalize[n] || 1);
-    });
-    return values;
-  }
-
+export function parse(rawColor: Color): sRGB {
   // [R, G, B] or [R, G, B, A]
   if (Array.isArray(rawColor)) {
     if (rawColor.some((val) => typeof val != 'number')) throw new Error(`Color array must be numbers, received ${rawColor}`);

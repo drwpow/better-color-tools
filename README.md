@@ -2,7 +2,7 @@
 
 Color parser and better color manipulation through **the power of science!** 🧪 Uses [Oklab](https://bottosson.github.io/posts/oklab/)/Oklch for better color operations.
 
-The JS version of this libray is fast (`> 200k` ops/s), lightweight (`4 kB` gzip), and dependency-free. The Sass version… is Sass (which has no runtime).
+The JS version of this libray is fast (`> 220k` ops/s), lightweight (`4.5 kB` gzip), and dependency-free. The Sass version… is Sass (which has no runtime).
 
 👉 **Playground**: https://better-color-tools.pages.dev/
 
