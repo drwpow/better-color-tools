@@ -1,5 +1,11 @@
 # better-color-tools
 
+## 0.6.2
+
+### Patch Changes
+
+- 59acc29: fix parsing bug for hex integers
+
 ## 0.6.1
 
 ### Patch Changes
