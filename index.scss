@@ -55,10 +55,10 @@ $ONE_THIRD: math.div(1, 3);
   );
 
   // LMS -> Oklab
-  $l: 0.2104542553 * map.get($lms, 'l') + 0.793617785 * map.get($lms, 'm') - 0.0040720468 * map.get($lms, 's');
-  $a: 1.9779984951 * map.get($lms, 'l') - 2.428592205 * map.get($lms, 'm') + 0.4505937099 * map.get($lms, 's');
-  $b: 0.0259040371 * map.get($lms, 'l') + 0.7827717662 * map.get($lms, 'm') - 0.808675766 * map.get($lms, 's');
-  @return ('l': __cbrt($l), 'a': __cbrt($a), 'b': __cbrt($b));
+  $l: 0.2104542553 * __cbrt(map.get($lms, 'l')) + 0.793617785 * __cbrt(map.get($lms, 'm')) - 0.0040720468 * __cbrt(map.get($lms, 's'));
+  $a: 1.9779984951 * __cbrt(map.get($lms, 'l')) - 2.428592205 * __cbrt(map.get($lms, 'm')) + 0.4505937099 * __cbrt(map.get($lms, 's'));
+  $b: 0.0259040371 * __cbrt(map.get($lms, 'l')) + 0.7827717662 * __cbrt(map.get($lms, 'm')) - 0.808675766 * __cbrt(map.get($lms, 's'));
+  @return ('l': $l, 'a': $a, 'b': $b);
 }
 
 /// Convert Oklab map to sRGB
@@ -154,7 +154,7 @@ $ONE_THIRD: math.div(1, 3);
 
 // utils
 
-// convert sRGB to Linear RGB
+/// convert sRGB to Linear RGB
 @function __degamma($value) {
   @if $value <= 0.04045 {
     @return math.div($value, 12.92);
@@ -162,7 +162,7 @@ $ONE_THIRD: math.div(1, 3);
   @return math.pow(math.div($value + 0.055, 1.055), 2.4);
 }
 
-// convert Linear RGB to sRGB
+/// convert Linear RGB to sRGB
 @function __gamma($value) {
   @if $value <= 0.0031308 {
     @return math.clamp($value * 12.92, 0, 1);

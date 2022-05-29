@@ -41,7 +41,7 @@ describe('better.mix', () => {
     ['b -> r', B, R, '#8c53a2'],
     ['b -> y', B, Y, '#6cabc7'],
     ['m -> r', M, R, '#fd2d9b'],
-    ['k -> w', K, W, '#646362'],
+    ['k -> w', K, W, '#636363'],
   ];
 
   for (const [name, c1, c2, mid] of tests) {
@@ -53,7 +53,7 @@ describe('better.mix', () => {
   }
 
   // grayscale
-  const grayscale = ['black', '#030303', '#161616', '#2e2e2d', '#484847', '#646362', '#81807f', '#9f9e9d', '#bebdbc', '#dfdedc', 'white'];
+  const grayscale = ['black', '#030303', '#161616', '#2e2e2e', '#484848', '#636363', 'gray', '#9e9e9e', '#bebebe', '#dedede', 'white'];
   for (let n = 0; n < grayscale.length; n++) {
     it (`k -> w (${n * 10}%)`, () => {
       expect(test(`color: mix(black, white, ${n/10})`)).to.equal(`color: ${grayscale[n]};`);
@@ -87,17 +87,17 @@ describe('fallback', () => {
 
 describe('lightness', () => {
   const lightness = [
-    ['r', R, '0.6337714281'],
-    ['y', Y, '0.9678103203'],
-    ['g', G, '0.8671007367'],
-    ['c', C, '0.9067133452'],
-    ['b', B, '0.4538660491'],
-    ['m', M, '0.7034243341'],
+    ['r', R, '0.6279553606'],
+    ['y', Y, '0.9679827203'],
+    ['g', G, '0.8664396115'],
+    ['c', C, '0.9053992301'],
+    ['b', B, '0.4520137184'],
+    ['m', M, '0.7016738559'],
     ['k', K, '0'],
-    ['w', W, '0.9999999978'],
+    ['w', W, '0.9999999935'],
   ];
 
-  // note: opacity is only a way to store the value for comparison
+  // note: opacity is just a way to store the value for comparison
   for (const [name, given, want] of lightness) {
     it(name, () => {
       expect(test(`opacity: lightness(${given})`)).to.equal(`opacity: ${want};`);

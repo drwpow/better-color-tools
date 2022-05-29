@@ -14,6 +14,13 @@ export type Color = string | number | sRGB | LinearRGB | LMS | Oklab | Oklch;
 
 import { clamp, degToRad, multiplyColorMatrix, radToDeg } from './utils.js';
 
+const ε = 216 / 24389;
+const κ = 24389 / 27;
+const D65_WHITEPOINT = [95.47, 100, 108.33];
+const D65_LUV_DENOMINATOR = D65_WHITEPOINT[0] + 15 * D65_WHITEPOINT[1] + 3 * D65_WHITEPOINT[2];
+const D65_U_REF = (4 * D65_WHITEPOINT[0]) / D65_LUV_DENOMINATOR;
+const D65_V_REF = (9 * D65_WHITEPOINT[1]) / D65_LUV_DENOMINATOR;
+
 type MatrixRow = [number, number, number];
 export type ColorMatrix = [MatrixRow, MatrixRow, MatrixRow];
 
@@ -31,7 +38,7 @@ export const LMS_TO_LINEAR_RGB: ColorMatrix = [
   [-0.0041960863, -0.7034186147, 1.707614701],
 ];
 
-// http://www.easyrgb.com/
+// https://github.com/muak/ColorMinePortable/
 export const LINEAR_RGB_TO_XYZ_D65: ColorMatrix = [
   [0.4124, 0.3576, 0.1805],
   [0.2126, 0.7152, 0.0722],
@@ -95,7 +102,7 @@ export function hslTosRGB(hsl: HSL): sRGB {
   return [R + m, G + m, B + m, A];
 }
 
-/** Lab -> LCh / Oklab -> Oklch)*/
+/** Lab -> LCh / Oklab -> Oklch) */
 export function labToLCH(lab: LAB): LCH {
   const [L, a, b, alpha] = lab;
   const h = a === 0 && b === 0 ? 0 : radToDeg(Math.atan2(b, a)); // if desaturated, set hue to 0
@@ -146,13 +153,8 @@ export function linearRGBTosRGB(rgb: LinearRGB): sRGB {
     if (n === 3) return clamp(value, 0, 1); // alpha
 
     if (value <= 0.0031308) return clamp(value * 12.92, 0, 1);
-    else return clamp(1.055 * value ** (1 / 2.4) - 0.055, 0, 1);
+    else return clamp(1.055 * Math.pow(value, 1 / 2.4) - 0.055, 0, 1);
   }) as sRGB;
-}
-
-/** Linear sRGB -> XYZ (D65) */
-export function linearRGBToXYZ(linearRGB: LinearRGB): XYZ_D65 {
-  return multiplyColorMatrix(linearRGB, LINEAR_RGB_TO_XYZ_D65);
 }
 
 /** Linear sRGB -> LMS */
@@ -162,23 +164,25 @@ export function linearRGBToLMS(lrgb: LinearRGB): LMS {
 
 /** LUV -> XYZ (D65) */
 export function luvToXYZ(luv: LUV): XYZ_D65 {
-  const [L, u, v, alpha] = luv;
+  let [L, u, v, alpha] = luv;
 
-  const xyz: XYZ_D65 = [0, 0, 0, alpha];
+  L *= 100;
+  u *= 100;
+  v *= 100;
+  const y = L > ε * κ ? ((L + 16) / 116) ** 3 : L / κ;
+  const a = ((52 * L) / (u + 13 * L * D65_U_REF) - 1) / 3 || 0;
+  const b = -5 * y || 0;
+  const c = -1 / 3;
+  const d = y * ((39 * L) / (v + 13 * L * D65_V_REF) - 5) || 0;
+  const x = (d - b) / (a - c) || 0;
+  const z = x * a + b;
 
-  const _u = u / (13 * L);
-  const _v = v / (13 * L);
-
-  xyz[1] = L <= 8 ? L * (3 / 29) ** 3 : ((L + 16) / 116) ** 3; // Y
-  xyz[0] = xyz[1] * (9 / 4) * _u; // X
-  xyz[2] = xyz[1] * (((12 - 3 * _u - 20 * _v) / 4) * _v); // Z
-
-  return xyz;
+  return [x, y, z, alpha];
 }
 
 /** LUV -> sRGB */
 export function luvTosRGB(luv: LUV): sRGB {
-  return linearRGBTosRGB(xyzToLinearRGB(luvToXYZ(luv)));
+  return xyzTosRGB(luvToXYZ(luv));
 }
 
 /** Oklab -> LMS */
@@ -214,7 +218,7 @@ export function sRGBToLinearRGB(rgb: sRGB): LinearRGB {
 
 /** sRGB -> Luv */
 export function sRGBToLuv(rgb: sRGB): LUV {
-  return xyzToLuv(linearRGBToXYZ(sRGBToLinearRGB(rgb)));
+  return xyzToLuv(sRGBToXYZ(rgb));
 }
 
 /** sRGB -> Oklab */
@@ -227,24 +231,26 @@ export function sRGBToOklch(rgb: sRGB): Oklch {
   return labToLCH(sRGBToOklab(rgb));
 }
 
-/** XYZ (D65) -> Linear sRGB */
-export function xyzToLinearRGB(xyz: XYZ_D65): LinearRGB {
-  return multiplyColorMatrix(xyz, XYZ_D65_TO_LINEAR_RGB);
+/** sRGB -> XYZ (D65) */
+export function sRGBToXYZ(rgb: sRGB): XYZ_D65 {
+  return multiplyColorMatrix(sRGBToLinearRGB(rgb), LINEAR_RGB_TO_XYZ_D65);
+}
+
+/** XYZ (D65) -> sRGB */
+export function xyzTosRGB(xyz: XYZ_D65): LinearRGB {
+  return linearRGBTosRGB(multiplyColorMatrix(xyz, XYZ_D65_TO_LINEAR_RGB));
 }
 
 /** XYZ (D65) -> Luv */
 export function xyzToLuv(xyz: XYZ_D65): LUV {
   const [x, y, z, alpha] = xyz;
 
-  const luv: LUV = [0, 0, 0, alpha];
-
   const denominator = x + 15 * y + 3 * z;
-  const _u = (4 * x) / denominator;
-  const _v = (9 * y) / denominator;
+  const _u = (4 * x) / denominator || 0;
+  const _v = (9 * y) / denominator || 0;
+  const L = x > ε ? 116 * Math.pow(y, 1 / 3) - 16 : κ * y;
+  const u = 13 * L * (_u - D65_U_REF) || 0; // `|| 0` fixes -0
+  const v = 13 * L * (_v - D65_V_REF) || 0;
 
-  luv[0] = x > 0.008856451679035631 ? 116 * y ** (1 / 3) - 16 : 903.2962962962961 * y; // L
-  luv[1] = 13 * luv[0] * _u; // u
-  luv[2] = 13 * luv[0] * _v; // v
-
-  return luv;
+  return [L / 100, u / 100, v / 100, alpha];
 }

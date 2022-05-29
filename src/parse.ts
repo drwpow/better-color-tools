@@ -1,6 +1,6 @@
-import type { Color, LinearRGB, Oklab, Oklch, sRGB } from './colorspace.js';
+import { Color, LinearRGB, LUV, Oklab, Oklch, sRGB, sRGBToXYZ, xyzTosRGB, XYZ_D65 } from './colorspace.js';
 
-import { hslTosRGB, linearRGBTosRGB, luvTosRGB, oklabTosRGB, oklchTosRGB, sRGBToLinearRGB, sRGBToOklab, sRGBToOklch } from './colorspace.js';
+import { hslTosRGB, linearRGBTosRGB, luvTosRGB, oklabTosRGB, oklchTosRGB, sRGBToLinearRGB, sRGBToLuv, sRGBToOklab, sRGBToOklch } from './colorspace.js';
 import cssNames from './css-names.js';
 import { clamp, colorFn, leftPad, rgbFn, round } from './utils.js';
 
@@ -20,9 +20,9 @@ export interface ColorOutput {
   /** [R, G, B, alpha] */
   linearRGB: LinearRGB;
   /** `color(luv 0 0 0/1)` */
-  // luv: string; // TODO: fix bug
+  luv: string; // TODO: fix bug
   /** [L, u, v, alpha] */
-  // luvVal: LUV;
+  luvVal: LUV;
   /** `color(display-p3 0 0 0/1)` */
   p3: string;
   /** [R, G, B, alpha] */
@@ -35,6 +35,10 @@ export interface ColorOutput {
   oklch: string;
   /** [L, C, h, alpha] */
   oklchVal: Oklch;
+  /** `color(xyz 0 0 0/1)` (2•, D65 whitepoint) */
+  xyz: string;
+  /** [X, Y, Z, alpha] (2•, D65 whitespace) */
+  xyzVal: XYZ_D65;
   toString(): string; // JS helper
 }
 
@@ -72,18 +76,18 @@ export function from(rawColor: Color): ColorOutput {
       return hexString;
     },
     get hexVal(): number {
-      if (color[3] < 1) console.warn(`hexVal converted a semi-transparent color (${color[3] * 100}%) to fully opaque`);
+      if (color[3] < 1) console.warn(`hexVal converted a semi-transparent color (${color[3] * 100}%) to fully opaque`); // eslint-disable-line no-console
       const r = Math.round(color[0] * 255);
       const g = Math.round(color[1] * 255);
       const b = Math.round(color[2] * 255);
       return r * R_FACTOR + g * G_FACTOR + b;
     },
-    // get luv(): string {
-    //   return colorFn('luv', sRGBToLuv(color));
-    // },
-    // get luvVal(): LUV {
-    //   return sRGBToLuv(color);
-    // },
+    get luv(): string {
+      return colorFn('luv', sRGBToLuv(color));
+    },
+    get luvVal(): LUV {
+      return sRGBToLuv(color);
+    },
     get rgb(): string {
       return rgbFn(color);
     },
@@ -110,6 +114,12 @@ export function from(rawColor: Color): ColorOutput {
     },
     get oklchVal(): Oklch {
       return sRGBToOklch(color);
+    },
+    get xyz(): string {
+      return colorFn('xyz-d65', sRGBToXYZ(color));
+    },
+    get xyzVal(): XYZ_D65 {
+      return sRGBToXYZ(color);
     },
   };
 
@@ -176,7 +186,6 @@ export function parse(rawColor: Color): sRGB {
     if (!strVal) throw new Error(`Expected color, received empty string`);
 
     // named color
-    // console.log({ val: strVal, name: (cssNames as any)[strVal] });
     if (cssNames[strVal.toLowerCase()]) {
       return cssNames[strVal.toLowerCase()];
     }
@@ -232,13 +241,18 @@ export function parse(rawColor: Color): sRGB {
         return [clamp(r, 0, 1), clamp(g, 0, 1), clamp(b, 0, 1), clamp(a, 0, 1)];
       }
       case 'luv': {
-        return luvTosRGB(parseValueStr(valueStr, [1, 1, 1, 1]));
+        const luv = parseValueStr(valueStr, [1, 1, 1, 1]);
+        return luvTosRGB(luv);
       }
       case 'oklab': {
         return oklabTosRGB(parseValueStr(valueStr, [1, 1, 1, 1]));
       }
       case 'oklch': {
         return oklchTosRGB(parseValueStr(valueStr, [1, 1, Infinity, 1]));
+      }
+      case 'xyz':
+      case 'xyz-d65': {
+        return xyzTosRGB(parseValueStr(valueStr, [1, 1, 1, 1]));
       }
     }
   }

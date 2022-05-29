@@ -6,8 +6,8 @@ more-appropriate term would be more confusing, so here we are. Welcome!
 ## Project goals
 
 I started this library because I frequently need to mix colors, but was constantly disappointed at how bad the results were using common tools available (see examples above; if you’ve found a tool you’re happy with, more power to you, but I never did). I
-had avoided using any libraries or tools for this reason for my entire career, and instead always mixed color manually in graphics programs (in full disclosure I have a fine arts degree with a concentration in painting, which helps explain why I felt most
-color tools were primitive and unusable). But over time, I had this growing feeling that others had dealt with this problem and had been similarly disappointed, and that there were solutions available; they just were just unknown to the authors making
+had avoided using any libraries or tools for this reason for my entire career, and instead always mixed color manually in graphics programs (I have a fine arts degree with a concentration in painting, so I have to feel grumpy about colors to convince
+myself my art degree was worth something). But over time, I had this growing feeling that others had dealt with this problem and had been similarly disappointed, and that there were solutions available; they just were just unknown to the authors making
 simple color functions (including the Sass authors). After all, most programmers aren’t color scientists. And so this library is the product of finding solutions to the (deceptively-complex) problem of color mixing that aren’t god-awful, and are at least
 as good as I can achieve mixing colors manually if not better.
 

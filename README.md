@@ -33,18 +33,24 @@ import better from 'better-color-utils';
 
 #### Supported colorspaces
 
-| Colorspace  | Type       | Example                                            |
-| :---------- | :--------- | :------------------------------------------------- |
-| `.hex`      | `string`   | `'#ff0000'`                                        |
-| `.hexVal`   | `number`   | `0xff0000`                                         |
-| `.rgb`      | `string`   | `'rgb(255, 0, 0)'`                                 |
-| `.rgbVal`   | `number[]` | `[1, 0, 0, 1]` (R, G, B, alpha)                    |
-| `.p3`       | `string`   | `'color(display-p3 1 0 0)'`                        |
-| `.p3Val`    | `number[]` | (alias for `rgbVal`)                               |
-| `.oklab`    | `string`   | `'color(oklab 0.62796 0.22486 0.12585)'`           |
-| `.oklabVal` | `number[]` | `[0.62796, 0.22486, 0.12585, 1]` (L, a, b, alpha)  |
-| `.oklch`    | `string`   | `'color(oklch 0.62796 0.25768 29.23389)'`          |
-| `.oklchVal` | `number[]` | `[0.62796, 0.25768, 29.23389, 1]` (L, C, h, alpha) |
+| Colorspace  | Type       | Example                                     |
+| :---------- | :--------- | :------------------------------------------ |
+| `.hex`      | `string`   | `'#ff0000'`                                 |
+| `.hexVal`   | `number`   | `0xff0000`                                  |
+| `.rgb`      | `string`   | `'rgb(255, 0, 0)'`                          |
+| `.rgbVal`   | `number[]` | `[1, 0, 0, 1]`                              |
+| `.p3`       | `string`   | `'color(display-p3 1 0 0)'`                 |
+| `.p3Val`    | `number[]` | (alias for `rgbVal`)                        |
+| `.oklab`    | `string`   | `'color(oklab 0.62796 0.22486 0.12585)'`    |
+| `.oklabVal` | `number[]` | `[0.62796, 0.22486, 0.12585, 1]`            |
+| `.oklch`    | `string`   | `'color(oklch 0.62796 0.25768 29.23389)'`   |
+| `.oklchVal` | `number[]` | `[0.62796, 0.25768, 29.23389, 1]`           |
+| `.xyz`      | `string`   | `'color(xyz-d65 0.62796 0.25768 29.23389)'` |
+| `.xyzVal`   | `number[]` | `[0.62796, 0.25768, 29.23389, 1]`           |
+| `.luv`      | `string`   | `'color(luv 0.53241 1.75015 0.2979)'`       |
+| `.luvVal`   | `number[]` | `[0.53241, 1.75015, 0.2979, 1]`             |
+
+_Note: all colorspaces use the [CIE standard 2•, D65 white point observer](https://en.wikipedia.org/wiki/Illuminant_D65)._
 
 ### Sass
 
