@@ -1,5 +1,11 @@
 # better-color-tools
 
+## 0.7.0
+
+### Minor Changes
+
+- ee8f8e1: Add Luv colorspace, fix Sass bugs
+
 ## 0.6.3
 
 ### Patch Changes
