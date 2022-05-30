@@ -31,7 +31,7 @@
     "changeset": "changeset",
     "dev": "tsc -w",
     "lint": "eslint \"**/*.{js,ts}\"",
-    "prepublishOnly": "npm run build",
+    "prepublish": "npm run build",
     "test": "mocha --parallel",
     "test:benchmark": "mocha"
   },
