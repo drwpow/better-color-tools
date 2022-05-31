@@ -42,4 +42,34 @@ describe.skip('benchmark', () => {
     const end = performance.now() - start;
     expect(end).to.be.lessThan(1000);
   });
+
+  it('parse speed: hex string', (done) => {
+    const start = performance.now();
+    for (let n = 0; n < 1000000; n++) {
+      better.from('#ff0000');
+    }
+    const end = performance.now() - start;
+    console.log(`hex string: 1m ops in ${end/1000}s`);
+    done();
+  });
+
+  it('parse speed: hex number', (done) => {
+    const start = performance.now();
+    for (let n = 0; n < 1000000; n++) {
+      better.from(0xff0000);
+    }
+    const end = performance.now() - start;
+    console.log(`hex number: 1m ops in ${end/1000}s`);
+    done();
+  });
+
+  it('parse speed: rgb array', (done) => {
+    const start = performance.now();
+    for (let n = 0; n < 1000000; n++) {
+      better.from([1, 0, 0, 1]);
+    }
+    const end = performance.now() - start;
+    console.log(`rgb array: 1m ops in ${end/1000}s`);
+    done();
+  });
 });

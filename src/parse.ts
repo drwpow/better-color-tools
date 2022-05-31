@@ -186,8 +186,9 @@ export function parse(rawColor: Color): sRGB {
     if (!strVal) throw new Error(`Expected color, received empty string`);
 
     // named color
-    if (cssNames[strVal.toLowerCase()]) {
-      return cssNames[strVal.toLowerCase()];
+    const lc = strVal.toLowerCase();
+    if (typeof cssNames[lc] === 'number') {
+      return hexNumTosRGB(cssNames[lc]);
     }
 
     // hex

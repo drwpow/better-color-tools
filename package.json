@@ -33,7 +33,7 @@
     "lint": "eslint \"**/*.{js,ts}\"",
     "prepublish": "npm run build",
     "test": "mocha --parallel",
-    "test:benchmark": "mocha"
+    "test:benchmark": "mocha -t 10000"
   },
   "devDependencies": {
     "@changesets/cli": "^2.22.0",

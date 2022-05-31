@@ -2,7 +2,7 @@
 
 Color parser and better color manipulation through **the power of science!** 🧪 Uses [Oklab](https://bottosson.github.io/posts/oklab/)/Oklch for better color operations.
 
-The JS version of this libray is fast (`> 220k` ops/s), lightweight (`4.5 kB` gzip), and dependency-free. The Sass version… is Sass (which has no runtime).
+The JS version of this libray is fast (`> 225k` ops/s), lightweight (`4.3 kB` gzip), and dependency-free. The Sass version… is Sass (which has no runtime).
 
 👉 **Playground**: https://better-color-tools.pages.dev/
 
@@ -18,6 +18,10 @@ Works in the browser (ESM) and Node (14+).
 
 ```js
 import better from 'better-color-utils';
+
+better.from('rebeccapurple').hex; // #663399
+better.from('rebeccapurple').p3; // color(display-p3 0.4 0.2 0.6)
+better.from('rebeccapurple').oklch; // color(oklch 0.44027 0.1603 303.37299)
 ```
 
 #### Quick guide
@@ -50,7 +54,8 @@ import better from 'better-color-utils';
 | `.luv`      | `string`   | `'color(luv 0.53241 1.75015 0.2979)'`       |
 | `.luvVal`   | `number[]` | `[0.53241, 1.75015, 0.2979, 1]`             |
 
-_Note: all colorspaces use the [CIE standard 2•, D65 white point observer](https://en.wikipedia.org/wiki/Illuminant_D65)._
+- HSL can be parsed, but not output (and [you shouldn’t use it anyway](https://better-color-tools.pages.dev/terminology#hsl))
+- All colorspaces use the [CIE standard 2•, D65 white point observer](https://en.wikipedia.org/wiki/Illuminant_D65).
 
 ### Sass
 
