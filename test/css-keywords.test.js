@@ -156,13 +156,6 @@ describe('CSS color keywords', () => {
   for (const [name, val] of Object.entries(keywords)) {
     it(name, () => {
       expect(better.from(name).hex).to.equal(val);
-      if (name === 'rebeccapurple') {
-        console.log(better.from(name).oklab);
-        console.log(better.from(name).oklch);
-        console.log(better.from(name).p3);
-        console.log(better.from(name).xyz);
-        console.log(better.from(name).luv);
-      }
     });
   }
 });

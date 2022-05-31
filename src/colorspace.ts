@@ -1,6 +1,7 @@
 // note: these types are all interchangeable, but are kept separate for readability
 // all color spaces’ 4th number is alpha
 export type HSL = [number, number, number, number];
+export type HWB = [number, number, number, number];
 export type LAB = [number, number, number, number];
 export type LCH = [number, number, number, number];
 export type LUV = [number, number, number, number];
@@ -100,6 +101,21 @@ export function hslTosRGB(hsl: HSL): sRGB {
   const m = L - C / 2;
 
   return [R + m, G + m, B + m, A];
+}
+
+/** HWB -> sRGB (https://www.w3.org/TR/css-color-4/#hwb-to-rgb) */
+export function hwbTosRGB(hwb: HWB): sRGB {
+  const [h, w, b, alpha] = hwb;
+  if (w + b >= 1) {
+    const gray = w / (w + b);
+    return [gray, gray, gray, alpha];
+  }
+  const rgb = hslTosRGB([h, 100, 50, alpha]);
+  for (let i = 0; i < 3; i++) {
+    rgb[i] *= 1 - w - b;
+    rgb[i] += w;
+  }
+  return rgb;
 }
 
 /** Lab -> LCh / Oklab -> Oklch) */

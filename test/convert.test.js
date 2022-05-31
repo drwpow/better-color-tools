@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import better from '../dist/index.js';
-import { colorFn, rgbFn, round } from '../dist/utils.js';
+import { colorFn, round } from '../dist/utils.js';
 
 const colors = [
   // basic colors
@@ -34,14 +34,14 @@ describe('hex <-> rgb', () => {
   // hex -> rgb
   for (const c of colors) {
     const given = c.hex;
-    const want = rgbFn(c.rgb);
+    const want = colorFn('rgb', c.rgb);
     it(given, () => {
       expect(better.from(given).rgb).to.deep.equal(want);
     });
   }
   // rgb -> hex
   for (const c of colors) {
-    const given = rgbFn(c.rgb);
+    const given = colorFn('rgb', c.rgb);
     const want = c.hex;
     it(given, () => {
       expect(better.from(given).hex).to.equal(want);

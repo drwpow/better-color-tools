@@ -63,8 +63,8 @@ better.from('rebeccapurple').oklch; // color(oklch 0.44027 0.1603 303.37299)
 - **Oklch** (and Oklab) are always preferred. Oklch works like HSL (1 value for lightness, 1 value for chroma/saturation, and 1 value for hue degrees) but is vastly superior.
 - All values are normalized to `1` besides hue degrees (e.g. Oklch). Values < 0 and > 1 are still valid; they just represent a value darker or brigher than the display is able to reproduce
 - **Luv** is [a close runner-up to Oklch/Oklab](https://gist.github.com/Myndex/47c793f8a054041bd2b52caa7ad5271c)
-- HSL can be parsed, but not output (and [you shouldn’t use it anyway](https://better-color-tools.pages.dev/terminology#hsl))
-- All colorspaces use the [CIE standard 2•, D65 white point observer](https://en.wikipedia.org/wiki/Illuminant_D65).
+- HSL and HWB can be parsed but not output (and [you shouldn’t use either anyway](https://better-color-tools.pages.dev/terminology#hsl))
+- All colorspaces use the [CIE standard 2°, D65 white point observer](https://en.wikipedia.org/wiki/Illuminant_D65).
 
 ### Sass
 

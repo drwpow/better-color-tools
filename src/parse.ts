@@ -1,8 +1,8 @@
 import { Color, LinearRGB, LUV, Oklab, Oklch, sRGB, sRGBToXYZ, xyzTosRGB, XYZ_D65 } from './colorspace.js';
 
-import { hslTosRGB, linearRGBTosRGB, luvTosRGB, oklabTosRGB, oklchTosRGB, sRGBToLinearRGB, sRGBToLuv, sRGBToOklab, sRGBToOklch } from './colorspace.js';
+import { hslTosRGB, hwbTosRGB, linearRGBTosRGB, luvTosRGB, oklabTosRGB, oklchTosRGB, sRGBToLinearRGB, sRGBToLuv, sRGBToOklab, sRGBToOklch } from './colorspace.js';
 import cssNames from './css-names.js';
-import { clamp, colorFn, leftPad, rgbFn, round } from './utils.js';
+import { clamp, colorFn, leftPad, round } from './utils.js';
 
 export interface ColorOutput {
   /** `#000000` */
@@ -89,11 +89,11 @@ export function from(rawColor: Color): ColorOutput {
       return sRGBToLuv(color);
     },
     get rgb(): string {
-      return rgbFn(color);
+      return colorFn('rgb', color);
     },
     rgbVal: color,
     get rgba(): string {
-      return rgbFn(color);
+      return colorFn('rgb', color);
     },
     rgbaVal: color,
     get linearRGB(): sRGB {
@@ -232,9 +232,15 @@ export function parse(rawColor: Color): sRGB {
         const [r, g, b, a] = parseValueStr(valueStr, [255, 255, 255, 1]);
         return linearRGBTosRGB([clamp(r, 0, 1), clamp(g, 0, 1), clamp(b, 0, 1), clamp(a, 0, 1)]);
       }
-      case 'hsl': {
+      case 'hsl':
+      case 'hsla': {
         const [h, s, l, a] = parseValueStr(valueStr, [Infinity, 1, 1, 1]);
         return hslTosRGB([h, clamp(s, 0, 1), clamp(l, 0, 1), clamp(a, 0, 1)]);
+      }
+      case 'hwb':
+      case 'hwba': {
+        const [h, w, b, a] = parseValueStr(valueStr, [Infinity, 1, 1, 1]);
+        return hwbTosRGB([h, clamp(w, 0, 1), clamp(b, 0, 1), clamp(a, 0, 1)]);
       }
       case 'p3':
       case 'display-p3': {
