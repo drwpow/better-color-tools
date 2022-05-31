@@ -1,5 +1,11 @@
 # better-color-tools
 
+## 0.7.3
+
+### Patch Changes
+
+- b09be1a: Fix Oklab/Oklch color() function output
+
 ## 0.7.2
 
 ### Patch Changes
