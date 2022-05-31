@@ -1,11 +1,11 @@
 import type { Color, sRGB } from './colorspace.js';
 import type { ColorOutput } from './parse.js';
 
-import { linearRGBTosRGB, sRGBToOklab, sRGBToOklch, sRGBToLinearRGB, oklabTosRGB, oklchTosRGB } from './colorspace.js';
+import { linearRGBTosRGB, luvTosRGB, sRGBToLuv, sRGBToOklab, sRGBToOklch, sRGBToLinearRGB, oklabTosRGB, oklchTosRGB } from './colorspace.js';
 import { from } from './parse.js';
 import { clamp } from './utils.js';
 
-export type MixColorSpace = 'oklab' | 'oklch' | 'linearRGB' | 'sRGB';
+export type MixColorSpace = 'oklab' | 'oklch' | 'luv' | 'linearRGB' | 'sRGB';
 
 /**
  * Mix colors via Oklch (better for preserving hue than Oklab)
@@ -26,6 +26,7 @@ export function mix(color1: Color, color2: Color, weight = 0.5, colorSpace: MixC
   const converters: Record<MixColorSpace, (color: sRGB) => sRGB> = {
     oklch: sRGBToOklch,
     oklab: sRGBToOklab,
+    luv: sRGBToLuv,
     linearRGB: sRGBToLinearRGB,
     sRGB: (c) => c,
   };
@@ -33,6 +34,7 @@ export function mix(color1: Color, color2: Color, weight = 0.5, colorSpace: MixC
   const deconverters: Record<MixColorSpace, (color: sRGB) => sRGB> = {
     oklch: oklchTosRGB,
     oklab: oklabTosRGB,
+    luv: luvTosRGB,
     linearRGB: linearRGBTosRGB,
     sRGB: (c) => c,
   };

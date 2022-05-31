@@ -20,7 +20,7 @@ function render() {
   search.set('steps', steps.value);
 
   let rows = [];
-  const colorSpaces = ['oklab', 'oklch', 'linearRGB', 'sRGB'];
+  const colorSpaces = ['oklab', 'oklch', 'luv', 'linearRGB', 'sRGB'];
 
   for (let row = 0; row < colorSpaces.length; row++) {
     const colorSpace = document.createElement('div');
