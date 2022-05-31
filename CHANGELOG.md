@@ -1,5 +1,12 @@
 # better-color-tools
 
+## 0.7.1
+
+### Patch Changes
+
+- 5d93f00: Add Luv colorspace to mix
+- 614a81e: Fix CSS names bug in silver, darkorchid, darkturqoise
+
 ## 0.7.0
 
 ### Minor Changes
