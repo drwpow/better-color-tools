@@ -37,7 +37,7 @@ export function colorFn(colorSpace: string, val: sRGB): string {
     // color(oklab 54.0% -0.10 -0.02)
     case 'oklab':
     case 'oklch': {
-      return `color(${colorSpace} ${round(x * 100, 5)}% ${round(y, 5)} ${round(z, 5)}${alphaSlash}`;
+      return `color(${colorSpace} ${round(x * 100, 5)}% ${round(y, 5)} ${round(z, 5)}${alphaSlash})`;
     }
     // color(display-p3 0.4 0.2 0.6)
     // color(luv 0.4 0.2 0.6)

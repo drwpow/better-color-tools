@@ -26,6 +26,7 @@ function render() {
   document.querySelector('#p3').innerHTML = c.p3;
   document.querySelector('#oklab').innerHTML = c.oklab;
   document.querySelector('#oklch').innerHTML = c.oklch;
+  document.querySelector('#luv').innerHTML = c.luv;
 
   window.location.hash = `#${search.toString()}`;
 }
