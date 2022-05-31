@@ -1,5 +1,11 @@
 # better-color-tools
 
+## 0.7.2
+
+### Patch Changes
+
+- aa0e0c4: Add HWB parsing, fix HSLA parsing bug
+
 ## 0.7.1
 
 ### Patch Changes
