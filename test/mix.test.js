@@ -11,16 +11,18 @@ const K = '#000000';
 const W = '#ffffff';
 
 describe('better.mix', () => {
+  // note: these values are ever-so-slightly-improved from the Sass version because of
+  // better gamut clipping (for most purposes the difference is insignificant)
   const tests = [
     ['r -> y', R, Y, '#ffa000'],
     ['r -> g', R, G, '#d0a800'],
     ['r -> c', R, C, '#d2a993'],
     ['y -> g', Y, G, '#b0ff00'],
-    ['g -> c', G, C, '#00ffa9'],
-    ['g -> b', G, B, '#00aabf'],
+    ['g -> c', G, C, '#00ffaa'],
+    ['g -> b', G, B, '#51aabf'],
     ['g -> m', G, M, '#c6b4b4'],
-    ['c -> b', C, B, '#00a0ff'],
-    ['b -> m', B, M, '#9038ff'],
+    ['c -> b', C, B, '#00a0f3'],
+    ['b -> m', B, M, '#9501ff'],
     ['b -> r', B, R, '#8c53a2'],
     ['b -> y', B, Y, '#6cabc7'],
     ['m -> r', M, R, '#fd2d9b'],

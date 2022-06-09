@@ -6,7 +6,7 @@ export type { ColorOutput } from './parse.js';
 export { darken, lighten } from './lighten-darken.js';
 export { mix } from './mix.js';
 export { from, lightness } from './parse.js';
-export { clamp, colorFn, leftPad, round } from './utils.js';
+export { clamp, colorFn, degToRad, leftPad, multiplyColorMatrix, radToDeg, round } from './utils.js';
 
 import { darken, lighten } from './lighten-darken.js';
 import { mix } from './mix.js';
