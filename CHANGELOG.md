@@ -1,5 +1,19 @@
 # better-color-tools
 
+## 0.8.0
+
+### Minor Changes
+
+- a6f9631: Adds sRGB gamut clamping for Oklab/Oklch
+- a6f9631: Improve XYZ accuracy
+
+### Patch Changes
+
+- a6f9631: Improved mix() function
+- a6f9631: Remove luv colorspace (at least until CSS Color Module mentions it)
+- a6f9631: Minor performance improvements
+- a6f9631: Output oklab() and oklch() functions for CSS
+
 ## 0.7.3
 
 ### Patch Changes
