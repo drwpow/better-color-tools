@@ -1,5 +1,5 @@
 ---
-'better-color-tools': patch
+'better-color-tools': minor
 ---
 
-Fix Oklab clamping
+Adds sRGB gamut clamping for Oklab/Oklch
