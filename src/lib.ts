@@ -141,7 +141,7 @@ export function findCusp(a: number, b: number): Cusp {
 
   // Convert to linear sRGB to find the first point where at least one of r,g or b >= 1:
   const rgb_at_max = lmsToLinearRGB(oklabToLMS([1, S_cusp * a, S_cusp * b, 1]));
-  const L_cusp = Math.cbrt(1 / Math.max((rgb_at_max[0], rgb_at_max[1], rgb_at_max[3])));
+  const L_cusp = Math.cbrt(1 / Math.max(rgb_at_max[0], rgb_at_max[1], rgb_at_max[3]));
   const C_cusp = L_cusp * S_cusp;
 
   return { L: L_cusp, C: C_cusp };
@@ -215,5 +215,5 @@ export function findGamutIntersection(a: number, b: number, L1: number, C1: numb
   const u_blue = blue1 / (blue1 * blue1 - 0.5 * blue * blue2);
   const t_blue = u_blue >= 0 ? -blue * u_blue : Infinity;
 
-  return Math.min(t_red, t_green, t_blue);
+  return t + Math.min(t_red, t_green, t_blue);
 }
