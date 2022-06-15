@@ -14,11 +14,11 @@ describe('better.mix', () => {
   // note: these values are ever-so-slightly-improved from the Sass version because of
   // better gamut clipping (for most purposes the difference is insignificant)
   const tests = [
-    ['r -> y', R, Y, '#ffa000'],
+    ['r -> y', R, Y, '#ffa645'],
     ['r -> g', R, G, '#d0a800'],
     ['r -> c', R, C, '#d2a993'],
-    ['y -> g', Y, G, '#b0ff00'],
-    ['g -> c', G, C, '#00ffaa'],
+    ['y -> g', Y, G, '#b4ff36'],
+    ['g -> c', G, C, '#2effac'],
     ['g -> b', G, B, '#51aabf'],
     ['g -> m', G, M, '#c6b4b4'],
     ['c -> b', C, B, '#00a0f3'],
