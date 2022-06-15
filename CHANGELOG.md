@@ -1,5 +1,11 @@
 # better-color-tools
 
+## 0.8.1
+
+### Patch Changes
+
+- 2dde7ca: Fixed implementation of Björn's gamut clipping to sRGB in Oklab
+
 ## 0.8.0
 
 ### Minor Changes
