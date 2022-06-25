@@ -126,14 +126,14 @@ export function lmsToLinearRGB(lms: LMS): LinearRGB {
 }
 
 /** Linear sRGB -> sRGB */
-export function linearRGBTosRGB(rgb: LinearRGB): sRGB {
+export function linearRGBTosRGB(rgb: LinearRGB, γ = 2.4): sRGB {
   const r = Math.abs(rgb[0]);
   const g = Math.abs(rgb[1]);
   const b = Math.abs(rgb[2]);
   return [
-    r < 0.0031308 ? rgb[0] * 12.92 : 1.055 * Math.pow(r, 1 / 2.4) - 0.055, // r
-    g < 0.0031308 ? rgb[1] * 12.92 : 1.055 * Math.pow(g, 1 / 2.4) - 0.055, // g
-    b < 0.0031308 ? rgb[2] * 12.92 : 1.055 * Math.pow(b, 1 / 2.4) - 0.055, // b
+    r < 0.0031308 ? rgb[0] * 12.92 : 1.055 * Math.pow(r, 1 / γ) - 0.055, // r
+    g < 0.0031308 ? rgb[1] * 12.92 : 1.055 * Math.pow(g, 1 / γ) - 0.055, // g
+    b < 0.0031308 ? rgb[2] * 12.92 : 1.055 * Math.pow(b, 1 / γ) - 0.055, // b
     rgb[3], // alpha
   ];
 }
@@ -217,14 +217,14 @@ export function oklchTosRGB(oklch: Oklch): sRGB {
 }
 
 /** sRGB -> Linear sRGB */
-export function sRGBToLinearRGB(rgb: sRGB): LinearRGB {
+export function sRGBToLinearRGB(rgb: sRGB, γ = 2.4): LinearRGB {
   const r = Math.abs(rgb[0]);
   const g = Math.abs(rgb[1]);
   const b = Math.abs(rgb[2]);
   return [
-    r < 0.04045 ? rgb[0] / 12.92 : ((r + 0.055) / 1.055) ** 2.4, // r
-    g < 0.04045 ? rgb[1] / 12.92 : ((g + 0.055) / 1.055) ** 2.4, // g
-    b < 0.04045 ? rgb[2] / 12.92 : ((b + 0.055) / 1.055) ** 2.4, // b
+    r < 0.04045 ? rgb[0] / 12.92 : ((r + 0.055) / 1.055) ** γ, // r
+    g < 0.04045 ? rgb[1] / 12.92 : ((g + 0.055) / 1.055) ** γ, // g
+    b < 0.04045 ? rgb[2] / 12.92 : ((b + 0.055) / 1.055) ** γ, // b
     rgb[3], // alpha
   ];
 }

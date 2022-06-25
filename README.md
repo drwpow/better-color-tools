@@ -94,6 +94,31 @@ better.from(colorFn('oklch', [L, C, h])).hex; // #6f00ca
 
 Manipulation is best done in a space like [Oklch](https://oklch.evilmartians.io/#70,0.1,17,100) which is optimized for manual tweaking.
 
+**Contrast Ratio**
+
+Get [WCAG 2.1 contrast ratio](https://www.w3.org/WAI/WCAG21/quickref/?showtechniques=141%2C146#contrast-minimum) for 2 colors. The order doesn’t matter.
+
+```js
+import { contrastRatio } from 'better-color-tools';
+
+contrastRatio('#37ca93', '#055af6'); // { ratio: 2.4,   AA: false, AAA: false }
+contrastRatio('#37ca93', '#4474cc'); // { ratio: 4.5,   AA: true,  AAA: false }
+contrastRatio('#37ca93', '#002c7b'); // { ratio: 12.76, AA: true,  AAA: true }
+```
+
+**Light or dark?**
+
+Should you overlay white or black text over a color? This function will figure out whether a color is perceptually “dark” or “light.” You can then use white text for dark colors, and vice-versa.
+
+This subjective and nuanced, so to read more about the method see [Myndex’s “flip for color” gist](https://gist.github.com/Myndex/e1025706436736166561d339fd667493).
+
+```js
+import { lightOrDark } from 'better-color-tools';
+
+lightOrDark('#2d659e'); // "dark" (white text will show better)
+lightOrDark('#b2d6d3'); // "light" (black text will show better)
+```
+
 ### Sass
 
 Works with any version of [Dart Sass](https://sass-lang.com/dart-sass) (the current version).

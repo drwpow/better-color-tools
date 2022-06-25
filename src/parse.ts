@@ -2,7 +2,7 @@ import type { Color, LinearRGB, Oklab, Oklch, sRGB, XYZ_D65 } from './colorspace
 
 import { hslTosRGB, hwbTosRGB, linearRGBTosRGB, linearRGBToXYZ, oklabTosRGB, oklchTosRGB, sRGBToLinearRGB, sRGBToOklab, sRGBToOklch, xyzToLinearRGB } from './colorspace.js';
 import cssNames from './css-names.js';
-import { clamp, colorFn, leftPad, round } from './utils.js';
+import { clamp, colorFn, leftPad } from './utils.js';
 
 export interface ColorOutput {
   /** `#000000` */
@@ -35,9 +35,9 @@ export interface ColorOutput {
   oklch: string;
   /** [L, C, h, alpha] */
   oklchVal: Oklch;
-  /** `color(xyz 0 0 0/1)` (2•, D65 whitepoint) */
+  /** `color(xyz 0 0 0/1)` (2°, D65 whitepoint) */
   xyz: string;
-  /** [X, Y, Z, alpha] (2•, D65 whitespace) */
+  /** [X, Y, Z, alpha] (2°, D65 whitespace) */
   xyzVal: XYZ_D65;
   toString(): string; // JS helper
 }
@@ -268,12 +268,4 @@ export function parse(rawColor: Color): sRGB {
   }
 
   throw new Error(`Unable to parse color "${rawColor}"`);
-}
-
-/**
- * Lightness
- * Shortcut of "L” from oklab
- */
-export function lightness(color: Color): number {
-  return round(from(color).oklabVal[0], 5); // l == lightness
 }
