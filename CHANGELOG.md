@@ -1,5 +1,13 @@
 # better-color-tools
 
+## 0.9.0
+
+### Minor Changes
+
+- 286d114: Add WCAG 2.1 contrast ratios
+- 286d114: Add lightOrDark utility
+- a5fc64b: Allow object notation inputs
+
 ## 0.8.1
 
 ### Patch Changes
