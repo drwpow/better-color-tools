@@ -2,7 +2,7 @@
 
 Color parser and better color manipulation through **the power of science!** 🧪 Uses [Oklab](https://bottosson.github.io/posts/oklab/)/Oklch for better color operations.
 
-The JS version of this libray is fast (`~200k` ops/s), lightweight (`5 kB` gzip), and dependency-free. The Sass version… is Sass (which has no runtime).
+The JS version of this libray is fast (`~200k` ops/s), lightweight (`5.6 kB` gzip), and dependency-free. The Sass version… is Sass (which has no runtime).
 
 👉 **Playground**: https://better-color-tools.pages.dev/
 
@@ -25,13 +25,23 @@ import better from 'better-color-tools';
 **Parse**
 
 ```js
+// CSS format
 better.from('#b3f6e6'); // hex string
-better.from(0xb3f6e6); // hex integer (note: only mode that doesn’t support transparency)
 better.from('rebeccapurple'); // CSS keyword
-better.from('rgb(136, 48, 62)'); // CSS RGB
+better.from('rgb(136, 48, 62)'); // CSS sRGB
 better.from('hsl(210, 85%, 37%)'); // CSS HSL
+better.from('hwb(210, 6%, 31%)'); // CSS HWB
 better.from('oklab(48.56949% -0.03971 -0.14459)'); // CSS Oklab
 better.from('oklch(83.11253% 0.22612 147.35276)'); // CSS Oklch
+
+// Other JS formats
+better.from(0xb3f6e6); // hex integer (note: only mode that doesn’t support transparency)
+better.from([0.533, 0.188, 0.243, 1]); // sRGB array/P3 (normalized to 1)
+better.from({ r: 0.533, g: 0.188, b: 0.243, alpha: 1 }); // sRGB/P3 object (normalized to 1)
+better.from({ h: 210, s: 0.85, l: 0.37, alpha: 1 }); // HSL object
+better.from({ h: 210, w: 0.06, b: 0.31, alpha: 1 }); // HWB object
+better.from({ l: 0.4856949, a: -0.03971, b: -0.14459, alpha: 1 }); // Oklab object (not CIELAB)
+better.from({ l: 0.8311253, c: 0.22612, h: 147.35276, alpha: 1 }); // Oklch object (not CIELCh)
 ```
 
 This library understands **any CSS-valid color**, including [CSS Color Module 4](https://www.w3.org/TR/css-color-4/) (but if some aspect isn’t implemented yet, please request it!).
@@ -41,7 +51,8 @@ This library understands **any CSS-valid color**, including [CSS Color Module 4]
 This library converts to most web-compatible formats¹, with an emphasis on usefulness over completeness:
 
 - **sRGB** (hex): `better.from('…').hex` / `better.from('…').hexVal`
-- **sRGB** (RGB): `better.from('…').rgb` / `better.from('–').rgbVal`
+- **sRGB** (RGB): `better.from('…').rgb` / `better.from('…').rgbVal`
+- **P3**: `better.from('…').p3` / `better.from('…').p3Val`
 - **Oklab**: `better.from('…').oklab` / `better.from('…').oklabVal`
 - **Oklch**: `better.from('…').oklch` / `better.from('…').oklchVal`
 - **XYZ**: `better.from('…').xyz` / `better.from('…').xyzVal`
@@ -50,10 +61,26 @@ _¹The following formats aren’t supported as outputs:_
 
 - HSL isn’t supported because [you shouldn’t use it](https://pow.rs/blog/dont-use-hsl-for-anything/)
 - HWB isn’t supported because it’s another form of HSL
-- HSV is a great colorspace, but on no standards track for the web currently
-- CIE L\*a\*/CIE L\*C\*h aren’t supported because Oklab/Oklch [are superior](https://bottosson.github.io/posts/oklab/)
+- CIELAB/CIELCh aren’t supported because Oklab/Oklch [are superior](https://bottosson.github.io/posts/oklab/)
+- HSV is a great color space and is on the roadmap but isn’t available right now
 
 For a comprehensive color conversion library, see [culori](https://github.com/Evercoder/culori).
+
+**P3**
+
+This library supports [P3](https://webkit.org/blog/10042/wide-gamut-color-in-css-with-display-p3/) by expanding the sRGB space into the P3 gamut 1:1. For example, 100% red sRGB is converted to 100% red P3:
+
+```js
+const red = '#ff0000';
+better.from(red).rgb; // rgb(255, 0, 0)
+better.from(red).p3; // color(display-p3 1 0 0)
+```
+
+This is [the practice recommended by WebKit](https://webkit.org/blog/10042/wide-gamut-color-in-css-with-display-p3/) because when dealing with web colors you probably intend to take full advantage of that expanded gamut and this is the easiest, quickest
+way to do so without dealing with the specifics of both the sRGB and P3 gamuts. This gives you more vibrant colors in supporting browsers without your colors appearing “off.”
+
+While you wouldn’t want to use this technique for other methods such as photo manipulation, for CSS purposes this method is ideal. better-color-tools assumes a CSS application (or something similar), so any deviation between this library’s implementation
+of P3 from a more color-science-focused library like culori are intentional.
 
 **Mix**
 
@@ -83,16 +110,18 @@ better.lightness('#fc7030'); // 0.7063999
 
 **Manipulation**
 
-```js
-import better, { colorFn } from 'better-color-tools';
-
-let [L, C, h] = better.from('#5a00a6').oklchVal;
-h += 5; // rotate hue by 5°
-C += 0.01; // increase Chroma by 1%
-better.from(colorFn('oklch', [L, C, h])).hex; // #6f00ca
-```
-
 Manipulation is best done in a space like [Oklch](https://oklch.evilmartians.io/#70,0.1,17,100) which is optimized for manual tweaking.
+
+```js
+import better from 'better-color-tools';
+
+let [l, c, h] = better.from('#5a00a6').oklchVal;
+better.from({
+  l,
+  c: c + 0.01, // increase Chroma by 1%
+  h: h + 5, // rotate hue by 5°
+}).hex; // #6f00ca
+```
 
 **Contrast Ratio**
 
@@ -110,7 +139,7 @@ contrastRatio('#37ca93', '#002c7b'); // { ratio: 12.76, AA: true,  AAA: true }
 
 Should you overlay white or black text over a color? This function will figure out whether a color is perceptually “dark” or “light.” You can then use white text for dark colors, and vice-versa.
 
-This subjective and nuanced, so to read more about the method see [Myndex’s “flip for color” gist](https://gist.github.com/Myndex/e1025706436736166561d339fd667493).
+This subjective and nuanced, so to read more about the method see [Myndex’s “flip for color” technique](https://gist.github.com/Myndex/e1025706436736166561d339fd667493).
 
 ```js
 import { lightOrDark } from 'better-color-tools';

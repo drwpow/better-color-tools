@@ -162,6 +162,10 @@ function parseValueStr(colorStr: string, normalize: number[]): [number, number, 
 
 /** Convert any number of user inputs into RGBA array */
 export function parse(rawColor: Color): sRGB {
+  const unparsable = new Error(`Unable to parse color "${rawColor}"`);
+
+  if (rawColor == undefined || rawColor == null) throw unparsable;
+
   // [R, G, B] or [R, G, B, A]
   if (Array.isArray(rawColor)) {
     if (typeof rawColor[0] != 'number' || typeof rawColor[1] != 'number' || typeof rawColor[2] != 'number') throw new Error(`Color array must be numbers, received ${rawColor}`);
@@ -172,6 +176,40 @@ export function parse(rawColor: Color): sRGB {
       clamp(rawColor[2], 0, 1), // b
       typeof rawColor[3] === 'number' ? clamp(rawColor[3], 0, 1) : 1, // apha
     ];
+  }
+
+  if (typeof rawColor == 'object') {
+    const c = { ...(rawColor as Record<string, number>) };
+    let alpha = 1;
+    // grab alpha, ensure keys are lowercase
+    for (const k of Object.keys(c)) {
+      if (k === 'alpha') {
+        alpha = clamp(c[k], 0, 1);
+      } else {
+        c[k.toLowerCase()] = c[k];
+      }
+    }
+    // RGB
+    if ('r' in c && 'g' in c && 'b' in c) {
+      return [
+        clamp(c.r || c.R, 0, 1), // r
+        clamp(c.r || c.R, 0, 1), // g
+        clamp(c.r || c.R, 0, 1), // b
+        alpha, // alpha
+      ];
+    }
+    // HSL
+    if ('h' in c && 's' in c && 'l' in c) return hslTosRGB([c.h, clamp(c.s, 0, 1), clamp(c.l, 0, 1), alpha]);
+    // HWB
+    if ('h' in c && 'w' in c && 'b' in c) return hwbTosRGB([c.h, clamp(c.w, 0, 1), clamp(c.b, 0, 1), alpha]);
+    // Oklab
+    if ('l' in c && 'a' in c && 'b' in c) return oklabTosRGB([c.l, c.a, c.b, alpha]);
+    // Oklch
+    if ('l' in c && 'c' in c && 'h' in c) return oklchTosRGB([c.l, c.c, c.h, alpha]);
+    // XYZ
+    if ('x' in c && 'y' in c && 'z' in c) return linearRGBTosRGB(xyzToLinearRGB([c.x, c.y, c.z, alpha]));
+    // unknown object
+    throw unparsable;
   }
 
   // 0xff0000 (number)
@@ -267,5 +305,5 @@ export function parse(rawColor: Color): sRGB {
     }
   }
 
-  throw new Error(`Unable to parse color "${rawColor}"`);
+  throw unparsable;
 }
