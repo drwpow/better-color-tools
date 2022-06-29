@@ -17,8 +17,10 @@ export interface ColorOutput {
   rgbVal: sRGB;
   /** [R, G, B, alpha] */
   rgbaVal: sRGB;
+  /** `color(srgb-linear 0 0 0)` */
+  linearRGB: string;
   /** [R, G, B, alpha] */
-  linearRGB: LinearRGB;
+  linearRGBVal: LinearRGB;
   /** `color(luv 0 0 0/1)` */
   // luv: string;
   /** [L, u, v, alpha] */
@@ -96,7 +98,10 @@ export function from(rawColor: Color): ColorOutput {
       return colorFn('rgb', color);
     },
     rgbaVal: color,
-    get linearRGB(): sRGB {
+    get linearRGB(): string {
+      return colorFn('srgb-linear', sRGBToLinearRGB(color));
+    },
+    get linearRGBVal(): LinearRGB {
       return sRGBToLinearRGB(color);
     },
     get p3(): string {
