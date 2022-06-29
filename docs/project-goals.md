@@ -1,23 +1,13 @@
-# FAQ
+# Project goals
 
-This doc is labelled “FAQ,” but as you may suspect with many FAQs, most of these questions have never been asked. This is more of a compendium of things too boring and too in-the-weeds for the README, but calling it a “compendium” or “appendex” or some
-more-appropriate term would be more confusing, so here we are. Welcome!
+I started this library because I frequently need to mix colors, but was constantly disappointed at how bad the results were using common tools available. Of course, the answer was “color science,” but that field is inaccessible or a huge time-sink to most.
+But since I needed to really understand color science to determine “best” methods, I took the plunge so you don’t have to.
 
-## Project goals
+This library is full of opinions that perhaps not all color scientists will agree with, but that’s OK. It posists strong opinions for the sake of the developer. But those strong opinions do come from what I could find to be the largest of consortium of
+color scientists agreeing to.
 
-I started this library because I frequently need to mix colors, but was constantly disappointed at how bad the results were using common tools available (see examples above; if you’ve found a tool you’re happy with, more power to you, but I never did). I
-had avoided using any libraries or tools for this reason for my entire career, and instead always mixed color manually in graphics programs (I have a fine arts degree with a concentration in painting, so I have to feel grumpy about colors to convince
-myself my art degree was worth something). But over time, I had this growing feeling that others had dealt with this problem and had been similarly disappointed, and that there were solutions available; they just were just unknown to the authors making
-simple color functions (including the Sass authors). After all, most programmers aren’t color scientists. And so this library is the product of finding solutions to the (deceptively-complex) problem of color mixing that aren’t god-awful, and are at least
-as good as I can achieve mixing colors manually if not better.
-
-On the other side of the divide, there are plenty of color tools that comprehensively deal with most major color spaces accurately, and are capable of mixing colors precisely. However, they posess a steep learning curve to use, and a user must have a deep
-knowledge of the tool and theory to accomplish basic tasks for the purpose of making websites. And for good reason, too—there’s over a century of color science history to tackle, and those libraries are also dealing with myriad other applications beyond
-computer monitor color including physical paint, printing, etc. By limiting scope to _just computer monitor color_ and more specifically _computer monitor color for the web_, we can cut down on most complexity of other tools and are left with only a subset
-of options, which is sadly an untapped space.
-
-So in essence, this library aims to fill the void between those two sides by prioritizing **practicality** and **precision** (as opposed to completeness in the latter side and, uh, I’m not sure what outlines the former side other than fundamental
-misunderstandings of color 🤷‍♂️).
+Put another way, this library aims to bridge the gap between **practicality** (libraries that are easy to use but produce god-awful colors) and **precision** (libraries that are accurate implementations of digital color spaces but require a large learning
+curve to use well).
 
 ### Practicality
 
