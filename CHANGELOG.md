@@ -1,5 +1,11 @@
 # better-color-tools
 
+## 0.9.1
+
+### Patch Changes
+
+- c8dbd0e: Fix linearRGB output consistency
+
 ## 0.9.0
 
 ### Minor Changes
