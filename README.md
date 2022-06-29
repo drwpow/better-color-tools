@@ -1,10 +1,10 @@
 # better-color-tools
 
-Color parser and better color manipulation through **the power of science!** 🧪 Uses [Oklab](https://bottosson.github.io/posts/oklab/)/Oklch for better color operations.
+Color parser and better color manipulation through **the power of science!** 🧪 Uses [Oklab]/[Oklch] for better color operations.
 
 The JS version of this libray is fast (`~200k` ops/s), lightweight (`5.6 kB` gzip), and dependency-free. The Sass version… is Sass (which has no runtime).
 
-👉 **Playground**: https://better-color-tools.pages.dev/
+[🏀 **Playground**](https://better-color-tools.pages.dev/)
 
 ## Usage
 
@@ -22,7 +22,7 @@ Works in the browser (ESM) and Node (14+).
 import better from 'better-color-tools';
 ```
 
-**Parse**
+**Input**
 
 ```js
 // CSS format
@@ -46,29 +46,49 @@ better.from({ l: 0.8311253, c: 0.22612, h: 147.35276, alpha: 1 }); // Oklch obje
 
 This library understands **any CSS-valid color**, including [CSS Color Module 4](https://www.w3.org/TR/css-color-4/) (but if some aspect isn’t implemented yet, please request it!).
 
-**Convert**
+[Playground](https://better-color-tools.pages.dev/)
+
+**Output**
 
 This library converts to most web-compatible formats¹, with an emphasis on usefulness over completeness:
 
-- **sRGB** (hex): `better.from('…').hex` / `better.from('…').hexVal`
-- **sRGB** (RGB): `better.from('…').rgb` / `better.from('…').rgbVal`
-- **P3**: `better.from('…').p3` / `better.from('…').p3Val`
-- **Oklab**: `better.from('…').oklab` / `better.from('…').oklabVal`
-- **Oklch**: `better.from('…').oklch` / `better.from('…').oklchVal`
-- **XYZ**: `better.from('…').xyz` / `better.from('…').xyzVal`
+```js
+const c = better.from('rgba(136, 48, 62, 1)');
+
+// CSS formats
+c.hex; // #b3f6e6
+c.rgb; // rgb(179, 246, 230) (note: will output rgba() if alpha < 1)
+c.p3; // color(display-p3 0.701961 0.964706 0.901961)
+c.linearRGB; // color(srgb-linear 0.450786 0.921582 0.791298)
+c.oklab; // oklab(92.404387% -0.070395 0.002188)
+c.oklch; // oklch(92.404387% 0.070429 178.219895)
+c.xyz; // color(xyz-d65 0.658257 0.812067 0.870716)
+
+// JS formats
+c.hexVal; // 0xb3f6e6
+const [r, g, b, alpha] = c.rgbVal; // [0.701961, 0.964706, 0.901961, 1]
+const [r, g, b, alpha] = c.p3Val; // [0.701961, 0.964706, 0.901961, 1]
+const [lr, lg, lb, alpha] = c.linearRGBVal; // [0.450786, 0.921582, 0.791298, 1]
+const [l, a, b, alpha] = c.oklabVal; // [0.924044, -0.070395, 0.002188, 1]
+const [l, c, h, alpha] = c.oklchVal; // [0.924044, 0.070429, 178.219895, 1]
+const [x, y, z, alpha] = c.xyzVal; // [0.658257, 0.812067, 0.870716, 1]
+```
+
+As a minor implementation detail, all of those properties are [getters](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get), so no work is wasted converting to colorspaces you haven’t explicitly asked for.
 
 _¹The following formats aren’t supported as outputs:_
 
 - HSL isn’t supported because [you shouldn’t use it](https://pow.rs/blog/dont-use-hsl-for-anything/)
 - HWB isn’t supported because it’s another form of HSL
-- CIELAB/CIELCh aren’t supported because Oklab/Oklch [are superior](https://bottosson.github.io/posts/oklab/)
-- HSV is a great color space and is on the roadmap but isn’t available right now
+- CIELAB/CIELCh aren’t supported because Oklab/Oklch [are superior][oklab]
+- XYZ D50 isn’t supported because I didn’t feel like it
+- HSV is a great color space (not to be confused with HSL) and is on the roadmap but isn’t available right now
 
-For a comprehensive color conversion library, see [culori](https://github.com/Evercoder/culori).
+For a comprehensive color conversion library, see [Culori].
 
 **P3**
 
-This library supports [P3](https://webkit.org/blog/10042/wide-gamut-color-in-css-with-display-p3/) by expanding the sRGB space into the P3 gamut 1:1. For example, 100% red sRGB is converted to 100% red P3:
+This library supports [P3] by expanding the sRGB space into the P3 gamut 1:1. For example, 100% red sRGB is converted to 100% red P3:
 
 ```js
 const red = '#ff0000';
@@ -76,29 +96,35 @@ better.from(red).rgb; // rgb(255, 0, 0)
 better.from(red).p3; // color(display-p3 1 0 0)
 ```
 
-This is [the practice recommended by WebKit](https://webkit.org/blog/10042/wide-gamut-color-in-css-with-display-p3/) because when dealing with web colors you probably intend to take full advantage of that expanded gamut and this is the easiest, quickest
-way to do so without dealing with the specifics of both the sRGB and P3 gamuts. This gives you more vibrant colors in supporting browsers without your colors appearing “off.”
+[Playground](https://better-color-tools.pages.dev/)
 
-While you wouldn’t want to use this technique for other methods such as photo manipulation, for CSS purposes this method is ideal. better-color-tools assumes a CSS application (or something similar), so any deviation between this library’s implementation
-of P3 from a more color-science-focused library like culori are intentional.
+This is [the practice recommended by WebKit][p3] because when dealing with web colors you probably intend to take full advantage of that expanded gamut and this is the easiest, quickest way to do so without dealing with the specifics of both the sRGB and
+P3 gamuts. This gives you more vibrant colors in supporting browsers without your colors appearing “off.”
+
+While you wouldn’t want to use this technique for other methods such as photo manipulation, for CSS purposes this method is ideal (which better-color-tools assumes you’re using this for). Any deviation between this library’s implementation of P3 from
+others’ are intentional.
 
 **Mix**
 
-```js
-better.mix('red', 'lime', 0.35); // Mix `red` and `lime` 35%, i.e. more red
-better.mix('blue', 'magenta', 0.5, 'srgb-linear'); // Mix `blue` and `magenta` 50% using srgb-linear colorspace
-```
-
 This uses Oklab (best) by default, but also supports `oklch`, `lms`, `sRGB`, and `linearRGB` colorspaces for mixing.
 
+```js
+better.mix('red', 'lime', 0.35); // Mix `red` and `lime` 35%, i.e. more red
+better.mix('blue', 'magenta', 0.5, 'linearRGB'); // Mix `blue` and `magenta` 50% using linearRGB colorspace
+```
+
+[Playground](https://better-color-tools.pages.dev/mix)
+
 **Lighten / Darken**
+
+This takes hue and human perception into account for visually-accurate results. Also, fun fact: both functions accept negative values.
 
 ```js
 better.lighten('red', 0.5); // Lighten color by 50%
 better.darken('red', 0.5); // Darken color by 50%
 ```
 
-This takes hue and human perception into account for visually-accurate results. Also, fun fact: both functions accept negative values.
+[Playground](https://better-color-tools.pages.dev/color-scale)
 
 **Lightness**
 
@@ -108,9 +134,11 @@ Get the human-perceived lightness of any color (identical to the first value of 
 better.lightness('#fc7030'); // 0.7063999
 ```
 
+[Playground](https://better-color-tools.pages.dev/grayscale)
+
 **Manipulation**
 
-Manipulation is best done in a space like [Oklch](https://oklch.evilmartians.io/#70,0.1,17,100) which is optimized for manual tweaking.
+Manipulation is best done in a space like [Oklch] which is optimized for manual tweaking.
 
 ```js
 import better from 'better-color-tools';
@@ -128,24 +156,21 @@ better.from({
 Get [WCAG 2.1 contrast ratio](https://www.w3.org/WAI/WCAG21/quickref/?showtechniques=141%2C146#contrast-minimum) for 2 colors. The order doesn’t matter.
 
 ```js
-import { contrastRatio } from 'better-color-tools';
-
-contrastRatio('#37ca93', '#055af6'); // { ratio: 2.4,   AA: false, AAA: false }
-contrastRatio('#37ca93', '#4474cc'); // { ratio: 4.5,   AA: true,  AAA: false }
-contrastRatio('#37ca93', '#002c7b'); // { ratio: 12.76, AA: true,  AAA: true }
+better.contrastRatio('#37ca93', '#055af6'); // { ratio: 2.4,   AA: false, AAA: false }
+better.contrastRatio('#37ca93', '#4474cc'); // { ratio: 4.5,   AA: true,  AAA: false }
+better.contrastRatio('#37ca93', '#002c7b'); // { ratio: 12.76, AA: true,  AAA: true }
 ```
 
 **Light or dark?**
 
-Should you overlay white or black text over a color? This function will figure out whether a color is perceptually “dark” or “light.” You can then use white text for dark colors, and vice-versa.
+Should you overlay white or black text over a color? This will figure out whether a color is perceptually “dark” or “light,” taken directly from [Myndex’s “flip for color” technique](https://gist.github.com/Myndex/e1025706436736166561d339fd667493). You can
+then use white text for dark colors, and vice-versa.
 
-This subjective and nuanced, so to read more about the method see [Myndex’s “flip for color” technique](https://gist.github.com/Myndex/e1025706436736166561d339fd667493).
+_Note: though it would be reasonable to assume this just checks whether Oklab’s `l` (lightness) value is over or under `0.5`, [there’s a bit more to it](https://gist.github.com/Myndex/e1025706436736166561d339fd667493))_
 
 ```js
-import { lightOrDark } from 'better-color-tools';
-
-lightOrDark('#2d659e'); // "dark" (white text will show better)
-lightOrDark('#b2d6d3'); // "light" (black text will show better)
+better.lightOrDark('#2d659e'); // "dark" (white text will show better)
+better.lightOrDark('#b2d6d3'); // "light" (black text will show better)
 ```
 
 ### Sass
@@ -187,7 +212,7 @@ Lightens (or darkens) color via Oklab for human-perceived lightness value (which
 }
 ```
 
-Convert any Sass-readable color to [P3][p3].
+Convert any Sass-readable color to [P3].
 
 **Fallback**
 
@@ -236,12 +261,12 @@ $lightness: better.lightness(#f00);
 ## Project summary
 
 This project is meant to provide **the best possible method** for common color operations such as mixing, lightening/darkening, and conversion. This library is _not_ comprehensive, and doesn’t support any colorspaces that don’t serve a practical purpose
-(limiting colorspaces helps this library optimize for performance over completeness, not to mention ease-of-use). If you are well-versed in color science and need a comprehensive library, consider [Culori][culori] or [Color.js][colorjs] instead.
+(limiting colorspaces helps this library optimize for performance over completeness, not to mention ease-of-use). If you are well-versed in color science and need a comprehensive library, consider [Culori] or [Color.js][colorjs] instead.
 
-To learn more, see [Project Goals](./docs/faq.md#project-goals)
+To learn more, see [Project Goals](./docs/project-goals.md)
 
 [culori]: https://culorijs.org/
 [colorjs]: https://colorjs.io/
-[css-color]: https://www.w3.org/TR/css-color-5/#color-function
-[faq]: https://github.com/drwpow/better-color-tools/blob/main/faq.md
+[oklab]: https://bottosson.github.io/posts/oklab/
+[oklch]: https://oklch.evilmartians.io/
 [p3]: https://webkit.org/blog/10042/wide-gamut-color-in-css-with-display-p3/
