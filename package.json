@@ -37,19 +37,19 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.23.0",
-    "@types/node": "^17.0.42",
-    "@typescript-eslint/eslint-plugin": "^5.27.1",
-    "@typescript-eslint/parser": "^5.27.1",
+    "@types/node": "^18.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.30.0",
+    "@typescript-eslint/parser": "^5.30.0",
     "chai": "^4.3.6",
     "del-cli": "^4.0.1",
-    "esbuild": "^0.14.43",
-    "eslint": "^8.17.0",
+    "esbuild": "^0.14.47",
+    "eslint": "^8.18.0",
     "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-prettier": "^4.1.0",
     "mocha": "^10.0.0",
     "npm-run-all": "^4.1.5",
-    "prettier": "^2.6.2",
-    "sass": "^1.52.3",
-    "typescript": "^4.7.3"
+    "prettier": "^2.7.1",
+    "sass": "^1.53.0",
+    "typescript": "^4.7.4"
   }
 }
