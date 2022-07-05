@@ -1,6 +1,6 @@
-import type { Color, LinearRGB, Oklab, Oklch, sRGB, XYZ_D65 } from './colorspace.js';
+import type { Color, LinearRGBD65, Oklab, Oklch, sRGB, XYZ } from './colorspace.js';
 
-import { hslTosRGB, hwbTosRGB, linearRGBTosRGB, linearRGBToXYZ, oklabTosRGB, oklchTosRGB, sRGBToLinearRGB, sRGBToOklab, sRGBToOklch, xyzToLinearRGB } from './colorspace.js';
+import { hslTosRGB, hwbTosRGB, linearRGBD65TosRGB, linearRGBD65ToXYZ, oklabTosRGB, oklchTosRGB, sRGBToLinearRGBD65, sRGBToOklab, sRGBToOklch, xyzToLinearRGBD65 } from './colorspace.js';
 import cssNames from './css-names.js';
 import { clamp, colorFn, leftPad } from './utils.js';
 
@@ -20,7 +20,7 @@ export interface ColorOutput {
   /** `color(srgb-linear 0 0 0)` */
   linearRGB: string;
   /** [R, G, B, alpha] */
-  linearRGBVal: LinearRGB;
+  linearRGBVal: LinearRGBD65;
   /** `color(luv 0 0 0/1)` */
   // luv: string;
   /** [L, u, v, alpha] */
@@ -37,16 +37,16 @@ export interface ColorOutput {
   oklch: string;
   /** [L, C, h, alpha] */
   oklchVal: Oklch;
-  /** `color(xyz 0 0 0/1)` (2°, D65 whitepoint) */
+  /** `color(xyz 0 0 0/1)` */
   xyz: string;
-  /** [X, Y, Z, alpha] (2°, D65 whitespace) */
-  xyzVal: XYZ_D65;
+  /** [X, Y, Z, alpha] */
+  xyzVal: XYZ;
   toString(): string; // JS helper
 }
 
 // constants
 const FLOAT_RE = /-?[0-9.]+%?/g;
-const HEX_RE = /^#?[0-9a-f]{3,8}$/i;
+const HEX_RE = /^#[0-9a-f]{3,8}$/i;
 const RGB_RANGE = 16 ** 6;
 const R_FACTOR = 16 ** 4; // base 16, starting after 4 digits (GGBB)
 const G_FACTOR = 16 ** 2; // base 16, starting after 2 digits (BB)
@@ -99,10 +99,10 @@ export function from(rawColor: Color): ColorOutput {
     },
     rgbaVal: color,
     get linearRGB(): string {
-      return colorFn('srgb-linear', sRGBToLinearRGB(color));
+      return colorFn('srgb-linear', sRGBToLinearRGBD65(color));
     },
-    get linearRGBVal(): LinearRGB {
-      return sRGBToLinearRGB(color);
+    get linearRGBVal(): LinearRGBD65 {
+      return sRGBToLinearRGBD65(color);
     },
     get p3(): string {
       return colorFn('display-p3', color);
@@ -121,10 +121,10 @@ export function from(rawColor: Color): ColorOutput {
       return sRGBToOklch(color);
     },
     get xyz(): string {
-      return colorFn('xyz-d65', linearRGBToXYZ(sRGBToLinearRGB(color)));
+      return colorFn('xyz-d65', linearRGBD65ToXYZ(sRGBToLinearRGBD65(color)));
     },
-    get xyzVal(): XYZ_D65 {
-      return linearRGBToXYZ(sRGBToLinearRGB(color));
+    get xyzVal(): XYZ {
+      return linearRGBD65ToXYZ(sRGBToLinearRGBD65(color));
     },
   };
 
@@ -150,7 +150,7 @@ export function hexNumTosRGB(hex: number): sRGB {
 }
 
 /** only grabs numbers from a color string (ignores spaces, commas, slashes, etc.) */
-function parseValueStr(colorStr: string, normalize: number[]): [number, number, number, number] {
+function parseValueStr(colorStr: string, normalize?: number[]): [number, number, number, number] {
   const matches = colorStr.match(FLOAT_RE);
   if (!matches) throw new Error(`Unexpected color format: ${colorStr}`);
   const values: [number, number, number, number] = [0, 0, 0, 1]; // always start alpha at 1 unless overridden
@@ -158,7 +158,7 @@ function parseValueStr(colorStr: string, normalize: number[]): [number, number, 
     // percentage (already normalized)
     if (value.includes('%')) values[n] = parseFloat(value) / 100;
     // unbounded
-    else if (normalize[n] === Infinity || normalize[n] === 0 || normalize[n] === 1) values[n] = parseFloat(value);
+    else if (!normalize || normalize[n] === Infinity || normalize[n] === 1) values[n] = parseFloat(value);
     // bounded
     else values[n] = parseFloat(value) / normalize[n];
   });
@@ -167,9 +167,9 @@ function parseValueStr(colorStr: string, normalize: number[]): [number, number, 
 
 /** Convert any number of user inputs into RGBA array */
 export function parse(rawColor: Color): sRGB {
-  const unparsable = new Error(`Unable to parse color "${rawColor}"`);
+  const unparsable = new Error(`Unable to parse color ${JSON.stringify(rawColor)}`);
 
-  if (rawColor == undefined || rawColor == null) throw unparsable;
+  if (rawColor == undefined || rawColor == null || typeof rawColor === 'boolean') throw unparsable;
 
   // [R, G, B] or [R, G, B, A]
   if (Array.isArray(rawColor)) {
@@ -181,40 +181,6 @@ export function parse(rawColor: Color): sRGB {
       clamp(rawColor[2], 0, 1), // b
       typeof rawColor[3] === 'number' ? clamp(rawColor[3], 0, 1) : 1, // apha
     ];
-  }
-
-  if (typeof rawColor == 'object') {
-    const c = { ...(rawColor as Record<string, number>) };
-    let alpha = 1;
-    // grab alpha, ensure keys are lowercase
-    for (const k of Object.keys(c)) {
-      if (k === 'alpha') {
-        alpha = clamp(c[k], 0, 1);
-      } else {
-        c[k.toLowerCase()] = c[k];
-      }
-    }
-    // RGB
-    if ('r' in c && 'g' in c && 'b' in c) {
-      return [
-        clamp(c.r || c.R, 0, 1), // r
-        clamp(c.r || c.R, 0, 1), // g
-        clamp(c.r || c.R, 0, 1), // b
-        alpha, // alpha
-      ];
-    }
-    // HSL
-    if ('h' in c && 's' in c && 'l' in c) return hslTosRGB([c.h, clamp(c.s, 0, 1), clamp(c.l, 0, 1), alpha]);
-    // HWB
-    if ('h' in c && 'w' in c && 'b' in c) return hwbTosRGB([c.h, clamp(c.w, 0, 1), clamp(c.b, 0, 1), alpha]);
-    // Oklab
-    if ('l' in c && 'a' in c && 'b' in c) return oklabTosRGB([c.l, c.a, c.b, alpha]);
-    // Oklch
-    if ('l' in c && 'c' in c && 'h' in c) return oklchTosRGB([c.l, c.c, c.h, alpha]);
-    // XYZ
-    if ('x' in c && 'y' in c && 'z' in c) return linearRGBTosRGB(xyzToLinearRGB([c.x, c.y, c.z, alpha]));
-    // unknown object
-    throw unparsable;
   }
 
   // 0xff0000 (number)
@@ -235,23 +201,23 @@ export function parse(rawColor: Color): sRGB {
     }
 
     // hex
-    if (HEX_RE.test(strVal)) {
-      const hex = strVal.replace('#', '');
+    if (HEX_RE.test(lc)) {
+      const hex = lc.replace('#', '');
       const rgb: sRGB = [0, 0, 0, 1];
-      if (hex.length >= 6) {
+      if (hex.length === 6 || hex.length === 8) {
         for (let n = 0; n < hex.length / 2; n++) {
           const start = n * 2;
           const end = start + 2;
           const value = hex.substring(start, end);
           rgb[n] = parseInt(value, 16) / 255;
         }
-      }
-      // according to spec, any shortened hex should have characters doubled
-      else {
+      } else if (hex.length === 3 || hex.length === 4) {
         for (let n = 0; n < hex.length; n++) {
           const value = hex.charAt(n);
           rgb[n] = parseInt(`${value}${value}`, 16) / 255;
         }
+      } else {
+        throw new Error(`Hex value "${lc}" not a valid sRGB color`);
       }
       return rgb;
     }
@@ -275,39 +241,73 @@ export function parse(rawColor: Color): sRGB {
       case 'linear-srgb':
       case 'rgb-linear':
       case 'srgb-linear': {
-        const rgb = parseValueStr(valueStr, [255, 255, 255, 1]);
-        return linearRGBTosRGB(rgb);
+        const rgb = parseValueStr(valueStr);
+        return linearRGBD65TosRGB(rgb);
       }
       case 'hsl':
       case 'hsla': {
-        const [h, s, l, a] = parseValueStr(valueStr, [1, 1, 1, 1]);
+        const [h, s, l, a] = parseValueStr(valueStr);
         return hslTosRGB([h, clamp(s, 0, 1), clamp(l, 0, 1), clamp(a, 0, 1)]);
       }
       case 'hwb':
       case 'hwba': {
-        const [h, w, b, a] = parseValueStr(valueStr, [1, 1, 1, 1]);
+        const [h, w, b, a] = parseValueStr(valueStr);
         return hwbTosRGB([h, clamp(w, 0, 1), clamp(b, 0, 1), clamp(a, 0, 1)]);
       }
       case 'p3':
       case 'display-p3': {
-        const [r, g, b, a] = parseValueStr(valueStr, [1, 1, 1, 1]);
+        const [r, g, b, a] = parseValueStr(valueStr);
         return [clamp(r, 0, 1), clamp(g, 0, 1), clamp(b, 0, 1), clamp(a, 0, 1)];
       }
       // case 'luv': {
-      //   const luv = parseValueStr(valueStr, [1, 1, 1, 1]);
+      //   const luv = parseValueStr(valueStr);
       //   return luvTosRGB(luv);
       // }
       case 'oklab': {
-        return oklabTosRGB(parseValueStr(valueStr, [1, 1, 1, 1]));
+        return oklabTosRGB(parseValueStr(valueStr));
       }
       case 'oklch': {
-        return oklchTosRGB(parseValueStr(valueStr, [1, 1, 1, 1]));
+        return oklchTosRGB(parseValueStr(valueStr));
       }
       case 'xyz':
       case 'xyz-d65': {
-        return linearRGBTosRGB(xyzToLinearRGB(parseValueStr(valueStr, [1, 1, 1, 1])));
+        return linearRGBD65TosRGB(xyzToLinearRGBD65(parseValueStr(valueStr)));
       }
     }
+  }
+
+  if (typeof rawColor == 'object') {
+    const c = { ...(rawColor as Record<string, number>) };
+    let alpha = 1;
+    // grab alpha, ensure keys are lowercase
+    for (const k of Object.keys(c)) {
+      if (k === 'alpha') {
+        alpha = clamp(c[k], 0, 1);
+      } else {
+        c[k.toLowerCase()] = c[k];
+      }
+    }
+    // RGB
+    if ('r' in c && 'g' in c && 'b' in c) {
+      return [
+        clamp(c.r, 0, 1), // r
+        clamp(c.g, 0, 1), // g
+        clamp(c.b, 0, 1), // b
+        alpha, // alpha
+      ];
+    }
+    // HSL
+    if ('h' in c && 's' in c && 'l' in c) return hslTosRGB([c.h, clamp(c.s, 0, 1), clamp(c.l, 0, 1), alpha]);
+    // HWB
+    if ('h' in c && 'w' in c && 'b' in c) return hwbTosRGB([c.h, clamp(c.w, 0, 1), clamp(c.b, 0, 1), alpha]);
+    // Oklab
+    if ('l' in c && 'a' in c && 'b' in c) return oklabTosRGB([c.l, c.a, c.b, alpha]);
+    // Oklch
+    if ('l' in c && 'c' in c && 'h' in c) return oklchTosRGB([c.l, c.c, c.h, alpha]);
+    // XYZ
+    if ('x' in c && 'y' in c && 'z' in c) return linearRGBD65TosRGB(xyzToLinearRGBD65([c.x, c.y, c.z, alpha]));
+    // unknown object
+    throw unparsable;
   }
 
   throw unparsable;

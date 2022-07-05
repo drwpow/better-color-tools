@@ -1,13 +1,13 @@
 import type { ColorMatrix } from './index';
-import { lmsToLinearRGB, oklabToLMS } from './colorspace.js';
+import { lmsToLinearRGBD65, oklabToLMS } from './colorspace.js';
 
 // https://observablehq.com/@danburzo/color-matrix-calculator
-export const LINEAR_RGB_TO_XYZ_D65: ColorMatrix = [
+export const LINEAR_RGB_D65_TO_XYZ: ColorMatrix = [
   [0.4123907992659593, 0.357584339383878, 0.1804807884018343],
   [0.2126390058715102, 0.715168678767756, 0.0721923153607337],
-  [0.0193308187155918, 0.11919477979462, 0.9505321522496607],
+  [0.0193308187155918, 0.119194779794626, 0.9505321522496607],
 ];
-export const XYZ_D65_TO_LINEAR_RGB: ColorMatrix = [
+export const XYZ_TO_LINEAR_RGB_D65: ColorMatrix = [
   [3.2409699419045221, -1.5373831775700939, -0.4986107602930034],
   [-0.9692436362808793, 1.8759675015077202, 0.0415550574071756],
   [0.0556300796969937, -0.2039769588889766, 1.0569715142428782],
@@ -139,8 +139,8 @@ export function findCusp(a: number, b: number): Cusp {
   // First, find the maximum saturation (saturation S = C/L)
   const S_cusp = computeMaxSaturation(a, b);
 
-  // Convert to linear sRGB to find the first point where at least one of r,g or b >= 1:
-  const rgb_at_max = lmsToLinearRGB(oklabToLMS([1, S_cusp * a, S_cusp * b, 1]));
+  // Convert to linear RGB (D65) to find the first point where at least one of r,g or b >= 1:
+  const rgb_at_max = lmsToLinearRGBD65(oklabToLMS([1, S_cusp * a, S_cusp * b, 1]));
   const L_cusp = Math.cbrt(1 / Math.max(rgb_at_max[0], rgb_at_max[1], rgb_at_max[3]));
   const C_cusp = L_cusp * S_cusp;
 

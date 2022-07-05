@@ -81,8 +81,6 @@ _¹The following formats aren’t supported as outputs:_
 - HSL isn’t supported because [you shouldn’t use it](https://pow.rs/blog/dont-use-hsl-for-anything/)
 - HWB isn’t supported because it’s another form of HSL
 - CIELAB/CIELCh aren’t supported because Oklab/Oklch [are superior][oklab]
-- XYZ D50 isn’t supported because I didn’t feel like it
-- HSV is a great color space (not to be confused with HSL) and is on the roadmap but isn’t available right now
 
 For a comprehensive color conversion library, see [Culori].
 

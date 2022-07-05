@@ -2,3 +2,6 @@
 .dccache
 dist
 node_modules
+www/build
+www/lib/better.min.js
+www/.svelte-kit
