@@ -1,0 +1,20 @@
+.input {
+  -webkit-appearance: none;
+  appearance: none;
+  background: none;
+  border-color: currentColor;
+  border-style: solid;
+  border-width: 0 0 1px;
+  color: inherit;
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  margin-left: -0.125em;
+  margin-right: 0.5em;
+  padding: none;
+  width: 7.5ch;
+
+  &:focus {
+    outline: none;
+  }
+}

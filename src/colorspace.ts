@@ -4,15 +4,15 @@ export type LAB = [number, number, number, number];
 export type LCH = [number, number, number, number];
 export type LUV = [number, number, number, number];
 export type LMS = [number, number, number, number];
-export type LinearRGB = [number, number, number, number];
+export type LinearRGBD65 = [number, number, number, number];
 export type Oklab = [number, number, number, number];
 export type Oklch = [number, number, number, number];
 export type sRGB = [number, number, number, number];
-export type XYZ_D65 = [number, number, number, number];
-export type Color = string | number | sRGB | LinearRGB | LMS | Oklab | Oklch;
+export type XYZ = [number, number, number, number];
+export type Color = string | number | sRGB | LinearRGBD65 | LMS | Oklab | Oklch;
 
 import { clamp, degToRad, multiplyColorMatrix, radToDeg } from './utils.js';
-import { LMS_TO_OKLAB, LMS_TO_LINEAR_RGB, LINEAR_RGB_TO_LMS, OKLAB_TO_LMS, LINEAR_RGB_TO_XYZ_D65, XYZ_D65_TO_LINEAR_RGB, findGamutIntersection } from './lib.js';
+import { LMS_TO_OKLAB, LMS_TO_LINEAR_RGB, LINEAR_RGB_TO_LMS, OKLAB_TO_LMS, LINEAR_RGB_D65_TO_XYZ, XYZ_TO_LINEAR_RGB_D65, findGamutIntersection } from './lib.js';
 
 // const D65_κ = 24389 / 27;
 // const D65_X = 0.950489;
@@ -24,6 +24,17 @@ import { LMS_TO_OKLAB, LMS_TO_LINEAR_RGB, LINEAR_RGB_TO_LMS, OKLAB_TO_LMS, LINEA
 
 type MatrixRow = [number, number, number];
 export type ColorMatrix = [MatrixRow, MatrixRow, MatrixRow];
+
+/** sRGB transfer function (D65 illuminant) */
+export function sRGBTransferFunction(value: number): number {
+  const abs = Math.abs(value);
+  return abs <= 0.0031308 ? value * 12.92 : 1.055 * Math.pow(abs, 1 / 2.4) - 0.055;
+}
+
+/** sRGB inverse transfer function (D65 illuminant) */
+export function sRGBInverseTransferFunction(value: number): number {
+  return Math.abs(value) <= 0.04045 ? value / 12.92 : ((Math.abs(value) + 0.055) / 1.055) ** 2.4;
+}
 
 /** HSL -> sRGB */
 export function hslTosRGB(hsl: HSL): sRGB {
@@ -114,8 +125,8 @@ export function lmsToOklab(lms: LMS): Oklab {
   return multiplyColorMatrix(lms, LMS_TO_OKLAB);
 }
 
-/** LMS -> Linear sRGB */
-export function lmsToLinearRGB(lms: LMS): LinearRGB {
+/** LMS -> Linear RGB D65 */
+export function lmsToLinearRGBD65(lms: LMS): LinearRGBD65 {
   const [r, g, b, a] = multiplyColorMatrix([lms[0] ** 3, lms[1] ** 3, lms[2] ** 3, lms[3]], LMS_TO_LINEAR_RGB);
   return [
     r, // r
@@ -125,21 +136,18 @@ export function lmsToLinearRGB(lms: LMS): LinearRGB {
   ];
 }
 
-/** Linear sRGB -> sRGB */
-export function linearRGBTosRGB(rgb: LinearRGB, γ = 2.4): sRGB {
-  const r = Math.abs(rgb[0]);
-  const g = Math.abs(rgb[1]);
-  const b = Math.abs(rgb[2]);
+/** Linear RGB D65 -> sRGB */
+export function linearRGBD65TosRGB(rgb: LinearRGBD65): sRGB {
   return [
-    r < 0.0031308 ? rgb[0] * 12.92 : 1.055 * Math.pow(r, 1 / γ) - 0.055, // r
-    g < 0.0031308 ? rgb[1] * 12.92 : 1.055 * Math.pow(g, 1 / γ) - 0.055, // g
-    b < 0.0031308 ? rgb[2] * 12.92 : 1.055 * Math.pow(b, 1 / γ) - 0.055, // b
+    sRGBTransferFunction(rgb[0]), // r
+    sRGBTransferFunction(rgb[1]), // g
+    sRGBTransferFunction(rgb[2]), // b
     rgb[3], // alpha
   ];
 }
 
-/** Linear sRGB -> LMS */
-export function linearRGBToLMS(lrgb: LinearRGB): LMS {
+/** Linear RGB D65 -> LMS */
+export function linearRGBD65ToLMS(lrgb: LinearRGBD65): LMS {
   const lms = multiplyColorMatrix(lrgb, LINEAR_RGB_TO_LMS);
   return [
     Math.cbrt(lms[0]), // L
@@ -149,14 +157,14 @@ export function linearRGBToLMS(lrgb: LinearRGB): LMS {
   ];
 }
 
-/** Linear sRGB -> XYZ (D65) */
-export function linearRGBToXYZ(rgb: LinearRGB): XYZ_D65 {
-  return multiplyColorMatrix(rgb, LINEAR_RGB_TO_XYZ_D65);
+/** Linear RGB D65 -> XYZ */
+export function linearRGBD65ToXYZ(rgb: LinearRGBD65): XYZ {
+  return multiplyColorMatrix(rgb, LINEAR_RGB_D65_TO_XYZ);
 }
 
 /** LUV -> sRGB */
 // export function luvTosRGB(luv: LUV): sRGB {
-//   return linearRGBTosRGB(xyzToLinearRGB(luvToXYZ(luv)));
+//   return linearRGBD65TosRGB(xyzToLinearRGB(luvToXYZ(luv)));
 // }
 
 /** LUV -> XYZ (D65) */
@@ -184,7 +192,7 @@ export function oklabToLMS(oklab: Oklab): sRGB {
 
 /** Oklab -> sRGB */
 export function oklabTosRGB(oklab: Oklab): sRGB {
-  const rgb = linearRGBTosRGB(lmsToLinearRGB(oklabToLMS(oklab)));
+  const rgb = lmsToLinearRGBD65(oklabToLMS(oklab));
 
   if (rgb[0] > 1.001 || rgb[0] < -0.001 || rgb[1] > 1.001 || rgb[1] < -0.001 || rgb[2] > 1.001 || rgb[2] < -0.001) {
     // “Preserve light, clamp Chroma” method from https://bottosson.github.io/posts/gamutclipping/
@@ -196,8 +204,8 @@ export function oklabTosRGB(oklab: Oklab): sRGB {
     const bNorm = b / C;
     const t = findGamutIntersection(aNorm, bNorm, L, C, Lgamut);
 
-    return linearRGBTosRGB(
-      lmsToLinearRGB(
+    return linearRGBD65TosRGB(
+      lmsToLinearRGBD65(
         oklabToLMS([
           Lgamut * (1 - t) + t * L, // L
           aNorm * (t * C), // a
@@ -208,7 +216,7 @@ export function oklabTosRGB(oklab: Oklab): sRGB {
     );
   }
 
-  return rgb;
+  return linearRGBD65TosRGB(rgb);
 }
 
 /** Oklch -> sRGB */
@@ -216,27 +224,24 @@ export function oklchTosRGB(oklch: Oklch): sRGB {
   return oklabTosRGB(lchToLAB(oklch));
 }
 
-/** sRGB -> Linear sRGB */
-export function sRGBToLinearRGB(rgb: sRGB, γ = 2.4): LinearRGB {
-  const r = Math.abs(rgb[0]);
-  const g = Math.abs(rgb[1]);
-  const b = Math.abs(rgb[2]);
+/** sRGB -> Linear RGB D65 */
+export function sRGBToLinearRGBD65(rgb: sRGB): LinearRGBD65 {
   return [
-    r < 0.04045 ? rgb[0] / 12.92 : ((r + 0.055) / 1.055) ** γ, // r
-    g < 0.04045 ? rgb[1] / 12.92 : ((g + 0.055) / 1.055) ** γ, // g
-    b < 0.04045 ? rgb[2] / 12.92 : ((b + 0.055) / 1.055) ** γ, // b
+    sRGBInverseTransferFunction(rgb[0]), // r
+    sRGBInverseTransferFunction(rgb[1]), // g
+    sRGBInverseTransferFunction(rgb[2]), // b
     rgb[3], // alpha
   ];
 }
 
-/** Linear sRGB -> Luv */
+/** Linear RGB D65 -> Luv */
 // export function sRGBToLuv(rgb: LinearRGB): LUV {
-//   return xyzToLuv(linearRGBToXYZ(sRGBToLinearRGB(rgb)));
+//   return xyzToLuv(linearRGBD65ToXYZ(sRGBToLinearRGB(rgb)));
 // }
 
 /** sRGB -> Oklab */
 export function sRGBToOklab(rgb: sRGB): Oklab {
-  return lmsToOklab(linearRGBToLMS(sRGBToLinearRGB(rgb)));
+  return lmsToOklab(linearRGBD65ToLMS(sRGBToLinearRGBD65(rgb)));
 }
 
 /** sRGB -> Oklch */
@@ -244,9 +249,9 @@ export function sRGBToOklch(rgb: sRGB): Oklch {
   return labToLCH(sRGBToOklab(rgb));
 }
 
-/** XYZ (D65) -> Linear sRGB */
-export function xyzToLinearRGB(xyz: XYZ_D65): sRGB {
-  return multiplyColorMatrix(xyz, XYZ_D65_TO_LINEAR_RGB);
+/** XYZ -> Linear RGB D65 */
+export function xyzToLinearRGBD65(xyz: XYZ): sRGB {
+  return multiplyColorMatrix(xyz, XYZ_TO_LINEAR_RGB_D65);
 }
 
 /** XYZ (D65) -> Luv */

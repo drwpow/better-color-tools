@@ -1,0 +1,17 @@
+.swatch {
+  align-items: flex-end;
+  counter-increment: step;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  justify-content: flex-end;
+  margin: 0;
+  padding: 0.5rem;
+
+  &::before {
+    align-self: flex-start;
+    margin-bottom: auto;
+    opacity: 0.4;
+  }
+}

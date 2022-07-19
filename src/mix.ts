@@ -1,7 +1,7 @@
-import { Color, linearRGBToLMS, lmsToLinearRGB, sRGB } from './colorspace.js';
+import { Color, linearRGBD65ToLMS, lmsToLinearRGBD65, sRGB } from './colorspace.js';
 import type { ColorOutput } from './parse.js';
 
-import { linearRGBTosRGB, sRGBToOklab, sRGBToOklch, sRGBToLinearRGB, oklabTosRGB, oklchTosRGB } from './colorspace.js';
+import { linearRGBD65TosRGB, sRGBToOklab, sRGBToOklch, sRGBToLinearRGBD65, oklabTosRGB, oklchTosRGB } from './colorspace.js';
 import { from } from './parse.js';
 import { clamp } from './utils.js';
 
@@ -26,16 +26,16 @@ export function mix(color1: Color, color2: Color, weight = 0.5, colorSpace: MixC
   const converters: Record<MixColorSpace, (color: sRGB) => sRGB> = {
     oklch: sRGBToOklch,
     oklab: sRGBToOklab,
-    lms: (c) => sRGBToLinearRGB(linearRGBToLMS(c)),
-    linearRGB: sRGBToLinearRGB,
+    lms: (c) => sRGBToLinearRGBD65(linearRGBD65ToLMS(c)),
+    linearRGB: sRGBToLinearRGBD65,
     sRGB: (c) => c,
   };
   // conversions aren’t invertible!
   const deconverters: Record<MixColorSpace, (color: sRGB) => sRGB> = {
     oklch: oklchTosRGB,
     oklab: oklabTosRGB,
-    lms: (c) => lmsToLinearRGB(linearRGBTosRGB(c)),
-    linearRGB: linearRGBTosRGB,
+    lms: (c) => lmsToLinearRGBD65(linearRGBD65TosRGB(c)),
+    linearRGB: linearRGBD65TosRGB,
     sRGB: (c) => c,
   };
   let converter = converters[colorSpace];

@@ -1,4 +1,4 @@
-export type { ColorMatrix, HSL, HWB, LMS, LinearRGB, LUV, Oklab, Oklch, sRGB, XYZ_D65 } from './colorspace.js';
+export type { ColorMatrix, HSL, HWB, LMS, LinearRGBD65, LUV, Oklab, Oklch, sRGB, XYZ } from './colorspace.js';
 export type { MixColorSpace } from './mix.js';
 export type { ColorOutput } from './parse.js';
 

@@ -1,0 +1,13 @@
+.select {
+  -webkit-appearance: none;
+  appearance: none;
+  background: none;
+  border: 1px solid currentColor;
+  border-radius: 5px;
+  color: currentColor;
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  margin: 0;
+  padding: 4px 8px;
+}
