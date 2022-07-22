@@ -1,5 +1,12 @@
 # better-color-tools
 
+## 0.9.2
+
+### Patch Changes
+
+- 07fff97: Only allow 3, 4, 6, 8 length hex colors
+- 07fff97: Fix RGB object parsing
+
 ## 0.9.1
 
 ### Patch Changes
