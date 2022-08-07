@@ -13,11 +13,11 @@
 
   // dynamic
   $: ramp = {
-    oklab: [...new Array(steps)].map((_, i) => better.mix(from, to, i / steps).hex),
-    oklch: [...new Array(steps)].map((_, i) => better.mix(from, to, i / steps, 'oklch').hex),
-    srgb: [...new Array(steps)].map((_, i) => better.mix(from, to, i / steps, 'sRGB').hex),
-    linearRGB: [...new Array(steps)].map((_, i) => better.mix(from, to, i / steps, 'linearRGB').hex),
-    lms: [...new Array(steps)].map((_, i) => better.mix(from, to, i / steps, 'lms').hex),
+    oklab: [...new Array(steps)].map((_, i) => better.mix(from, to, i / (steps - 1)).hex),
+    oklch: [...new Array(steps)].map((_, i) => better.mix(from, to, i / (steps - 1), 'oklch').hex),
+    srgb: [...new Array(steps)].map((_, i) => better.mix(from, to, i / (steps - 1), 'sRGB').hex),
+    linearRGB: [...new Array(steps)].map((_, i) => better.mix(from, to, i / (steps - 1), 'linearRGB').hex),
+    lms: [...new Array(steps)].map((_, i) => better.mix(from, to, i / steps - 1, 'lms').hex),
   };
 
   function onHexChange(evt: Event, target: 'from' | 'to'): void {

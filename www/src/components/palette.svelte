@@ -66,7 +66,6 @@
 
   function onAdd(): void {
     const last = palette[palette.length - 1];
-    console.log({ last });
     palette.push({
       base: better.from([Math.random(), Math.random(), Math.random()]).hex,
       dark: last.dark || '#020307',
@@ -88,11 +87,9 @@
     for (let n = 0; n < steps; n++) {
       if (n === mid) {
         ramp.push(better.from(midColor).hex);
-      }
-      if (n < mid) {
+      } else if (n < mid) {
         ramp.push(better.mix(dark, midColor, (n + 1) / (mid + 1), colorspace).hex);
-      }
-      if (n > mid) {
+      } else if (n > mid) {
         ramp.push(better.mix(midColor, light, (n - mid) / (mid + 1), colorspace).hex);
       }
     }

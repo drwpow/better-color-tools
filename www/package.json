@@ -12,21 +12,21 @@
     "lint": "prettier --check --plugin-search-dir=. . && eslint ."
   },
   "dependencies": {
-    "@sveltejs/adapter-auto": "next",
-    "@sveltejs/adapter-cloudflare": "1.0.0-next.29",
-    "@sveltejs/kit": "next",
+    "@sveltejs/adapter-auto": "1.0.0-next.64",
+    "@sveltejs/adapter-cloudflare": "1.0.0-next.31",
+    "@sveltejs/kit": "1.0.0-next.405",
     "svelte": "^3.49.0",
     "svelte-check": "^2.8.0",
     "svelte-preprocess": "^4.10.7",
-    "vite": "^3.0.2"
+    "vite": "^3.0.4"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.30.6",
-    "@typescript-eslint/parser": "^5.30.6",
-    "eslint": "^8.19.0",
+    "@typescript-eslint/eslint-plugin": "^5.32.0",
+    "@typescript-eslint/parser": "^5.32.0",
+    "eslint": "^8.21.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-svelte3": "^4.0.0",
-    "sass": "^1.53.0",
+    "sass": "^1.54.3",
     "tslib": "^2.4.0",
     "typescript": "^4.7.4"
   }
