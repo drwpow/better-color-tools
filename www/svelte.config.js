@@ -6,12 +6,8 @@ const config = {
   // Consult https://github.com/sveltejs/svelte-preprocess
   // for more information about preprocessors
   preprocess: preprocess(),
-
   kit: {
     adapter: cloudflare(),
-    prerender: {
-      default: true,
-    },
   },
 };
 

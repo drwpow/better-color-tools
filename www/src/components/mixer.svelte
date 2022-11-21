@@ -17,7 +17,7 @@
     oklch: [...new Array(steps)].map((_, i) => better.mix(from, to, i / (steps - 1), 'oklch').hex),
     srgb: [...new Array(steps)].map((_, i) => better.mix(from, to, i / (steps - 1), 'sRGB').hex),
     linearRGB: [...new Array(steps)].map((_, i) => better.mix(from, to, i / (steps - 1), 'linearRGB').hex),
-    lms: [...new Array(steps)].map((_, i) => better.mix(from, to, i / steps - 1, 'lms').hex),
+    lms: [...new Array(steps)].map((_, i) => better.mix(from, to, i / (steps - 1), 'lms').hex),
   };
 
   function onHexChange(evt: Event, target: 'from' | 'to'): void {

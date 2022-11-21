@@ -107,7 +107,7 @@ export function lchToLAB(lch: LCH): LAB {
   let [L, C, h, alpha] = lch;
   // treat L === 0 as pure black
   if (L === 0) {
-    return [0, 0, 0, lch[3]];
+    return [0, 0, 0, alpha];
   }
   while (h < 0) h += 360;
   while (h >= 360) h -= 360;
@@ -127,33 +127,35 @@ export function lmsToOklab(lms: LMS): Oklab {
 
 /** LMS -> Linear RGB D65 */
 export function lmsToLinearRGBD65(lms: LMS): LinearRGBD65 {
-  const [r, g, b, a] = multiplyColorMatrix([lms[0] ** 3, lms[1] ** 3, lms[2] ** 3, lms[3]], LMS_TO_LINEAR_RGB);
+  const [l, m, s, a] = lms;
+  const [r, g, b] = multiplyColorMatrix([l ** 3, m ** 3, s ** 3, a], LMS_TO_LINEAR_RGB);
   return [
     r, // r
     g, // g
     b, // b
-    a, // a
+    a, // alpha
   ];
 }
 
 /** Linear RGB D65 -> sRGB */
 export function linearRGBD65TosRGB(rgb: LinearRGBD65): sRGB {
+  const [r, g, b, a] = rgb;
   return [
-    sRGBTransferFunction(rgb[0]), // r
-    sRGBTransferFunction(rgb[1]), // g
-    sRGBTransferFunction(rgb[2]), // b
-    rgb[3], // alpha
+    sRGBTransferFunction(r), // r
+    sRGBTransferFunction(g), // g
+    sRGBTransferFunction(b), // b
+    a, // alpha
   ];
 }
 
 /** Linear RGB D65 -> LMS */
 export function linearRGBD65ToLMS(lrgb: LinearRGBD65): LMS {
-  const lms = multiplyColorMatrix(lrgb, LINEAR_RGB_TO_LMS);
+  const [l, m, s, a] = multiplyColorMatrix(lrgb, LINEAR_RGB_TO_LMS);
   return [
-    Math.cbrt(lms[0]), // L
-    Math.cbrt(lms[1]), // M
-    Math.cbrt(lms[2]), // S
-    lms[3],
+    Math.cbrt(l), // L
+    Math.cbrt(m), // M
+    Math.cbrt(s), // S
+    a, // alpha
   ];
 }
 
@@ -192,12 +194,12 @@ export function oklabToLMS(oklab: Oklab): sRGB {
 
 /** Oklab -> sRGB */
 export function oklabTosRGB(oklab: Oklab): sRGB {
-  const rgb = lmsToLinearRGBD65(oklabToLMS(oklab));
+  const [R, G, B, alpha] = lmsToLinearRGBD65(oklabToLMS(oklab));
 
-  if (rgb[0] > 1.001 || rgb[0] < -0.001 || rgb[1] > 1.001 || rgb[1] < -0.001 || rgb[2] > 1.001 || rgb[2] < -0.001) {
+  if (R > 1.001 || R < -0.001 || G > 1.001 || G < -0.001 || B > 1.001 || B < -0.001) {
     // “Preserve light, clamp Chroma” method from https://bottosson.github.io/posts/gamutclipping/
     const ε = 0.00001;
-    const [L, a, b, alpha] = oklab;
+    const [L, a, b] = oklab;
     const C = Math.max(ε, Math.sqrt(a ** 2 + b ** 2));
     const Lgamut = clamp(L, 0, 1);
     const aNorm = a / C;
@@ -216,7 +218,7 @@ export function oklabTosRGB(oklab: Oklab): sRGB {
     );
   }
 
-  return linearRGBD65TosRGB(rgb);
+  return linearRGBD65TosRGB([R, G, B, alpha]);
 }
 
 /** Oklch -> sRGB */
@@ -226,11 +228,12 @@ export function oklchTosRGB(oklch: Oklch): sRGB {
 
 /** sRGB -> Linear RGB D65 */
 export function sRGBToLinearRGBD65(rgb: sRGB): LinearRGBD65 {
+  const [r, g, b, a] = rgb;
   return [
-    sRGBInverseTransferFunction(rgb[0]), // r
-    sRGBInverseTransferFunction(rgb[1]), // g
-    sRGBInverseTransferFunction(rgb[2]), // b
-    rgb[3], // alpha
+    sRGBInverseTransferFunction(r), // r
+    sRGBInverseTransferFunction(g), // g
+    sRGBInverseTransferFunction(b), // b
+    a, // alpha
   ];
 }
 

@@ -42,18 +42,18 @@ export function mix(color1: Color, color2: Color, weight = 0.5, colorSpace: MixC
   let deconverter = deconverters[colorSpace];
   if (!converter) throw new Error(`Unknown color space "${colorSpace}", try "oklab", "oklch", "linearRGB", or "sRGB"`);
 
-  const rgb1 = from(color1).rgbVal;
-  const rgb2 = from(color2).rgbVal;
+  const [r1, g1, b1, alpha1] = from(color1).rgbVal;
+  const [r2, g2, b2, alpha2] = from(color2).rgbVal;
 
   // Oklch fix: if one color is neutral, use Oklab to prevent hue shifting
-  if (colorSpace === 'oklch' && ((rgb1[0] === rgb1[1] && rgb1[1] === rgb1[2]) || (rgb2[0] === rgb2[1] && rgb2[1] === rgb2[2]))) {
+  if (colorSpace === 'oklch' && ((r1 === g1 && g1 === b1) || (r2 === g2 && g2 === b2))) {
     converter = converters.oklab;
     deconverter = deconverters.oklab;
   }
 
   // convert color into mix colorspace
-  let [x1, y1, z1, a1] = converter(rgb1);
-  let [x2, y2, z2, a2] = converter(rgb2);
+  let [x1, y1, z1, a1] = converter([r1, g1, b1, alpha1]);
+  let [x2, y2, z2, a2] = converter([r2, g2, b2, alpha2]);
 
   // Oklch: take shortest hue distance (e.g. 0 and 359 should only be 1 degree apart, not 359)
   if (colorSpace === 'oklch' && Math.abs(z2 - z1) > 180) {

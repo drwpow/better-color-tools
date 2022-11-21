@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import Mixer from '../components/mixer.svelte';
-  import better from '../lib/better.min.js';
+  import Mixer from '../../components/mixer.svelte';
+  import better from '../../lib/better.min.js';
 
   let t = 0;
   let from = [0, 0, 0, 1];

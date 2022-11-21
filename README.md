@@ -84,6 +84,17 @@ _¹The following formats aren’t supported as outputs:_
 
 For a comprehensive color conversion library, see [Culori].
 
+**Adjust**
+
+To adjust a color via Oklch, append `.adjust()` along with the adjustments to make:
+
+```js
+better.from('#0060ff').adjust({ lightness: 0.5 }); // set lightness to 50% (absolute)
+better.from('#0060ff').adjust({ mode: 'relative', lightness: -0.1 }); // darken lightness by 10%
+```
+
+You can adjust `lightness`, `chroma`, and `hue` altogether, and you can either operate in `relative` or `absolute` (default) mode.
+
 **P3**
 
 This library supports [P3] by expanding the sRGB space into the P3 gamut 1:1. For example, 100% red sRGB is converted to 100% red P3:

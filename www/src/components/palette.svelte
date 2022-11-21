@@ -86,10 +86,13 @@
     const midColor = normalized ? { l: (lmax - lmin) / 2 + lmin, a, b } : { l, a, b };
     for (let n = 0; n < steps; n++) {
       if (n === mid) {
+        console.log(`step ${n}: ${n}`);
         ramp.push(better.from(midColor).hex);
       } else if (n < mid) {
+        console.log(`step ${n}: ${(n + 1) / (mid + 1)}`);
         ramp.push(better.mix(dark, midColor, (n + 1) / (mid + 1), colorspace).hex);
       } else if (n > mid) {
+        console.log(`step ${n}: ${(n - mid) / (mid + 1)}`);
         ramp.push(better.mix(midColor, light, (n - mid) / (mid + 1), colorspace).hex);
       }
     }

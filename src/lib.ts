@@ -140,8 +140,8 @@ export function findCusp(a: number, b: number): Cusp {
   const S_cusp = computeMaxSaturation(a, b);
 
   // Convert to linear RGB (D65) to find the first point where at least one of r,g or b >= 1:
-  const rgb_at_max = lmsToLinearRGBD65(oklabToLMS([1, S_cusp * a, S_cusp * b, 1]));
-  const L_cusp = Math.cbrt(1 / Math.max(rgb_at_max[0], rgb_at_max[1], rgb_at_max[3]));
+  const [R, G, B] = lmsToLinearRGBD65(oklabToLMS([1, S_cusp * a, S_cusp * b, 1]));
+  const L_cusp = Math.cbrt(1 / Math.max(R, G, B));
   const C_cusp = L_cusp * S_cusp;
 
   return { L: L_cusp, C: C_cusp };

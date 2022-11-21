@@ -1,5 +1,7 @@
+import type { AdjustOptions } from './adjust.js';
 import type { Color, LinearRGBD65, Oklab, Oklch, sRGB, XYZ } from './colorspace.js';
 
+import adjust from './adjust.js';
 import { hslTosRGB, hwbTosRGB, linearRGBD65TosRGB, linearRGBD65ToXYZ, oklabTosRGB, oklchTosRGB, sRGBToLinearRGBD65, sRGBToOklab, sRGBToOklch, xyzToLinearRGBD65 } from './colorspace.js';
 import cssNames from './css-names.js';
 import { clamp, colorFn, leftPad } from './utils.js';
@@ -70,18 +72,20 @@ export function from(rawColor: Color): ColorOutput {
 
   const outputs = {
     get hex(): string {
+      const [r, g, b, a] = color;
       let hexString = '#';
-      hexString += leftPad(Math.round(clamp(color[0] * 255, 0, 255)).toString(16), 2); // r
-      hexString += leftPad(Math.round(clamp(color[1] * 255, 0, 255)).toString(16), 2); // g
-      hexString += leftPad(Math.round(clamp(color[2] * 255, 0, 255)).toString(16), 2); // b
-      if (color[3] < 1) hexString += leftPad(Math.round(color[3] * 255).toString(16), 2); // a
+      hexString += leftPad(Math.round(clamp(r * 255, 0, 255)).toString(16), 2); // r
+      hexString += leftPad(Math.round(clamp(g * 255, 0, 255)).toString(16), 2); // g
+      hexString += leftPad(Math.round(clamp(b * 255, 0, 255)).toString(16), 2); // b
+      if (color[3] < 1) hexString += leftPad(Math.round(a * 255).toString(16), 2); // a
       return hexString;
     },
     get hexVal(): number {
-      if (color[3] < 1) console.warn(`hexVal converted a semi-transparent color (${color[3] * 100}%) to fully opaque`); // eslint-disable-line no-console
-      const r = Math.round(clamp(color[0] * 255, 0, 255));
-      const g = Math.round(clamp(color[1] * 255, 0, 255));
-      const b = Math.round(clamp(color[2] * 255, 0, 255));
+      let [r, g, b, a] = color;
+      if (a < 1) console.warn(`hexVal converted a semi-transparent color (${a * 100}%) to fully opaque`); // eslint-disable-line no-console
+      r = Math.round(clamp(r * 255, 0, 255));
+      g = Math.round(clamp(g * 255, 0, 255));
+      b = Math.round(clamp(b * 255, 0, 255));
       return r * R_FACTOR + g * G_FACTOR + b;
     },
     // get luv(): string {
@@ -125,6 +129,9 @@ export function from(rawColor: Color): ColorOutput {
     },
     get xyzVal(): XYZ {
       return linearRGBD65ToXYZ(sRGBToLinearRGBD65(color));
+    },
+    adjust(options: AdjustOptions): ColorOutput {
+      return from(adjust(color, options));
     },
   };
 
@@ -173,13 +180,14 @@ export function parse(rawColor: Color): sRGB {
 
   // [R, G, B] or [R, G, B, A]
   if (Array.isArray(rawColor)) {
-    if (typeof rawColor[0] != 'number' || typeof rawColor[1] != 'number' || typeof rawColor[2] != 'number') throw new Error(`Color array must be numbers, received ${rawColor}`);
+    if (rawColor.some((v) => typeof v !== 'number')) throw new Error(`Color array must be numbers, received ${rawColor}`);
     if (rawColor.length < 3 || rawColor.length > 4) throw new Error(`Expected [R, G, B, A?], received ${rawColor}`);
+    const [r, g, b, a] = rawColor;
     return [
-      clamp(rawColor[0], 0, 1), // r
-      clamp(rawColor[1], 0, 1), // g
-      clamp(rawColor[2], 0, 1), // b
-      typeof rawColor[3] === 'number' ? clamp(rawColor[3], 0, 1) : 1, // apha
+      clamp(r, 0, 1), // r
+      clamp(g, 0, 1), // g
+      clamp(b, 0, 1), // b
+      typeof a === 'number' ? clamp(a, 0, 1) : 1, // alpha
     ];
   }
 
