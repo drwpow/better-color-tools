@@ -1,5 +1,17 @@
 # better-color-tools
 
+## 0.10.0
+
+### Minor Changes
+
+- c8cb79a: Add adjust() function
+
+### Patch Changes
+
+- 07fff97: Only allow 3, 4, 6, 8 length hex colors
+- 07fff97: Fix RGB object parsing
+- c8cb79a: Fix critical mix() bug with blue channel being ignored
+
 ## 0.9.1
 
 ### Patch Changes
