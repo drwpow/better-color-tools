@@ -8,7 +8,7 @@
   function onHexChange(evt: Event): void {
     try {
       const hex = (evt.target as HTMLInputElement).value.trim();
-      if (hex.length !== 7) return;
+      better.from(hex); // will throw if invalid
       onUpdate(better.from(hex).rgbVal);
     } catch {}
   }

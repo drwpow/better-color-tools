@@ -32,18 +32,29 @@
       return;
     }
     const search = new URLSearchParams(hash.substring(1));
-    const colors = `${search.get('palette')}`.split(',');
-    const savedPalette: PaletteColor[] = [];
-    if (colors.length >= 3) {
-      let n = 0;
-      while (true) {
-        if (!colors[n + 6]) break;
-        const next: PaletteColor = { base: colors[n + 1], dark: colors[n], light: colors[n + 2], steps: parseInt(colors[n + 3], 10) || 9, colorspace: colors[n + 4] as any, normalized: colors[n + 5] };
-        savedPalette.push(next);
-        n += 6;
+    const rawPalette = search.get('palette[]');
+    if (rawPalette) {
+      const colors = rawPalette.split(',');
+      const savedPalette: PaletteColor[] = [];
+      if (colors.length >= 3) {
+        let n = 0;
+        while (true) {
+          if (!colors[n + 5]) break;
+          const next: PaletteColor = {
+            base: colors[n + 1],
+            dark: colors[n],
+            light: colors[n + 2],
+            steps: parseInt(colors[n + 3], 10) || 9,
+            colorspace: colors[n + 4] as any,
+            normalized: colors[n + 5] === 'true',
+          };
+          savedPalette.push(next);
+          n += 6;
+        }
       }
+      if (savedPalette.length) onUpdate(savedPalette);
+      else onUpdate(defaultPalette);
     }
-    if (!savedPalette.length) onUpdate(defaultPalette);
   });
 
   interface PaletteColor {
@@ -86,13 +97,10 @@
     const midColor = normalized ? { l: (lmax - lmin) / 2 + lmin, a, b } : { l, a, b };
     for (let n = 0; n < steps; n++) {
       if (n === mid) {
-        console.log(`step ${n}: ${n}`);
         ramp.push(better.from(midColor).hex);
       } else if (n < mid) {
-        console.log(`step ${n}: ${(n + 1) / (mid + 1)}`);
         ramp.push(better.mix(dark, midColor, (n + 1) / (mid + 1), colorspace).hex);
       } else if (n > mid) {
-        console.log(`step ${n}: ${(n - mid) / (mid + 1)}`);
         ramp.push(better.mix(midColor, light, (n - mid) / (mid + 1), colorspace).hex);
       }
     }
@@ -107,8 +115,8 @@
   function onColorChange(evt: Event, id: keyof PaletteColor, i: number): void {
     if (palette[i]) {
       try {
-        let hex = (evt.target as HTMLInputElement).value.trim();
-        if (hex.length !== 7) return;
+        const hex = (evt.target as HTMLInputElement).value.trim();
+        better.from(hex); // will throw if invalid
         (palette[i] as any)[id] = hex;
         onUpdate(palette);
       } catch {}

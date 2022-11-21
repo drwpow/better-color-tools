@@ -31,10 +31,6 @@
     onUpdate(val);
   }
 
-  function onKeyDown(evt: Event) {
-    console.log({ evt });
-  }
-
   function onStartDrag() {
     isDragging = true;
     if (sliderEl) document.body.classList.add('is-dragging');
