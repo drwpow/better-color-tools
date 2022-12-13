@@ -32,24 +32,24 @@
     "dev": "tsc -w",
     "lint": "eslint \"**/*.{js,ts}\"",
     "prepublish": "npm run build",
-    "test": "mocha",
-    "test:benchmark": "mocha -t 10000"
+    "test": "vitest run"
   },
   "devDependencies": {
     "@changesets/cli": "^2.25.2",
-    "@types/node": "^18.11.9",
-    "@typescript-eslint/eslint-plugin": "^5.43.0",
-    "@typescript-eslint/parser": "^5.43.0",
-    "chai": "^4.3.7",
+    "@types/node": "^18.11.14",
+    "@typescript-eslint/eslint-plugin": "^5.46.1",
+    "@typescript-eslint/parser": "^5.46.1",
     "del-cli": "^4.0.1",
     "esbuild": "^0.14.54",
-    "eslint": "^8.28.0",
+    "eslint": "^8.29.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
-    "mocha": "^10.1.0",
     "npm-run-all": "^4.1.5",
-    "prettier": "^2.7.1",
-    "sass": "^1.56.1",
-    "typescript": "^4.9.3"
+    "pnpm": "^7.18.2",
+    "prettier": "^2.8.1",
+    "sass": "^1.56.2",
+    "typescript": "^4.9.4",
+    "vite": "^4.0.1",
+    "vitest": "^0.25.8"
   }
 }

@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import better from '../dist/index.js';
 import { colorFn, round } from '../dist/utils.js';
 
@@ -26,27 +26,27 @@ function roundAll(arr, prec = 6) {
 describe('sRGB', () => {
   for (const c of colors) {
     it(c.hex, () => {
-      expect(better.from(c.hex).rgb).to.equal(colorFn('rgb', c.rgb));
+      expect(better.from(c.hex).rgb).toBe(colorFn('rgb', c.rgb));
     });
     it(`${c.hex} (inverse)`, () => {
-      expect(better.from(colorFn('rgb', c.rgb)).hex).to.equal(c.hex);
+      expect(better.from(colorFn('rgb', c.rgb)).hex).toBe(c.hex);
     });
 
     const canBeShortened = c.hex[1] === c.hex[2] && c.hex[3] === c.hex[4] && c.hex[5] === c.hex[6] && c.hex[7] === c.hex[8];
     if (canBeShortened) {
       const shortHex = `#${c.hex[1]}${c.hex[3]}${c.hex[5]}`;
       it(shortHex, () => {
-        expect(better.from(shortHex).hex).to.equal(c.hex);
+        expect(better.from(shortHex).hex).toBe(c.hex);
       });
     }
 
     if (c.rgb[3] === 1) {
       const hexInt = parseInt(c.hex.replace('#', '0x'));
       it(`${c.hex} (int)`, () => {
-        expect(better.from(c.hex).hexVal).to.equal(hexInt);
+        expect(better.from(c.hex).hexVal).toBe(hexInt);
       });
       it(`${c.hex} (from int)`, () => {
-        expect(better.from(hexInt).hex).to.equal(c.hex);
+        expect(better.from(hexInt).hex).toBe(c.hex);
       });
     }
   }
@@ -58,10 +58,10 @@ describe('oklab', () => {
       expect(roundAll(better.from(c.hex).oklabVal)).to.deep.equal(c.oklab);
     });
     it(`${c.hex} (inverse)`, () => {
-      expect(better.from(colorFn('oklab', c.oklab)).hex).to.equal(c.hex);
+      expect(better.from(colorFn('oklab', c.oklab)).hex).toBe(c.hex);
     });
     it(`${c.hex} (roundtrip)`, () => {
-      expect(better.from(better.from(c.hex).oklab).hex).to.equal(c.hex);
+      expect(better.from(better.from(c.hex).oklab).hex).toBe(c.hex);
     });
   }
 });
@@ -73,10 +73,10 @@ describe('oklch', () => {
       expect(roundAll(better.from(c.hex).oklchVal)).to.deep.equal(c.oklch);
     });
     it(`${oklchStr} (inverse)`, () => {
-      expect(better.from(oklchStr).hex).to.equal(c.hex);
+      expect(better.from(oklchStr).hex).toBe(c.hex);
     });
     it(`${oklchStr} (roundtrip)`, () => {
-      expect(better.from(better.from(c.hex).oklch).hex).to.equal(c.hex);
+      expect(better.from(better.from(c.hex).oklch).hex).toBe(c.hex);
     });
   }
   // non-recursive/out-of-gamut oklch tests
@@ -90,7 +90,7 @@ describe('oklch', () => {
   for (const t of oklchTests) {
     const oklchStr = colorFn('oklch', t.oklch);
     it(oklchStr, () => {
-      expect(better.from(oklchStr).hex).to.equal(t.hex);
+      expect(better.from(oklchStr).hex).toBe(t.hex);
     });
   }
 });
@@ -99,10 +99,10 @@ describe('p3', () => {
   for (const c of colors) {
     const p3Str = colorFn('display-p3', c.rgb);
     it(p3Str, () => {
-      expect(better.from(c.hex).p3).to.equal(p3Str);
+      expect(better.from(c.hex).p3).toBe(p3Str);
     });
     it(`${p3Str} (inverse)`, () => {
-      expect(better.from(p3Str).hex).to.equal(c.hex);
+      expect(better.from(p3Str).hex).toBe(c.hex);
     })
   }
 });
@@ -114,10 +114,10 @@ describe('xyz', () => {
       expect(roundAll(better.from(c.hex).xyzVal)).to.deep.equal(c.xyz);
     });
     it(`${xyzStr} (inverse)`, () => {
-      expect(better.from(xyzStr).hex).to.equal(c.hex);
+      expect(better.from(xyzStr).hex).toBe(c.hex);
     });
     it(`${xyzStr} (roundtrip)`, () => {
-      expect(better.from(colorFn('xyz-d65', better.from(c.hex).xyzVal)).hex).to.equal(c.hex);
+      expect(better.from(colorFn('xyz-d65', better.from(c.hex).xyzVal)).hex).toBe(c.hex);
     })
   }
 });
@@ -135,7 +135,7 @@ describe('xyz', () => {
 //       expect(better.from(luvStr).hex).to.deep.equal(c.hex);
 //     })
 //     it(`${luvStr} (roundtrip)`, () => {
-//       expect(better.from(colorFn('luv', better.from(c.hex).luvVal)).hex).to.equal(c.hex);
+//       expect(better.from(colorFn('luv', better.from(c.hex).luvVal)).hex).toBe(c.hex);
 //     });
 //   }
 // });

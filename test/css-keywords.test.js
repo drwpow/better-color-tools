@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import better from '../dist/index.min.js';
 
 const keywords = {
@@ -155,7 +155,7 @@ const keywords = {
 describe('CSS color keywords', () => {
   for (const [name, val] of Object.entries(keywords)) {
     it(name, () => {
-      expect(better.from(name).hex).to.equal(val);
+      expect(better.from(name).hex).toBe(val);
     });
   }
 });

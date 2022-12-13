@@ -1,5 +1,5 @@
-import { expect } from 'chai';
-import { performance } from 'perf_hooks';
+import { describe, expect, it } from 'vitest';
+import { performance } from 'node:perf_hooks';
 import better from '../dist/index.js';
 
 const OPS_PER_S = 200000;
@@ -12,7 +12,7 @@ describe.skip('benchmark', () => {
       better.from(`rgb(255, 0, 0)`).hexVal;
     }
     const end = performance.now() - start;
-    expect(end).to.be.lessThan(1000);
+    expect(end).toBeLessThan(1000);
   });
 
   it('rgb -> p3: 200k ops/s', () => {
@@ -21,7 +21,7 @@ describe.skip('benchmark', () => {
       better.from(`rgb(255, 0, 0)`).p3;
     }
     const end = performance.now() - start;
-    expect(end).to.be.lessThan(1000);
+    expect(end).toBeLessThan(1000);
   });
 
   it('rgb -> oklab: 200k ops/s', () => {
@@ -30,7 +30,7 @@ describe.skip('benchmark', () => {
       better.from(`rgb(255, 0, 0)`).oklab;
     }
     const end = performance.now() - start;
-    expect(end).to.be.lessThan(1000);
+    expect(end).toBeLessThan(1000);
   });
 
 
@@ -40,7 +40,7 @@ describe.skip('benchmark', () => {
       better.from(`rgb(255, 0, 0)`).oklch;
     }
     const end = performance.now() - start;
-    expect(end).to.be.lessThan(1000);
+    expect(end).toBeLessThan(1000);
   });
 
   it('parse speed: hex string', (done) => {

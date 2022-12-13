@@ -1,5 +1,5 @@
-import { expect } from 'chai'
-import better from '../dist/index.js'
+import { describe, expect, it } from 'vitest';
+import better from '../dist/index.js';
 
 const tests = [
   { name: 'r', rgb: [1, 0, 0], l5: '#bc0000', 'l-1': '#cb0000' },
@@ -13,16 +13,16 @@ const tests = [
 describe('better.adjust', () => {
   for (const t of tests) {
     it(`${t.name}: L=0`, () => {
-      expect(better.from(t.rgb).adjust({ lightness: 0 }).hex).to.equal('#000000');
+      expect(better.from(t.rgb).adjust({ lightness: 0 }).hex).toBe('#000000');
     });
     it(`${t.name}: L=1`, () => {
-      expect(better.from(t.rgb).adjust({ lightness: 1 }).hex).to.equal('#ffffff');
+      expect(better.from(t.rgb).adjust({ lightness: 1 }).hex).toBe('#ffffff');
     });
     it(`${t.name}: L=0.5`, () => {
-      expect(better.from(t.rgb).adjust({ lightness: 0.5 }).hex).to.equal(t.l5);
+      expect(better.from(t.rgb).adjust({ lightness: 0.5 }).hex).toBe(t.l5);
     });
     it(`${t.name}: L-=0.1`, () => {
-      expect(better.from(t.rgb).adjust({ mode: 'relative', lightness: -0.1 }).hex).to.equal(t['l-1']);
+      expect(better.from(t.rgb).adjust({ mode: 'relative', lightness: -0.1 }).hex).toBe(t['l-1']);
     });
   }
 });

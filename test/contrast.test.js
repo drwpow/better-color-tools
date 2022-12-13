@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { contrastRatio } from '../dist/index.js';
 import { round } from '../dist/utils.js';
 
@@ -50,9 +50,9 @@ describe('WCAG 2.1 contrast', () => {
       const result = contrastRatio(c1, c2);
       const passesAA = ratio >= 4.5;
       const passesAAA = ratio >= 7;
-      expect(round(result.ratio, 3)).to.equal(ratio);
-      expect(result.AA).to.equal(passesAA);
-      expect(result.AAA).to.equal(passesAAA);
+      expect(round(result.ratio, 3)).toBe(ratio);
+      expect(result.AA).toBe(passesAA);
+      expect(result.AAA).toBe(passesAAA);
     });
   }
 })

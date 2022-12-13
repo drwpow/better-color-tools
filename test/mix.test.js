@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import better from '../dist/index.js';
 
 const R = '#ff0000';
@@ -41,7 +41,7 @@ describe('better.mix', () => {
   const grayscale = ['#000000', '#030303', '#161616', '#2e2e2e', '#484848', '#636363', '#808080', '#9e9e9e', '#bebebe', '#dedede', '#ffffff'];
   for (let n = 0; n < grayscale.length; n++) {
     it (`k -> w (${n * 10}%)`, () => {
-      expect(better.mix('black', 'white', n/10).hex).to.equal(grayscale[n]);
+      expect(better.mix('black', 'white', n/10).hex).toBe(grayscale[n]);
     });
   }
 });

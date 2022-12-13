@@ -1,5 +1,5 @@
-import { expect } from 'chai';
-import fs from 'fs';
+import { describe, expect, it } from 'vitest';
+import fs from 'node:fs';
 import { default as sass } from 'sass';
 
 const SEMI_RE = /;?$/
@@ -46,9 +46,9 @@ describe('better.mix', () => {
 
   for (const [name, c1, c2, mid] of tests) {
     it(name, () => {
-      expect(test(`color: mix(${c1}, ${c2}, 0);`)).to.equal(`color: ${c1};`);
-      expect(test(`color: mix(${c1}, ${c2}, 0.5);`)).to.equal(`color: ${mid};`);
-      expect(test(`color: mix(${c1}, ${c2}, 1);`)).to.equal(`color: ${c2};`);
+      expect(test(`color: mix(${c1}, ${c2}, 0);`)).toBe(`color: ${c1};`);
+      expect(test(`color: mix(${c1}, ${c2}, 0.5);`)).toBe(`color: ${mid};`);
+      expect(test(`color: mix(${c1}, ${c2}, 1);`)).toBe(`color: ${c2};`);
     });
   }
 
@@ -56,32 +56,32 @@ describe('better.mix', () => {
   const grayscale = ['black', '#030303', '#161616', '#2e2e2e', '#484848', '#636363', 'gray', '#9e9e9e', '#bebebe', '#dedede', 'white'];
   for (let n = 0; n < grayscale.length; n++) {
     it (`k -> w (${n * 10}%)`, () => {
-      expect(test(`color: mix(black, white, ${n/10})`)).to.equal(`color: ${grayscale[n]};`);
+      expect(test(`color: mix(black, white, ${n/10})`)).toBe(`color: ${grayscale[n]};`);
     });
   }
 
   it('Sass works as expected', () => {
-    expect(test('color: color.mix(#ff0000, #ffff00, 50%);')).to.equal(`color: #ff8000;`);
-    expect(test('color: color.mix(#ff0000, #00ff00, 50%);')).to.equal(`color: olive;`);
-    expect(test('color: color.mix(#ffff00, #00ff00, 50%);')).to.equal(`color: #80ff00;`);
-    expect(test('color: color.mix(#00ff00, #00ffff, 50%);')).to.equal(`color: #00ff80;`);
-    expect(test('color: color.mix(#00ff00, #0000ff, 50%);')).to.equal(`color: teal;`);
-    expect(test('color: color.mix(#00ffff, #0000ff, 50%);')).to.equal(`color: #0080ff;`);
-    expect(test('color: color.mix(#0000ff, #ff00ff, 50%);')).to.equal(`color: #8000ff;`);
-    expect(test('color: color.mix(#0000ff, #ff0000, 50%);')).to.equal(`color: purple;`);
-    expect(test('color: color.mix(#ff00ff, #ff0000, 50%);')).to.equal(`color: #ff0080;`);
+    expect(test('color: color.mix(#ff0000, #ffff00, 50%);')).toBe(`color: #ff8000;`);
+    expect(test('color: color.mix(#ff0000, #00ff00, 50%);')).toBe(`color: olive;`);
+    expect(test('color: color.mix(#ffff00, #00ff00, 50%);')).toBe(`color: #80ff00;`);
+    expect(test('color: color.mix(#00ff00, #00ffff, 50%);')).toBe(`color: #00ff80;`);
+    expect(test('color: color.mix(#00ff00, #0000ff, 50%);')).toBe(`color: teal;`);
+    expect(test('color: color.mix(#00ffff, #0000ff, 50%);')).toBe(`color: #0080ff;`);
+    expect(test('color: color.mix(#0000ff, #ff00ff, 50%);')).toBe(`color: #8000ff;`);
+    expect(test('color: color.mix(#0000ff, #ff0000, 50%);')).toBe(`color: purple;`);
+    expect(test('color: color.mix(#ff00ff, #ff0000, 50%);')).toBe(`color: #ff0080;`);
   });
 });
 
 describe('p3', () => {
   it('g', () => {
-    expect(test('color: p3(#00ff00);')).to.equal('color: color(display-p3 0 1 0);')
+    expect(test('color: p3(#00ff00);')).toBe('color: color(display-p3 0 1 0);')
   });
 });
 
 describe('fallback', () => {
   it('color', () => {
-    expect(test('@include fallback(color, p3(#00ffff), #00ffff)')).to.equal('color: #00ffff;\n  color: color(display-p3 0 1 1);');
+    expect(test('@include fallback(color, p3(#00ffff), #00ffff)')).toBe('color: #00ffff;\n  color: color(display-p3 0 1 1);');
   });
 });
 
@@ -100,7 +100,7 @@ describe('lightness', () => {
   // note: opacity is just a way to store the value for comparison
   for (const [name, given, want] of lightness) {
     it(name, () => {
-      expect(test(`opacity: lightness(${given})`)).to.equal(`opacity: ${want};`);
+      expect(test(`opacity: lightness(${given})`)).toBe(`opacity: ${want};`);
     });
   }
 });

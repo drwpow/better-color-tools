@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import better from '../dist/index.js';
 
 const cssTests = [
@@ -42,7 +42,7 @@ describe('CSS parsing', () => {
 
   for (const [css, val] of cssTests) {
     it(css, () => {
-      expect(better.from(css).hex).to.equal(val);
+      expect(better.from(css).hex).toBe(val);
     });
   }
 });
@@ -62,7 +62,7 @@ const jsTests = [
 describe('JS parsing', () => {
   for (const [input, val] of jsTests) {
     it(JSON.stringify(input), () => {
-      expect(better.from(input).hex).to.equal(val);
+      expect(better.from(input).hex).toBe(val);
     });
   }
 })

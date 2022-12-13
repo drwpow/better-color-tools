@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { lightOrDark } from '../dist/index.js'
 
 const tests = [
@@ -42,7 +42,7 @@ const tests = [
 describe('lightOrDark', () => {
   for(const [c, value] of tests) {
     it(c, () => {
-      expect(lightOrDark(c)).to.equal(value);
+      expect(lightOrDark(c)).toBe(value);
     });
   }
 });
