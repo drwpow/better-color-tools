@@ -145,20 +145,26 @@ better.lightness('#fc7030'); // 0.7063999
 
 [Playground](https://better-color-tools.pages.dev/grayscale)
 
-**Manipulation**
+**Adjust**
 
-Manipulation is best done in a space like [Oklch] which is optimized for manual tweaking.
+Manipulation is done through [Oklch] which is optimized for manual tweaking. Call the `.adjust()` method to manipulate the color (they can even be chained together for multiple, incremental adjustments
 
 ```js
 import better from 'better-color-tools';
-
-let [l, c, h] = better.from('#5a00a6').oklchVal;
-better.from({
-  l,
-  c: c + 0.01, // increase Chroma by 1%
-  h: h + 5, // rotate hue by 5°
-}).hex; // #6f00ca
+better
+  .from('#5a00a6')
+  .adjust({
+    mode: 'relative',
+    hue: 5, // rotate hue by 5° (from wherever it was)
+    chroma: 0.1, // increase chroma by `0.1`
+  })
+  .adjust({
+    mode: 'absolute',
+    lightnes: 0.6, // set lightness to absolute 60%
+  }).hex; // #60009e
 ```
+
+Note that if `mode` is omitted, the default value is `'absolute'`.
 
 **Contrast Ratio**
 

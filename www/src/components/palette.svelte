@@ -94,14 +94,40 @@
     const [l, a, b] = better.from(base).oklabVal;
     const lmax = better.lightness(light);
     const lmin = better.lightness(dark);
-    const midColor = normalized ? { l: (lmax - lmin) / 2 + lmin, a, b } : { l, a, b };
+    const midColor = normalized
+      ? {
+          l: (lmax - lmin) / 2 + lmin,
+          a,
+          b,
+        }
+      : { l, a, b };
     for (let n = 0; n < steps; n++) {
       if (n === mid) {
         ramp.push(better.from(midColor).hex);
       } else if (n < mid) {
-        ramp.push(better.mix(dark, midColor, (n + 1) / (mid + 1), colorspace).hex);
+        ramp.push(
+          better.mix(
+            better.from(dark).adjust({
+              mode: 'relative',
+              chroma: 0.1, // try and keep saturation while mixing (without using oklch)
+            }).hex,
+            midColor,
+            (n + 1) / (mid + 1),
+            colorspace
+          ).hex
+        );
       } else if (n > mid) {
-        ramp.push(better.mix(midColor, light, (n - mid) / (mid + 1), colorspace).hex);
+        ramp.push(
+          better.mix(
+            better.from(midColor).adjust({
+              mode: 'relative',
+              chroma: 0.1, // try and keep saturation while mixing (without using oklch)
+            }).hex,
+            light,
+            (n - mid) / (mid + 1),
+            colorspace
+          ).hex
+        );
       }
     }
     // TODO: half-steps
