@@ -62,7 +62,7 @@
     <h3>OKLAB (best)</h3>
     <ul class="ramp">
       {#each ramp.oklab as step}
-        <li class="swatch ramp-swatch" aria-label={step} style={`background-color:${step};color:${better.lightOrDark(step) === 'dark' ? 'white' : 'black'}`}>{step}</li>
+        <li class="swatch ramp-swatch" aria-label={step} style={`background-color:${step};background-color:${better.from(step).p3}color:${better.lightOrDark(step) === 'dark' ? 'white' : 'black'}`}>{step}</li>
       {/each}
     </ul>
   </section>
@@ -71,7 +71,7 @@
     <h3>OKLCH</h3>
     <ul class="ramp">
       {#each ramp.oklch as step}
-        <li class="swatch ramp-swatch" aria-label={step} style={`background-color:${step};color:${better.lightOrDark(step) === 'dark' ? 'white' : 'black'}`}>{step}</li>
+        <li class="swatch ramp-swatch" aria-label={step} style={`background-color:${step};background-color:${better.from(step).p3}color:${better.lightOrDark(step) === 'dark' ? 'white' : 'black'}`}>{step}</li>
       {/each}
     </ul>
   </section>
@@ -80,7 +80,7 @@
     <h3>sRGB</h3>
     <ul class="ramp">
       {#each ramp.srgb as step}
-        <li class="swatch ramp-swatch" aria-label={step} style={`background-color:${step};color:${better.lightOrDark(step) === 'dark' ? 'white' : 'black'}`}>{step}</li>
+        <li class="swatch ramp-swatch" aria-label={step} style={`background-color:${step};background-color:${better.from(step).p3}color:${better.lightOrDark(step) === 'dark' ? 'white' : 'black'}`}>{step}</li>
       {/each}
     </ul>
   </section>
@@ -89,7 +89,7 @@
     <h3>Linear RGB</h3>
     <ul class="ramp">
       {#each ramp.linearRGB as step}
-        <li class="swatch ramp-swatch" aria-label={step} style={`background-color:${step};color:${better.lightOrDark(step) === 'dark' ? 'white' : 'black'}`}>{step}</li>
+        <li class="swatch ramp-swatch" aria-label={step} style={`background-color:${step};background-color:${better.from(step).p3}color:${better.lightOrDark(step) === 'dark' ? 'white' : 'black'}`}>{step}</li>
       {/each}
     </ul>
   </section>
@@ -98,7 +98,7 @@
     <h3>LMS</h3>
     <ul class="ramp">
       {#each ramp.lms as step}
-        <li class="swatch ramp-swatch" aria-label={step} style={`background-color:${step};color:${better.lightOrDark(step) === 'dark' ? 'white' : 'black'}`}>{step}</li>
+        <li class="swatch ramp-swatch" aria-label={step} style={`background-color:${step};background-color:${better.from(step).p3}color:${better.lightOrDark(step) === 'dark' ? 'white' : 'black'}`}>{step}</li>
       {/each}
     </ul>
   </section>

@@ -11,16 +11,23 @@
   export let bg = '';
   export let percentage = false;
   export let onUpdate: (value: number) => void;
+  export let vertical = false;
 
   // internal
   let sliderEl: HTMLDivElement;
   let isDragging = false;
+  let pos = `translate3d(0, 0, 0)`;
 
   // derivative
   $: scale = max - min;
   $: precision = scale > 1 || percentage ? 2 : 5;
   $: displayValue = round((percentage ? 100 : 1) * value, precision);
-  $: delta = sliderEl ? ((value - min) / scale) * sliderEl.getBoundingClientRect().width - 2 : min;
+  $: {
+    if (sliderEl) {
+      const delta = (value - min) / scale;
+      pos = vertical ? `translate3d(0, ${-(delta * sliderEl.getBoundingClientRect().height - 2)}px, 0)` : `translate3d(${delta * sliderEl.getBoundingClientRect().width - 2}px, 0, 0)`;
+    }
+  }
 
   function inputHandler(evt: Event) {
     if (!evt.target || typeof onUpdate !== 'function') return;
@@ -43,16 +50,28 @@
 
   function onDrag(evt: Event) {
     if (isDragging === false) return;
-    const { left, width } = sliderEl.getBoundingClientRect();
-    const pos = (scale * ((evt as MouseEvent).clientX - left)) / width + min;
-    onUpdate(Math.max(min, Math.min(max, pos)));
+    if (vertical) {
+      const { bottom, height } = sliderEl.getBoundingClientRect();
+      const pos = (scale * (bottom - (evt as MouseEvent).clientY)) / height + min;
+      onUpdate(Math.max(min, Math.min(max, pos)));
+    } else {
+      const { left, width } = sliderEl.getBoundingClientRect();
+      const pos = (scale * ((evt as MouseEvent).clientX - left)) / width + min;
+      onUpdate(Math.max(min, Math.min(max, pos)));
+    }
   }
 
   function onClick(evt: Event) {
     if (evt.target instanceof HTMLButtonElement) return;
-    const { left, width } = sliderEl.getBoundingClientRect();
-    const pos = (scale * ((evt as MouseEvent).clientX - left)) / width + min;
-    onUpdate(Math.max(min, Math.min(max, pos)));
+    if (vertical) {
+      const { bottom, height } = sliderEl.getBoundingClientRect();
+      const pos = (scale * (bottom - (evt as MouseEvent).clientY)) / height + min;
+      onUpdate(Math.max(min, Math.min(max, pos)));
+    } else {
+      const { left, width } = sliderEl.getBoundingClientRect();
+      const pos = (scale * ((evt as MouseEvent).clientX - left)) / width + min;
+      onUpdate(Math.max(min, Math.min(max, pos)));
+    }
   }
 
   onMount(() => {
@@ -72,14 +91,14 @@
   });
 </script>
 
-<div class="wrapper">
+<div class="wrapper" data-vertical={vertical || undefined}>
   <label class="label" for={`input-${label}`} {title}>{label}</label>
   <div class="slider" style={`background:${bg}`} on:click={onClick} bind:this={sliderEl}>
-    <button type="button" class="slider-handle" style={`transform:translateX(${delta}px)`} {value} on:mousedown={onStartDrag} on:touchstart={onStartDrag} tabindex="-1" />
+    <button type="button" class="slider-handle" style={`transform:${pos}`} {value} on:mousedown={onStartDrag} on:touchstart={onStartDrag} tabindex="-1" />
   </div>
   <div class="value">
     <input id={`input-${label}`} class="input" type="text" inputmode="digit" value={displayValue} on:input={inputHandler} />
-    {#if percentage}%{/if}
+    {#if percentage}<div class="value-percentage">%</div>{/if}
   </div>
 </div>
 
@@ -89,6 +108,13 @@
     display: grid;
     grid-gap: 1.5rem;
     grid-template-columns: min-content auto min-content;
+
+    &[data-vertical='true'] {
+      align-items: stretch;
+      justify-items: center;
+      grid-template-columns: 1fr;
+      grid-template-rows: min-content auto min-content;
+    }
   }
 
   .label {
@@ -100,9 +126,18 @@
   .slider {
     border-radius: 1rem;
     cursor: pointer;
+    min-height: 8px;
     height: 8px;
     position: relative;
+    min-width: 8rem;
     width: 100%;
+
+    .wrapper[data-vertical='true'] & {
+      min-height: 8rem;
+      height: 100%;
+      min-width: 8px;
+      width: 8px;
+    }
 
     &-handle {
       -webkit-appearance: none;
@@ -119,7 +154,14 @@
       position: absolute;
       top: -4px;
       width: 1rem;
+
+      .wrapper[data-vertical='true'] & {
+        bottom: -6px;
+        left: -4px;
+        top: auto;
+      }
     }
+
     // -webkit-appearance: none;
     // appearance: none;
     // background: none;
@@ -140,9 +182,18 @@
   .value {
     align-items: center;
     display: flex;
-    justify-content: space-between;
-    grid-gap: 0.5rem;
+    justify-content: flex-start;
     width: 5.5rem;
+
+    &-percentage {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      margin-left: 0.375rem;
+    }
+
+    .wrapper[data-vertical='true'] & {
+      justify-content: center;
+    }
   }
 
   .input {
@@ -154,6 +205,7 @@
     font-weight: 300;
     height: 20px;
     line-height: 20px;
+    margin: 0;
     max-width: 4rem;
     padding: 0;
     text-indent: 4px;
