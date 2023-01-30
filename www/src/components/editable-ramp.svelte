@@ -58,7 +58,11 @@
       if (i < basePos) {
         colors[i] = better.mix(colors[0], base, i / basePos).rgbVal;
       } else {
-        colors[i] = better.mix(base, colors[colors.length - 1], (i - basePos) / (colors.length - 1 - basePos)).rgbVal;
+        const lastC = lchVal[lchVal.length - 1];
+        const lDelta = lastC[0] - baseLCH[0];
+        const progress = (i - basePos) / (colors.length - 1 - basePos);
+        // try and maintain saturation while lightening
+        colors[i] = better.from({ l: baseLCH[0] + lDelta * progress, c: baseLCH[1], h: baseLCH[2] }).rgbVal;
       }
     }
 
