@@ -29,7 +29,12 @@
   $: hex = colors.map((c) => better.from(c).hex);
   $: lchVal = colors.map((c) => better.from(c).oklchVal);
   $: cDelta = lchVal.map((c) => c[1] - baseLCH[1]);
-  $: hDelta = lchVal.map((c) => c[2] - baseLCH[2]);
+  $: hDelta = lchVal.map((c) => {
+    const delta = c[2] - baseLCH[2];
+    if (delta < -180) return delta + 360;
+    if (delta > 180) return delta - 360;
+    return delta;
+  });
   $: hMin = Math.min(...lchVal.map(([, , h]) => h));
   $: hMax = Math.max(...lchVal.map(([, , h]) => h));
   $: hRange = Math.max(Math.max(Math.abs(baseLCH[2] - hMin), Math.abs(baseLCH[2] - hMax)), hRangeMin);
