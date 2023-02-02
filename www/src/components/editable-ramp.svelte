@@ -17,7 +17,7 @@
   };
 
   let colorPickerOpen = colors.map(() => false);
-  let basePos = 6; // `6` is significant because the most saturated colors are at ~60% lightness in Oklch. So you’ll get the best results focusing on this benchmark.
+  let basePos = 5; // the most saturated colors are at ~60% lightness in Oklch, and we start at index of `0`. We’ll get the best results focusing on this benchmark.
   let lightnessChartLines = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
   let chromaChartLines = [0.1, 0.2, 0.3, 0.4];
   let chartW = 800;
@@ -31,7 +31,7 @@
   $: cDelta = lchVal.map((c) => c[1] - baseLCH[1]);
   $: hDelta = lchVal.map((c) => {
     const delta = c[2] - baseLCH[2];
-    if (delta < -180) return delta + 360;
+    if (delta < -180) return delta + 360; // always show shortest path to Hue degree (e.g. prefer -1° over 359°)
     if (delta > 180) return delta - 360;
     return delta;
   });
@@ -61,8 +61,12 @@
         const lastC = lchVal[lchVal.length - 1];
         const lDelta = lastC[0] - baseLCH[0];
         const progress = (i - basePos) / (colors.length - 1 - basePos);
-        // try and maintain saturation while lightening
-        colors[i] = better.from({ l: baseLCH[0] + lDelta * progress, c: baseLCH[1], h: baseLCH[2] }).rgbVal;
+        const nextColor = better.mix(base, colors[colors.length - 1], progress);
+        // colors get washed out while mixing lighter, however, if we try and keep saturation, it results in awkward steps
+        // split the difference (average) between base chroma and the LAB-mixed chroma. Results in slightly-more-saturated colors
+        // but without completely throwing it out of whack
+        const avgChroma = (baseLCH[1] + nextColor.oklchVal[1]) / 2;
+        colors[i] = better.from({ l: baseLCH[0] + lDelta * progress, c: avgChroma, h: baseLCH[2] }).rgbVal;
       }
     }
 
@@ -182,7 +186,6 @@
 
   .ramp {
     counter-reset: index;
-    counter-set: index -10;
     display: grid;
     grid-template-columns: repeat(var(--cols), 1fr);
     padding: 2rem;
