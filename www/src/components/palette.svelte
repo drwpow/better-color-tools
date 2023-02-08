@@ -5,31 +5,39 @@
 
   let bg = [1, 1, 1, 1];
   let pickerOpen = false;
-  let colors = [
-    [
-      better.from('#030017').rgbVal,
-      better.from('#0c0e3d').rgbVal,
-      better.from('#172568').rgbVal,
-      better.from('#223e98').rgbVal,
-      better.from('#2d58ca').rgbVal,
-      better.from('#3874fe').rgbVal,
-      better.from('#6b9bff').rgbVal,
-      better.from('#9cbeff').rgbVal,
-      better.from('#cedfff').rgbVal,
-      better.from('#ffffff').rgbVal,
-    ],
-    [
-      better.from('#01001a').rgbVal,
-      better.from('#00182c').rgbVal,
-      better.from('#00353b').rgbVal,
-      better.from('#00544d').rgbVal,
-      better.from('#00755e').rgbVal,
-      better.from('#00976e').rgbVal,
-      better.from('#51b48e').rgbVal,
-      better.from('#80d1af').rgbVal,
-      better.from('#adefd2').rgbVal,
-      better.from('#ffffff').rgbVal,
-    ],
+  let colors: Record<number, number[]>[] = [
+    {
+      10: better.from('#030017').rgbVal,
+      15: better.from('#07042a').rgbVal,
+      20: better.from('#0c0e3d').rgbVal,
+      25: better.from('#111953').rgbVal,
+      30: better.from('#172568').rgbVal,
+      40: better.from('#223e98').rgbVal,
+      50: better.from('#2d58ca').rgbVal,
+      60: better.from('#3874fe').rgbVal,
+      70: better.from('#6b9bff').rgbVal,
+      80: better.from('#9cbeff').rgbVal,
+      85: better.from('#b5ceff').rgbVal,
+      90: better.from('#cedfff').rgbVal,
+      95: better.from('#e6efff').rgbVal,
+      100: better.from('#ffffff').rgbVal,
+    },
+    {
+      10: better.from('#01001a').rgbVal,
+      15: better.from('#000a23').rgbVal,
+      20: better.from('#00182c').rgbVal,
+      25: better.from('#002633').rgbVal,
+      30: better.from('#00353b').rgbVal,
+      40: better.from('#00544d').rgbVal,
+      50: better.from('#00755e').rgbVal,
+      60: better.from('#00976e').rgbVal,
+      70: better.from('#51b48e').rgbVal,
+      80: better.from('#80d1af').rgbVal,
+      85: better.from('#97e0c0').rgbVal,
+      90: better.from('#adefd2').rgbVal,
+      95: better.from('#c2fee3').rgbVal,
+      100: better.from('#ffffff').rgbVal,
+    },
   ];
 </script>
 
@@ -47,7 +55,7 @@
   </div>
   {#each colors as ramp, i}
     <EditableRamp
-      colors={ramp}
+      {ramp}
       onUpdate={(newRamp) => {
         colors[i] = newRamp;
         colors = colors;
@@ -63,21 +71,26 @@
       class="add"
       type="button"
       on:click={() => {
-        const random = better.from({ l: 0.6, c: 0.4, h: Math.random() * 360 }).rgbVal;
-        const dark = better.from(random).adjust({ lightness: 0.1 }).rgbVal;
-        const light = [1, 1, 1, 1];
-        colors.push([
-          dark,
-          better.mix(dark, random, 1 / 5).rgbVal,
-          better.mix(dark, random, 2 / 5).rgbVal,
-          better.mix(dark, random, 3 / 5).rgbVal,
-          better.mix(dark, random, 4 / 5).rgbVal,
-          random,
-          better.mix(random, light, 1 / 4).rgbVal,
-          better.mix(random, light, 2 / 4).rgbVal,
-          better.mix(random, light, 3 / 4).rgbVal,
-          [1, 1, 1, 1],
-        ]);
+        const base = better.from({ l: 0.6, c: 0.4, h: Math.random() * 360 }).rgbVal;
+        const dark = better.from(base).adjust({ lightness: 0.1 }).rgbVal;
+        const light = better.from(base).adjust({ lightness: 1 }).rgbVal;
+
+        colors.push({
+          10: dark,
+          15: better.mix(dark, base, 5 / 50).rgbVal,
+          20: better.mix(dark, base, 10 / 50).rgbVal,
+          25: better.mix(dark, base, 15 / 50).rgbVal,
+          30: better.mix(dark, base, 20 / 50).rgbVal,
+          40: better.mix(dark, base, 30 / 50).rgbVal,
+          50: better.mix(dark, base, 40 / 50).rgbVal,
+          60: base,
+          70: better.mix(base, light, 10 / 40).rgbVal,
+          80: better.mix(base, light, 20 / 40).rgbVal,
+          85: better.mix(base, light, 25 / 40).rgbVal,
+          90: better.mix(base, light, 30 / 40).rgbVal,
+          95: better.mix(base, light, 35 / 40).rgbVal,
+          100: light,
+        });
         colors = colors;
       }}>+</button
     >

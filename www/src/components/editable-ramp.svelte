@@ -5,8 +5,8 @@
   import Picker from './picker.svelte';
 
   // props
-  export let colors: number[][];
-  export let onUpdate: (ramp: number[][]) => void;
+  export let ramp: Record<string, number[]>;
+  export let onUpdate: (ramp: Record<string, number[]>) => void;
   export let onDelete: () => void;
 
   // state
@@ -16,18 +16,24 @@
     h: false,
   };
 
-  let colorPickerOpen = colors.map(() => false);
-  let basePos = 5; // the most saturated colors are at ~60% lightness in Oklch, and we start at index of `0`. We’ll get the best results focusing on this benchmark.
+  $: sortedRamp = Object.entries(ramp).map<[number, number[]]>(([id, color]) => [parseInt(id, 10), color]);
+  $: sortedRamp.sort((a, b) => a[0] - b[0]);
+
+  let colorPickerOpen: Record<string, boolean> = {};
+  let baseID = 60; // the most saturated colors are at ~60% lightness in Oklch. We’ll get the best results focusing on this benchmark.
   let lightnessChartLines = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1];
   let chromaChartLines = [0.1, 0.2, 0.3, 0.4];
   let chartW = 800;
   let chartH = 160;
   let hRangeMin = 30; // always show at least +/- 30°
 
-  $: base = colors[basePos];
+  $: base = ramp[baseID];
+  $: baseIDI = sortedRamp.findIndex(([id]) => id === baseID);
+  $: lowID = Math.min(...Object.keys(ramp).map((id) => parseInt(id, 10) || Infinity));
+  $: highID = Math.max(...Object.keys(ramp).map((id) => parseInt(id, 10) || -Infinity));
   $: baseLCH = better.from(base).oklchVal;
-  $: hex = colors.map((c) => better.from(c).hex);
-  $: lchVal = colors.map((c) => better.from(c).oklchVal);
+  $: hex = sortedRamp.map(([id, color]) => better.from(color).hex);
+  $: lchVal = sortedRamp.map(([id, color]) => better.from(color).oklchVal);
   $: cDelta = lchVal.map((c) => c[1] - baseLCH[1]);
   $: hDelta = lchVal.map((c) => {
     const delta = c[2] - baseLCH[2];
@@ -43,6 +49,8 @@
     if (typeof window !== 'undefined') {
       chartW = window.innerWidth - 180;
     }
+    // only once on mount, apply more advanced color smoothing to newly-created color ramps
+    updateRamp(ramp);
   });
 
   // methods
@@ -50,53 +58,57 @@
     return n >= 0 ? `+${n}` : String(n);
   }
 
-  function updateRamp(colors: number[][]) {
-    for (let i = 0; i < colors.length; i++) {
-      if (i === 0 || i === basePos || i === colors.length - 1) {
+  function updateRamp(ramp: Record<string, number[]>) {
+    const colors = Object.keys(ramp).map((id) => parseInt(id, 10));
+    const nextRamp: Record<string, number[]> = {};
+
+    for (const id of colors) {
+      if (id === lowID || id === baseID || id === highID) {
+        nextRamp[id] = ramp[id];
         continue;
       }
-      if (i < basePos) {
-        colors[i] = better.mix(colors[0], base, i / basePos).rgbVal;
+      if (id < baseID) {
+        const progress = (id - lowID) / (baseID - lowID);
+        nextRamp[id] = better.mix(ramp[lowID], base, progress).rgbVal;
       } else {
         const lastC = lchVal[lchVal.length - 1];
         const lDelta = lastC[0] - baseLCH[0];
-        const progress = (i - basePos) / (colors.length - 1 - basePos);
-        const nextColor = better.mix(base, colors[colors.length - 1], progress);
+        const progress = (id - baseID) / (highID - baseID);
+        const nextColor = better.mix(base, ramp[highID], progress);
         // colors get washed out while mixing lighter, however, if we try and keep saturation, it results in awkward steps
         // split the difference (average) between base chroma and the LAB-mixed chroma. Results in slightly-more-saturated colors
         // but without completely throwing it out of whack
         const avgChroma = (baseLCH[1] + nextColor.oklchVal[1]) / 2;
-        colors[i] = better.from({ l: baseLCH[0] + lDelta * progress, c: avgChroma, h: baseLCH[2] }).rgbVal;
+        nextRamp[id] = better.from({ l: baseLCH[0] + lDelta * progress, c: avgChroma, h: baseLCH[2] }).rgbVal;
       }
     }
 
     // TODO: allow per-stop tweaks of HCL
-
-    onUpdate(colors);
+    onUpdate(nextRamp);
   }
 </script>
 
-<div class="wrapper" style={`--cols: ${colors.length}`}>
-  <div class="ramp" style={`background-color: ${hex[0]};background-color:${better.from(colors[0]).p3};`}>
+<div class="wrapper" style={`--cols: ${sortedRamp.length}`}>
+  <div class="ramp" style={`background-color: ${hex[0]};background-color:${better.from(sortedRamp[0][1]).p3};`}>
     <button class="delete" on:click={onDelete}>✕</button>
-    {#each colors as color, i}
-      <div class="swatch" style={`background-color: ${hex[i]};background-color:${better.from(color).p3};color:${better.lightOrDark(color) === 'light' ? '#000' : '#fff'}`}>
-        {#if i === 0 || i === basePos || i === colors.length - 1}
-          <button class="swatch-hex swatch-hex--editable" on:click={() => (colorPickerOpen[i] = true)}>{hex[i]}</button>
-          {#if colorPickerOpen[i]}
-            <div class="picker" style={i === colors.length - 1 ? `right: 0` : 'left: 0'}>
+    {#each sortedRamp as [id, color], i}
+      <div class="swatch" style={`background-color: ${hex[i]};background-color:${better.from(color).p3};color:${better.lightOrDark(color) === 'light' ? '#000' : '#fff'}`} data-id={id}>
+        {#if i === 0 || i === baseIDI || i === sortedRamp.length - 1}
+          <button class="swatch-hex swatch-hex--editable" on:click={() => (colorPickerOpen[id] = true)}>{hex[i]}</button>
+          {#if colorPickerOpen[id]}
+            <div class="picker" style={id === highID ? `right: 0` : 'left: 0'}>
               <Picker
                 {color}
                 onUpdate={(newColor) => {
-                  colors[i] = newColor;
-                  updateRamp(colors);
+                  ramp[id] = newColor;
+                  updateRamp({ ...ramp });
                 }}
               />
             </div>
             <div
               class="picker-overlay"
               on:click={() => {
-                colorPickerOpen[i] = false;
+                colorPickerOpen[id] = false;
                 colorPickerOpen = colorPickerOpen;
               }}
             />
@@ -121,7 +133,7 @@
         <div class="chart">
           <div class="chart-axis-x">Lightness</div>
           <div class="chart-container">
-            <AreaChart data={lchVal.map(([l], i) => [i / (colors.length - 1), l])} width={chartW} height={chartH} />
+            <AreaChart data={lchVal.map(([l], i) => [i / (sortedRamp.length - 1), l])} width={chartW} height={chartH} />
             {#each lightnessChartLines as l}
               <div class="chart-line" style={`top: ${100 - l * 100}%`}>{l * 100}%</div>
             {/each}
@@ -135,7 +147,7 @@
         <div class="columns">
           {#each cDelta as delta, i}
             <div>
-              {#if i === basePos}{round(lchVal[i][1], 4)}{:else}{sign(round(delta, 4))}{/if}
+              {#if i === baseIDI}{round(lchVal[i][1], 4)}{:else}{sign(round(delta, 4))}{/if}
             </div>
           {/each}
         </div>
@@ -144,7 +156,7 @@
         <div class="chart">
           <div class="chart-axis-x">Chroma</div>
           <div class="chart-container">
-            <AreaChart data={lchVal.map(([, c], i) => [i / (colors.length - 1), c / 0.4])} width={chartW} height={chartH} />
+            <AreaChart data={lchVal.map(([, c], i) => [i / (sortedRamp.length - 1), c / 0.4])} width={chartW} height={chartH} />
             {#each chromaChartLines as c}
               <div class="chart-line" style={`top: ${((0.4 - c) / 0.4) * 100}%`}>{c}</div>
             {/each}
@@ -158,7 +170,7 @@
         <div class="columns">
           {#each hDelta as delta, i}
             <div>
-              {#if i === basePos}{round(lchVal[i][2], 0)}°{:else}{sign(round(delta, 0))}°{/if}
+              {#if i === baseIDI}{round(lchVal[i][2], 0)}°{:else}{sign(round(delta, 0))}°{/if}
             </div>
           {/each}
         </div>
@@ -167,7 +179,7 @@
         <div class="chart">
           <div class="chart-axis-x">Hue</div>
           <div class="chart-container">
-            <AreaChart data={lchVal.map(([, , h], i) => [i / (colors.length - 1), (h - baseLCH[2] + hRange) / (hRange * 2)])} fill="none" width={chartW} height={chartH} />
+            <AreaChart data={lchVal.map(([, , h], i) => [i / (sortedRamp.length - 1), (h - baseLCH[2] + hRange) / (hRange * 2)])} fill="none" width={chartW} height={chartH} />
             <div class="chart-line" style="top: 0">{round(baseLCH[2] + hRange, 0)}°</div>
             <div class="chart-line" style="top: 25%">{round(baseLCH[2] + 0.5 * hRange, 0)}°</div>
             <div class="chart-line" style="top: 50%">{round(baseLCH[2], 0)}°</div>
@@ -185,7 +197,6 @@
   }
 
   .ramp {
-    counter-reset: index;
     display: grid;
     grid-template-columns: repeat(var(--cols), 1fr);
     padding: 2rem;
@@ -209,14 +220,13 @@
   }
 
   .swatch {
-    counter-increment: index 10;
     height: 0;
     padding-top: 100%;
     position: relative;
     width: 100%;
 
     &::before {
-      content: counter(index);
+      content: attr(data-id);
       position: absolute;
       left: 0.5rem;
       top: 0.5rem;
