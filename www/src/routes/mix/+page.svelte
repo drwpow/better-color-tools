@@ -10,9 +10,9 @@
   function updateColors(newFrom: number[], newTo: number[]): void {
     from = newFrom;
     to = newTo;
-    if (typeof window !== undefined) {
+    if (typeof window !== 'undefined') {
       clearTimeout(t);
-      t = setTimeout(() => {
+      t = window.setTimeout(() => {
         const search = new URLSearchParams({ from: better.from(newFrom).hex, to: better.from(newTo).hex });
         window.location.hash = `#${search.toString()}`;
       }, 50);

@@ -9,9 +9,9 @@
 
   function updateColor(newColor: number[]): void {
     color = newColor;
-    if (typeof window !== undefined) {
+    if (typeof window !== 'undefined') {
       clearTimeout(t);
-      t = setTimeout(() => {
+      t = window.setTimeout(() => {
         const search = new URLSearchParams({ c: better.from(newColor).hex });
         window.location.hash = `#${search.toString()}`;
       }, 50);

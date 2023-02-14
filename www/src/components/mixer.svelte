@@ -27,7 +27,9 @@
       const inputColor = better.from(hex).rgbVal;
       if (target === 'from') onUpdate(inputColor, to);
       else if (target === 'to') onUpdate(from, inputColor);
-    } catch {}
+    } catch {
+      // ignore
+    }
   }
 </script>
 

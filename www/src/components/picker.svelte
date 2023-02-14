@@ -14,7 +14,9 @@
       if (hex.length !== 7) return;
       const inputColor = better.from(hex).rgbVal;
       onUpdate(inputColor);
-    } catch {}
+    } catch {
+      // ignore
+    }
   }
 
   $: oklch = better.from(color).oklchVal;

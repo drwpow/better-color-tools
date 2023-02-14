@@ -10,7 +10,9 @@
       const hex = (evt.target as HTMLInputElement).value.trim();
       better.from(hex); // will throw if invalid
       onUpdate(better.from(hex).rgbVal);
-    } catch {}
+    } catch {
+      // ignore
+    }
   }
 
   let cMin = 0;
