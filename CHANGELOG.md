@@ -1,5 +1,11 @@
 # better-color-tools
 
+## 0.10.1
+
+### Patch Changes
+
+- a800574: Fix TypeScript types
+
 ## 0.10.0
 
 ### Minor Changes
