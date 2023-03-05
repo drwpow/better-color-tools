@@ -20,7 +20,7 @@ const colors = [
   { hex: '#00000080', rgb: [0, 0, 0, 0.501961], oklab: [0, 0, 0, 0.501961], oklch: [0, 0, 0, 0.501961], xyz: [0, 0, 0, 0.501961] },
 ];
 
-function roundAll(arr, prec = 6) {
+function roundAll(arr: number[], prec = 6): number[] {
   return arr.map((v) => round(v, prec));
 }
 describe('sRGB', () => {

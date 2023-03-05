@@ -6,6 +6,51 @@ import { hslTosRGB, hwbTosRGB, linearRGBD65TosRGB, linearRGBD65ToXYZ, oklabTosRG
 import cssNames from './css-names.js';
 import { clamp, colorFn, leftPad } from './utils.js';
 
+/** note: values must be normalized to 1 (e.g. `255 -> 1`) */
+export interface RGBObj {
+  r: number;
+  g: number;
+  b: number;
+  alpha?: number;
+}
+
+export interface HSLObj {
+  h: number;
+  s: number;
+  l: number;
+  alpha?: number;
+}
+
+export interface HWBObj {
+  h: number;
+  w: number;
+  b: number;
+  alpha?: number;
+}
+
+export interface OklabObj {
+  l: number;
+  a: number;
+  b: number;
+  alpha?: number;
+}
+
+export interface OklchObj {
+  l: number;
+  c: number;
+  h: number;
+  alpha?: number;
+}
+
+export interface XYZObj {
+  x: number;
+  y: number;
+  z: number;
+  alpha?: number;
+}
+
+export type ColorInput = Color | RGBObj | HSLObj | HWBObj | OklabObj | OklchObj | XYZObj;
+
 export interface ColorOutput {
   /** `#000000` */
   hex: string;
@@ -43,6 +88,8 @@ export interface ColorOutput {
   xyz: string;
   /** [X, Y, Z, alpha] */
   xyzVal: XYZ;
+  /** Adjust color through oklab/oklch colorspace */
+  adjust: (options: AdjustOptions) => ColorOutput;
   toString(): string; // JS helper
 }
 
@@ -55,7 +102,7 @@ const G_FACTOR = 16 ** 2; // base 16, starting after 2 digits (BB)
 // B_FACTOR = 1 (16 ** 0); not really needed
 
 /**
- * Parse any valid CSS color color string and convert to:
+ * Parse any valid CSS color or object and convert to:
  * - hex:       '#ff0000'
  * - hexVal:    0xff0000
  * - rgb:       'rgb(255, 0, 0)'
@@ -67,7 +114,7 @@ const G_FACTOR = 16 ** 2; // base 16, starting after 2 digits (BB)
  * - p3:        'color(display-p3 1 0 0)'
  * - p3Val:     '[1, 0, 0, 0]'
  */
-export function from(rawColor: Color): ColorOutput {
+export function from(rawColor: ColorInput): ColorOutput {
   const color = parse(rawColor);
 
   const outputs = {
@@ -173,7 +220,7 @@ function parseValueStr(colorStr: string, normalize?: number[]): [number, number,
 }
 
 /** Convert any number of user inputs into RGBA array */
-export function parse(rawColor: Color): sRGB {
+export function parse(rawColor: ColorInput): sRGB {
   const unparsable = new Error(`Unable to parse color ${JSON.stringify(rawColor)}`);
 
   if (rawColor == undefined || rawColor == null || typeof rawColor === 'boolean') throw unparsable;
@@ -285,14 +332,16 @@ export function parse(rawColor: Color): sRGB {
   }
 
   if (typeof rawColor == 'object') {
-    const c = { ...(rawColor as Record<string, number>) };
+    const c = { ...(rawColor as RGBObj | HSLObj | HWBObj | OklabObj | OklchObj | XYZObj) };
     let alpha = 1;
     // grab alpha, ensure keys are lowercase
     for (const k of Object.keys(c)) {
       if (k === 'alpha') {
-        alpha = clamp(c[k], 0, 1);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        alpha = clamp(c[k]!, 0, 1);
       } else {
-        c[k.toLowerCase()] = c[k];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (c as any)[k.toLowerCase()] = (c as any)[k];
       }
     }
     // RGB

@@ -2,12 +2,12 @@ import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import { default as sass } from 'sass';
 
-const SEMI_RE = /;?$/
-const CB_CLOSE_RE = /}$/
+const SEMI_RE = /;?$/;
+const CB_CLOSE_RE = /}$/;
 
 const colorUtils = fs.readFileSync(new URL('../index.scss', import.meta.url));
 
-function test(css) {
+function test(css: string): string {
   const input = `${colorUtils}
 
 .sel {
@@ -55,8 +55,8 @@ describe('better.mix', () => {
   // grayscale
   const grayscale = ['black', '#030303', '#161616', '#2e2e2e', '#484848', '#636363', 'gray', '#9e9e9e', '#bebebe', '#dedede', 'white'];
   for (let n = 0; n < grayscale.length; n++) {
-    it (`k -> w (${n * 10}%)`, () => {
-      expect(test(`color: mix(black, white, ${n/10})`)).toBe(`color: ${grayscale[n]};`);
+    it(`k -> w (${n * 10}%)`, () => {
+      expect(test(`color: mix(black, white, ${n / 10})`)).toBe(`color: ${grayscale[n]};`);
     });
   }
 
@@ -75,7 +75,7 @@ describe('better.mix', () => {
 
 describe('p3', () => {
   it('g', () => {
-    expect(test('color: p3(#00ff00);')).toBe('color: color(display-p3 0 1 0);')
+    expect(test('color: p3(#00ff00);')).toBe('color: color(display-p3 0 1 0);');
   });
 });
 

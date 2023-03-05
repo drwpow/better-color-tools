@@ -1,7 +1,7 @@
 export type { AdjustOptions } from './adjust.js';
 export type { ColorMatrix, HSL, HWB, LMS, LinearRGBD65, LUV, Oklab, Oklch, sRGB, XYZ } from './colorspace.js';
 export type { MixColorSpace } from './mix.js';
-export type { ColorOutput } from './parse.js';
+export type { ColorInput, ColorOutput, RGBObj, HSLObj, HWBObj, OklabObj, OklchObj, XYZObj } from './parse.js';
 
 export { default as adjust } from './adjust.js';
 export { contrastRatio, darken, lighten, lightOrDark, lightness, luminance } from './luminance.js';

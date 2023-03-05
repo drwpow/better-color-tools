@@ -1,14 +1,14 @@
-export type HSL = [number, number, number, number];
-export type HWB = [number, number, number, number];
-export type LAB = [number, number, number, number];
-export type LCH = [number, number, number, number];
-export type LUV = [number, number, number, number];
-export type LMS = [number, number, number, number];
-export type LinearRGBD65 = [number, number, number, number];
-export type Oklab = [number, number, number, number];
-export type Oklch = [number, number, number, number];
-export type sRGB = [number, number, number, number];
-export type XYZ = [number, number, number, number];
+export type HSL = number[];
+export type HWB = number[];
+export type LAB = number[];
+export type LCH = number[];
+export type LUV = number[];
+export type LMS = number[];
+export type LinearRGBD65 = number[];
+export type Oklab = number[];
+export type Oklch = number[];
+export type sRGB = number[];
+export type XYZ = number[];
 export type Color = string | number | sRGB | LinearRGBD65 | LMS | Oklab | Oklch;
 
 import { clamp, degToRad, multiplyColorMatrix, radToDeg } from './utils.js';
