@@ -1,6 +1,6 @@
 # better-color-tools
 
-## 0.10.1
+## 0.10.2
 
 ### Patch Changes
 
