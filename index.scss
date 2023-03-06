@@ -40,12 +40,13 @@ $ONE_THIRD: math.div(1, 3);
 /// Convert sRGB to Oklab
 ///
 /// @param {color} $color
-/// @returns {map} Map of l, a, b
+/// @returns {map} Map of l, a, b, alpha
 @function rgbToOklab($color) {
   // sRGB -> Linear RGB D65
   $red: __degamma(math.div(color.red($color), 255));
   $green: __degamma(math.div(color.green($color), 255));
   $blue: __degamma(math.div(color.blue($color), 255));
+  $alpha: color.alpha($color);
 
   // Linear RGB D65 -> LMS
   $lms: (
@@ -58,7 +59,7 @@ $ONE_THIRD: math.div(1, 3);
   $l: 0.2104542553 * __cbrt(map.get($lms, 'l')) + 0.793617785 * __cbrt(map.get($lms, 'm')) - 0.0040720468 * __cbrt(map.get($lms, 's'));
   $a: 1.9779984951 * __cbrt(map.get($lms, 'l')) - 2.428592205 * __cbrt(map.get($lms, 'm')) + 0.4505937099 * __cbrt(map.get($lms, 's'));
   $b: 0.0259040371 * __cbrt(map.get($lms, 'l')) + 0.7827717662 * __cbrt(map.get($lms, 'm')) - 0.808675766 * __cbrt(map.get($lms, 's'));
-  @return ('l': $l, 'a': $a, 'b': $b);
+  @return ('l': $l, 'a': $a, 'b': $b, alpha: $alpha);
 }
 
 /// Convert Oklab map to sRGB
@@ -72,9 +73,9 @@ $ONE_THIRD: math.div(1, 3);
 
   // Oklab -> LMS
   $lms: (
-    'l': math.pow(map.get($oklab, 'l') + 0.3963377774 * map.get($oklab, 'a') + 0.2158037573 * map.get($oklab, 'b'), 3),
-    'm': math.pow(map.get($oklab, 'l') - 0.1055613458 * map.get($oklab, 'a') - 0.0638541728 * map.get($oklab, 'b'), 3),
-    's': math.pow(map.get($oklab, 'l') - 0.0894841775 * map.get($oklab, 'a') - 1.291485548 * map.get($oklab, 'b'), 3),
+    'l': math.pow(map.get($oklab, 'l') + 0.39633779217376774 * map.get($oklab, 'a') + 0.2158037580607588 * map.get($oklab, 'b'), 3),
+    'm': math.pow(map.get($oklab, 'l') - 0.10556134232365633 * map.get($oklab, 'a') - 0.0638541747717059 * map.get($oklab, 'b'), 3),
+    's': math.pow(map.get($oklab, 'l') - 0.08948418209496574 * map.get($oklab, 'a') - 1.2914855378640917 * map.get($oklab, 'b'), 3),
   );
 
   // LMS -> Linear RGB D65
@@ -82,8 +83,84 @@ $ONE_THIRD: math.div(1, 3);
   $g: math.max(-1.2684380046 * map.get($lms, 'l') + 2.6097574011 * map.get($lms, 'm') - 0.3413193965 * map.get($lms, 's'), 0);
   $b: math.max(-0.0041960863 * map.get($lms, 'l') - 0.7034186147 * map.get($lms, 'm') + 1.707614701 * map.get($lms, 's'), 0);
 
+  $alpha: 1;
+  @if map.has-key($oklab, 'alpha') {
+    $alpha: map.get($oklab, 'alpha');
+  }
+
   // Linear RGB D65 -> sRGB
-  @return rgb(__gamma($r) * 255, __gamma($g) * 255, __gamma($b) * 255);
+  @return rgba(__gamma($r) * 255, __gamma($g) * 255, __gamma($b) * 255, $alpha);
+}
+
+$ε: 0.0002;
+
+/// Convert RGB to Oklch map
+/// @param {color} $color
+/// @returns {map} Map of l, c, h, alpha
+@function rgbToOklch($color) {
+  $oklab: rgbToOklab($color);
+
+  $l: map.get($oklab, 'l');
+  $a: map.get($oklab, 'a');
+  $b: map.get($oklab, 'b');
+  $alpha: 1;
+  @if (map.has-key($oklab, 'alpha')) {
+    $alpha: map.get($oklab, 'alpha');
+  }
+
+  $h: 0;
+  @if (math.abs($a) >= $ε or math.abs($b) >= $ε) {
+    $h: __unitless(math.atan2($b, $a));
+  }
+  @while ($h < 0) {
+    $h: $h + 360;
+  }
+  @while ($h >= 360) {
+    $h: $h - 360;
+  }
+  @return (l: $l, c: math.sqrt(math.pow($a, 2) + math.pow($b, 2)), h: $h, alpha: $alpha);
+}
+
+/// Convert Oklch map to sRGB
+///
+/// @param {map} Map of l, c, h
+/// @returns {color} sRGB color
+@function oklchToRGB($oklch) {
+  @if meta.type-of($oklch) != 'map' {
+    @error "Must provide map of \"l\", \"c\", \"h\" values";
+  }
+
+  $l: map.get($oklch, 'l');
+  $c: map.get($oklch, 'c');
+  $h: map.get($oklch, 'h');
+  $alpha: 1;
+  @if (map.has-key($oklch, 'alpha')) {
+    $alpha: map.get($oklch, 'alpha');
+  }
+
+  // if lightness is 0, return pure black
+  @if ($l < $ε) {
+    @return rgba(0, 0, 0, $alpha);
+  }
+
+  @while ($h < 0) {
+    $h: $h + 360;
+  }
+  @while ($h >= 360) {
+    $h: $h - 360;
+  }
+
+  $a: math.cos(__degToRad($h)) * $c;
+  $b: math.sin(__degToRad($h)) * $c;
+
+  @return oklabToRGB(
+    (
+      l: $l,
+      a: $a,
+      b: $b,
+      alpha: $alpha,
+    )
+  );
 }
 
 /// Relatively lighten color via Oklab. Produces better results than Sass’ lighten().
@@ -178,4 +255,14 @@ $ONE_THIRD: math.div(1, 3);
   } @else {
     @return $cbrt;
   }
+}
+
+/// Degrees -> radians
+@function __degToRad($degrees) {
+  @return $degrees * math.div(math.$pi, 180);
+}
+
+/// Remove units
+@function __unitless($number) {
+  @return math.div($number, ($number * 0 + 1));
 }

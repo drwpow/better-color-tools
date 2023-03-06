@@ -1,6 +1,6 @@
 # better-color-tools
 
-Color parser and better color manipulation through **the power of science!** 🧪 Uses [Oklab]/[Oklch] for better color operations.
+JS and Sass color tools for the [Oklab]/[Oklch] colorspace for better color operations.
 
 The JS version of this libray is fast (`~200k` ops/s), lightweight (`5.7 kB` gzip), and dependency-free. The Sass version… is Sass (which has no runtime).
 
@@ -11,6 +11,13 @@ The JS version of this libray is fast (`~200k` ops/s), lightweight (`5.7 kB` gzi
 ```
 npm install better-color-tools
 ```
+
+### Comparisons
+
+This library exists to provide performant and accurate access to the Oklab and Oklch colorspaces at minimum filesize and maximum performance. This is **not** a comprehensive colorspace tool like [Culori] or [Color.js][colorjs], rather, better-color-tools
+seeks to give you the best “bang for the buck” by providing maximum utility with minimal footprint.
+
+To learn more, see [Project Goals](./docs/project-goals.md)
 
 ### JavaScript
 
@@ -241,14 +248,16 @@ Convert any Sass-readable color to [P3].
 
 Mixin for adding CSS fallbacks. Can take infinite arguments. Specify desired format first, followed by fallbacks.
 
-**Oklab**
+**Oklab/Oklch**
 
 ```scss
 $oklab: better.rgbToOklab(#f00); // (l: 0.6279554, a: 0.22486, b: 0.12585)
+$oklch: better.rgbToOklch(#f00); // (l: 0.6279554, c: 0.25769, h: 29.23389)
 $rgb: better.oklabToRGB($oklab); // #f00
+$rgb: better.oklchToRGB($oklch); // #f00
 ```
 
-Converts any Sass-readable color to an Oklab [map](https://sass-lang.com/documentation/modules/map) of `(l: …, a: …, b: –)`. The Sass map can either be used to make a CSS string:
+Converts any Sass-readable color to an Oklab [map](https://sass-lang.com/documentation/modules/map) of `(l: …, a: …, b: …)`, or Oklch map of `(l: …, c: …, h: …)`. The Sass map can either be used to make a CSS string:
 
 ```scss
 @use 'sass:map';
@@ -272,13 +281,6 @@ Get the human-perceived lightness of any color (identical to the first value of 
 ```scss
 $lightness: better.lightness(#f00);
 ```
-
-## Project summary
-
-This project is meant to provide **the best possible method** for common color operations such as mixing, lightening/darkening, and conversion. This library is _not_ comprehensive, and doesn’t support any colorspaces that don’t serve a practical purpose
-(limiting colorspaces helps this library optimize for performance over completeness, not to mention ease-of-use). If you are well-versed in color science and need a comprehensive library, consider [Culori] or [Color.js][colorjs] instead.
-
-To learn more, see [Project Goals](./docs/project-goals.md)
 
 [culori]: https://culorijs.org/
 [colorjs]: https://colorjs.io/
