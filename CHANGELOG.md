@@ -1,5 +1,11 @@
 # better-color-tools
 
+## 0.11.0
+
+### Minor Changes
+
+- 7b8a07b: Add chroma/lightness table
+
 ## 0.10.2
 
 ### Patch Changes
