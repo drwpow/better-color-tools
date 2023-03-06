@@ -18,10 +18,10 @@ jobs:
           restore-keys: ${{ runner.os }}-
       - uses: pnpm/action-setup@v2
         with:
-          version: 6
+          version: latest
       - uses: actions/setup-node@v2
       - run: pnpm i
-      - run: pnpm run lint
+      - run: npm run lint
   build:
     runs-on: ubuntu-latest
     steps:
@@ -33,10 +33,10 @@ jobs:
           restore-keys: ${{ runner.os }}-
       - uses: pnpm/action-setup@v2
         with:
-          version: 6
+          version: latest
       - uses: actions/setup-node@v2
       - run: pnpm i
-      - run: pnpm run build
+      - run: npm run build
   changelog:
     if: ${{ github.ref_name == 'main' && github.repository_owner == 'drwpow' }}
     runs-on: ubuntu-latest
@@ -49,12 +49,12 @@ jobs:
           restore-keys: ${{ runner.os }}
       - uses: pnpm/action-setup@v2
         with:
-          version: 6
+          version: latest
       - uses: actions/setup-node@v2
       - run: pnpm i
       - uses: changesets/action@v1
         with:
-          publish: pnpm run changeset publish
+          publish: npm run changeset publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
