@@ -282,7 +282,7 @@ export function parse(rawColor: ColorInput): sRGB {
     // color functions
     const matches = strVal.match(COLOR_FN_RE);
     if (!matches) throw unparsable;
-    let [_, colorspace, valueStr] = matches;
+    let [, colorspace, valueStr] = matches;
     if (colorspace === 'color') {
       // if color() function, then split string by first occurrence of space
       const spaceI = valueStr.indexOf(' ');
