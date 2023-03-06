@@ -1,7 +1,7 @@
 {
   "name": "better-color-tools",
   "description": "Fast, minimal color conversion and tools for JS/Sass. Supports sRGB, Oklab, Oklch, Display P3, and more.",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "author": {
     "name": "Drew Powers",
     "email": "drew@pow.rs"
