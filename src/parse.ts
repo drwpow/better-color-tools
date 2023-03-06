@@ -96,6 +96,7 @@ export interface ColorOutput {
 // constants
 const FLOAT_RE = /-?[0-9.]+%?/g;
 const HEX_RE = /^#[0-9a-f]{3,8}$/i;
+const COLOR_FN_RE = /^([^( ]+)\s*\(\s*([^)]+)\)$/;
 const RGB_RANGE = 16 ** 6;
 const R_FACTOR = 16 ** 4; // base 16, starting after 4 digits (GGBB)
 const G_FACTOR = 16 ** 2; // base 16, starting after 2 digits (BB)
@@ -204,18 +205,19 @@ export function hexNumTosRGB(hex: number): sRGB {
 }
 
 /** only grabs numbers from a color string (ignores spaces, commas, slashes, etc.) */
-function parseValueStr(colorStr: string, normalize?: number[]): [number, number, number, number] {
+function parseValueStr(colorStr: string, normalize?: number[]): number[] {
   const matches = colorStr.match(FLOAT_RE);
   if (!matches) throw new Error(`Unexpected color format: ${colorStr}`);
-  const values: [number, number, number, number] = [0, 0, 0, 1]; // always start alpha at 1 unless overridden
-  matches.forEach((value, n) => {
+  const values = [0, 0, 0, 1]; // always start alpha at 1 unless overridden
+  for (let n = 0; n < matches.length; n++) {
+    if (!matches[n]) continue;
     // percentage (already normalized)
-    if (value.includes('%')) values[n] = parseFloat(value) / 100;
+    if (matches[n].includes('%')) values[n] = parseFloat(matches[n]) / 100;
     // unbounded
-    else if (!normalize || normalize[n] === Infinity || normalize[n] === 1) values[n] = parseFloat(value);
+    else if (!normalize || normalize[n] === Infinity || normalize[n] === 1) values[n] = parseFloat(matches[n]);
     // bounded
-    else values[n] = parseFloat(value) / normalize[n];
-  });
+    else values[n] = parseFloat(matches[n]) / normalize[n];
+  }
   return values;
 }
 
@@ -278,7 +280,9 @@ export function parse(rawColor: ColorInput): sRGB {
     }
 
     // color functions
-    let [colorspace, valueStr] = strVal.split('(');
+    const matches = strVal.match(COLOR_FN_RE);
+    if (!matches) throw unparsable;
+    let [_, colorspace, valueStr] = matches;
     if (colorspace === 'color') {
       // if color() function, then split string by first occurrence of space
       const spaceI = valueStr.indexOf(' ');

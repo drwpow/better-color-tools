@@ -32,7 +32,8 @@
     "dev": "tsc -w",
     "lint": "eslint \"**/*.{js,ts}\"",
     "prepublish": "npm run build",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:benchmark": "vitest bench"
   },
   "devDependencies": {
     "@changesets/cli": "^2.26.0",
