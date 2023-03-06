@@ -1,5 +1,15 @@
 # better-color-tools
 
+## 0.12.0
+
+### Minor Changes
+
+- c3aa03c: Add Oklch functions to Sass
+
+### Patch Changes
+
+- c3aa03c: Improve rgb <> hex performance
+
 ## 0.11.0
 
 ### Minor Changes
