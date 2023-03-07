@@ -1,5 +1,11 @@
 # better-color-tools
 
+## 0.12.1
+
+### Patch Changes
+
+- 2ab2559: Parse Lab and LCh as Oklab and Oklch
+
 ## 0.12.0
 
 ### Minor Changes
