@@ -104,6 +104,9 @@ better.from('#0060ff').adjust({ mode: 'relative', lightness: -0.1 }); // darken 
 
 You can adjust `lightness`, `chroma`, and `hue` altogether, and you can either operate in `relative` or `absolute` (default) mode.
 
+_Note: adjustments may be chained together, but it’s worth noting that this library will always “snap” to the closest sRGB color with each adjustment. So chaining enough together, you may get different colors purely due to rounding errors. Prefer fewer
+chained adjustments (or keep the original color around) for best results._
+
 **P3**
 
 This library supports [P3] by expanding the sRGB space into the P3 gamut 1:1. For example, 100% red sRGB is converted to 100% red P3:
@@ -146,34 +149,13 @@ better.darken('red', 0.5); // Darken color by 50%
 
 **Lightness**
 
-Get the human-perceived lightness of any color (identical to the first value of `.oklabVal`)
+Get the human-perceived lightness of any color (this is an alias for `.oklabVal[0]`)
 
 ```js
 better.lightness('#fc7030'); // 0.7063999
 ```
 
 [Playground](https://better-color-tools.pages.dev/grayscale)
-
-**Adjust**
-
-Manipulation is done through [Oklch] which is optimized for manual tweaking. Call the `.adjust()` method to manipulate the color (they can even be chained together for multiple, incremental adjustments
-
-```js
-import better from 'better-color-tools';
-better
-  .from('#5a00a6')
-  .adjust({
-    mode: 'relative',
-    hue: 5, // rotate hue by 5° (from wherever it was)
-    chroma: 0.1, // increase chroma by `0.1`
-  })
-  .adjust({
-    mode: 'absolute',
-    lightnes: 0.6, // set lightness to absolute 60%
-  }).hex; // #60009e
-```
-
-Note that if `mode` is omitted, the default value is `'absolute'`.
 
 **Contrast Ratio**
 
