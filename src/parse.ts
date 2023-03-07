@@ -322,9 +322,11 @@ export function parse(rawColor: ColorInput): sRGB {
       //   const luv = parseValueStr(valueStr);
       //   return luvTosRGB(luv);
       // }
+      case 'lab':
       case 'oklab': {
         return oklabTosRGB(parseValueStr(valueStr));
       }
+      case 'lch':
       case 'oklch': {
         return oklchTosRGB(parseValueStr(valueStr));
       }

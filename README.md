@@ -51,7 +51,9 @@ better.from({ l: 0.4856949, a: -0.03971, b: -0.14459, alpha: 1 }); // Oklab obje
 better.from({ l: 0.8311253, c: 0.22612, h: 147.35276, alpha: 1 }); // Oklch object (not CIELCh)
 ```
 
-This library understands **any CSS-valid color**, including [CSS Color Module 4](https://www.w3.org/TR/css-color-4/) (but if some aspect isn’t implemented yet, please request it!).
+This library understands **any CSS-valid color**, including [CSS Color Module 4\*](https://www.w3.org/TR/css-color-4/) (but if some aspect isn’t implemented yet, please request it!).
+
+_\* With the exception that `lab()` and `lch()` CSS Module 4 colors will be interpreted as `oklab()` and `oklch()`, respectively._
 
 [Playground](https://better-color-tools.pages.dev/)
 
