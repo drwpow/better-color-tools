@@ -1,4 +1,4 @@
-name: test
+name: ci
 
 on:
   push:
@@ -10,47 +10,33 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: ${{ runner.os }}-
+      - uses: actions/checkout@v3
       - uses: pnpm/action-setup@v2
         with:
           version: latest
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
       - run: pnpm i
       - run: npm run lint
-  build:
+  test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: ${{ runner.os }}-
+      - uses: actions/checkout@v3
       - uses: pnpm/action-setup@v2
         with:
           version: latest
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
       - run: pnpm i
       - run: npm run build
+      - run: npm test
   changelog:
     if: ${{ github.ref_name == 'main' && github.repository_owner == 'drwpow' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: ${{ runner.os }}
+      - uses: actions/checkout@v3
       - uses: pnpm/action-setup@v2
         with:
           version: latest
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
       - run: pnpm i
       - uses: changesets/action@v1
         with:

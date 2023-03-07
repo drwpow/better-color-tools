@@ -30,7 +30,7 @@
     "bundle": "esbuild dist/index.js --bundle --minify --outfile=dist/index.min.js --format=esm",
     "changeset": "changeset",
     "dev": "tsc -w",
-    "lint": "eslint \"**/*.{js,ts}\"",
+    "lint": "eslint \"src/**/*.{js,ts}\"",
     "prepublish": "npm run build",
     "test": "vitest run",
     "test:benchmark": "vitest bench"
