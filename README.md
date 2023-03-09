@@ -2,7 +2,7 @@
 
 JS and Sass color tools for the [Oklab]/[Oklch] colorspace for better color operations.
 
-The JS version of this libray is fast (`~200k` ops/s), lightweight (`5.7 kB` gzip), and dependency-free. The Sass version… is Sass (which has no runtime).
+The JS version of this libray is fast (`~200k` ops/s), lightweight (`5.9 kB` gzip), and dependency-free. The Sass version… is Sass (which has no runtime).
 
 [🏀 **Playground**](https://better-color-tools.pages.dev/)
 

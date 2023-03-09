@@ -117,24 +117,30 @@ const G_FACTOR = 16 ** 2; // base 16, starting after 2 digits (BB)
  */
 export function from(rawColor: ColorInput): ColorOutput {
   const color = parse(rawColor);
+  // mini-cache: don’t redo work already done
+  const miniCache: { hex?: string; hexVal?: number; rgb?: string; linearRGB?: string; linearRGBVal?: LinearRGBD65; p3?: string; oklab?: string; oklabVal?: Oklab; oklch?: string; oklchVal?: Oklch; xyz?: string; xyzVal?: XYZ } = {};
 
   const outputs = {
     get hex(): string {
+      if (miniCache.hex) return miniCache.hex;
       const [r, g, b, a] = color;
       let hexString = '#';
       hexString += leftPad(Math.round(clamp(r * 255, 0, 255)).toString(16), 2); // r
       hexString += leftPad(Math.round(clamp(g * 255, 0, 255)).toString(16), 2); // g
       hexString += leftPad(Math.round(clamp(b * 255, 0, 255)).toString(16), 2); // b
       if (color[3] < 1) hexString += leftPad(Math.round(a * 255).toString(16), 2); // a
-      return hexString;
+      miniCache.hex = hexString;
+      return miniCache.hex;
     },
     get hexVal(): number {
+      if (typeof miniCache.hexVal === 'number') return miniCache.hexVal;
       let [r, g, b, a] = color;
       if (a < 1) console.warn(`hexVal converted a semi-transparent color (${a * 100}%) to fully opaque`); // eslint-disable-line no-console
       r = Math.round(clamp(r * 255, 0, 255));
       g = Math.round(clamp(g * 255, 0, 255));
       b = Math.round(clamp(b * 255, 0, 255));
-      return r * R_FACTOR + g * G_FACTOR + b;
+      miniCache.hexVal = r * R_FACTOR + g * G_FACTOR + b;
+      return miniCache.hexVal;
     },
     // get luv(): string {
     //   return colorFn('luv', sRGBToLuv(color));
@@ -143,40 +149,51 @@ export function from(rawColor: ColorInput): ColorOutput {
     //   return sRGBToLuv(color);
     // },
     get rgb(): string {
-      return colorFn('rgb', color);
+      if (!miniCache.rgb) miniCache.rgb = colorFn('rgb', color);
+      return miniCache.rgb;
+    },
+    get rgba(): string {
+      if (!miniCache.rgb) miniCache.rgb = colorFn('rgb', color);
+      return miniCache.rgb;
     },
     rgbVal: color,
-    get rgba(): string {
-      return colorFn('rgb', color);
-    },
     rgbaVal: color,
     get linearRGB(): string {
-      return colorFn('srgb-linear', sRGBToLinearRGBD65(color));
+      if (!miniCache.linearRGB) miniCache.linearRGB = colorFn('srgb-linear', sRGBToLinearRGBD65(color));
+      return miniCache.linearRGB;
     },
     get linearRGBVal(): LinearRGBD65 {
-      return sRGBToLinearRGBD65(color);
+      if (!miniCache.linearRGBVal) miniCache.linearRGBVal = sRGBToLinearRGBD65(color);
+      return miniCache.linearRGBVal;
     },
     get p3(): string {
-      return colorFn('display-p3', color);
+      if (!miniCache.p3) miniCache.p3 = colorFn('display-p3', color);
+      return miniCache.p3;
     },
     p3Val: color,
     get oklab(): string {
-      return colorFn('oklab', sRGBToOklab(color));
+      if (!miniCache.oklab) miniCache.oklab = colorFn('oklab', sRGBToOklab(color));
+      return miniCache.oklab;
     },
     get oklabVal(): Oklab {
-      return sRGBToOklab(color);
+      if (!miniCache.oklabVal) miniCache.oklabVal = sRGBToOklab(color);
+      return miniCache.oklabVal;
     },
     get oklch(): string {
-      return colorFn('oklch', sRGBToOklch(color));
+      if (!miniCache.oklch) miniCache.oklch = colorFn('oklch', sRGBToOklch(color));
+      return miniCache.oklch;
     },
     get oklchVal(): Oklch {
-      return sRGBToOklch(color);
+      if (!miniCache.oklchVal) miniCache.oklchVal = sRGBToOklch(color);
+      return miniCache.oklchVal;
     },
     get xyz(): string {
-      return colorFn('xyz-d65', linearRGBD65ToXYZ(sRGBToLinearRGBD65(color)));
+      if (!miniCache.xyz) miniCache.xyz = colorFn('xyz-d65', linearRGBD65ToXYZ(sRGBToLinearRGBD65(color)));
+      return miniCache.xyz;
     },
     get xyzVal(): XYZ {
-      return linearRGBD65ToXYZ(sRGBToLinearRGBD65(color));
+      if (!miniCache.xyzVal) miniCache.xyzVal = linearRGBD65ToXYZ(sRGBToLinearRGBD65(color));
+      return miniCache.xyzVal;
     },
     adjust(options: AdjustOptions): ColorOutput {
       return from(adjust(color, options));
