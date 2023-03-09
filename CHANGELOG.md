@@ -1,5 +1,11 @@
 # better-color-tools
 
+## 0.12.2
+
+### Patch Changes
+
+- 6cd83ab: Add memoization for better performance
+
 ## 0.12.1
 
 ### Patch Changes
