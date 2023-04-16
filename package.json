@@ -1,7 +1,7 @@
 {
   "name": "better-color-tools",
-  "description": "Fast, minimal color conversion and tools for JS/Sass. Supports sRGB, Oklab, Oklch, Display P3, and more.",
-  "version": "0.12.2",
+  "description": "Fast, minimal color conversion and tools for JS and Sass. Supports sRGB, Oklab, Oklch, Display P3, and more.",
+  "version": "0.12.3",
   "author": {
     "name": "Drew Powers",
     "email": "drew@pow.rs"
@@ -11,12 +11,13 @@
     "url": "https://github.com/drwpow/better-color-tools"
   },
   "keywords": [
-    "sass",
-    "scss",
-    "css",
     "color",
     "colour",
-    "typescript"
+    "typescript",
+    "oklab",
+    "oklch",
+    "contrast",
+    "rgb"
   ],
   "homepage": "https://github.com/drwpow/better-color-tools",
   "license": "MIT",
