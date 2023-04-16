@@ -1,4 +1,4 @@
-import type { ColorMatrix, sRGB } from './index';
+import type { ColorMatrix, sRGB } from './index.js';
 
 /** you know it, you love it */
 export function leftPad(input: string, min = 2): string {

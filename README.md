@@ -14,6 +14,12 @@ npm install better-color-tools
 
 ### Comparisons
 
+| Package                                            | Size (min, gzip) |
+| :------------------------------------------------- | ---------------: |
+| **better-color-tools**                             |         `5.9 kB` |
+| [culori](https://culorijs.org) (Oklab/Oklch only)  |        `19.2 kB` |
+| [Color.js](https://colorjs.io/) (Oklab/Oklch only) |        `24.2 kB` |
+
 This library exists to provide performant and accurate access to the Oklab and Oklch colorspaces at minimum filesize and maximum performance. This is **not** a comprehensive colorspace tool like [Culori] or [Color.js][colorjs], rather, better-color-tools
 seeks to give you the best “bang for the buck” by providing maximum utility with minimal footprint.
 

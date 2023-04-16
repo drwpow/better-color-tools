@@ -1,4 +1,4 @@
-import type { ColorMatrix } from './index';
+import type { ColorMatrix } from './index.js';
 import { lmsToLinearRGBD65, oklabToLMS } from './colorspace.js';
 
 // https://observablehq.com/@danburzo/color-matrix-calculator
