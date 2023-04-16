@@ -89,8 +89,6 @@ const [l, c, h, alpha] = c.oklchVal; // [0.924044, 0.070429, 178.219895, 1]
 const [x, y, z, alpha] = c.xyzVal; // [0.658257, 0.812067, 0.870716, 1]
 ```
 
-As a minor implementation detail, all of those properties are [getters](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get), so no work is wasted converting to colorspaces you haven’t explicitly asked for.
-
 _¹The following formats aren’t supported as outputs:_
 
 - HSL isn’t supported because [you shouldn’t use it](https://pow.rs/blog/dont-use-hsl-for-anything/)
@@ -184,6 +182,48 @@ _Note: though it would be reasonable to assume this just checks whether Oklab’
 better.lightOrDark('#2d659e'); // "dark" (white text will show better)
 better.lightOrDark('#b2d6d3'); // "light" (black text will show better)
 ```
+
+#### Optimizing use in JS Frameworks (React, Svelte, etc.)
+
+For most usecases, this library can be used in any JS framework without the need for memoization or caching.
+
+However, if you need to optimize usage, it’s important to know:
+
+- `better.from()` will parse the color each time, and create a new internal cache for all subsequent colorspace operations for that color.
+- Colorspace transforms (e.g. `color.oklab`) are all [getters](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get) that only transform the color when requested (so no work is wasted). Further, it uses the internal cache, so
+  subsequent calls are memoized.
+
+In practical terms, optimal usage only requires caching the `better.from()` call and nothing else. Here are some examples of optimized code with a `color` prop:
+
+**React**
+
+```tsx
+import better from 'better-color-tools';
+import React, { useMemo } from 'react';
+
+function MyComponent({ color }: { color: string }) {
+  const myColor = useMemo(() => better.from(color), [color]);
+
+  return <div>{myColor.oklab}</div>;
+}
+```
+
+**Svelte**
+
+```svelte
+<script type"ts">
+  import better from 'better-color-tools';
+
+  export let color: string;
+
+  $: myColor = better.from(color);
+</script>
+
+<div>{myColor.oklab}</div>
+```
+
+In both instances, saving the output of `better.from()` is all that’s needed to preserve the internal cache so that subsequent renders require no work if the base color hasn’t changed. Further optimizations are unnecessary. But again, this library will
+usually perform faster than most other color transformations anyway, so in most instances, this library will be one of the last things slowing your code down.
 
 ### Sass
 
