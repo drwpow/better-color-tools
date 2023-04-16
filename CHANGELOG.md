@@ -1,5 +1,11 @@
 # better-color-tools
 
+## 0.12.3
+
+### Patch Changes
+
+- ce14b61: Fix package types
+
 ## 0.12.2
 
 ### Patch Changes
