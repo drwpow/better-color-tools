@@ -29,13 +29,13 @@ To learn more, see [Project Goals](./docs/project-goals.md)
 
 Works in the browser (ESM) and Node (14+).
 
-**Importing**
+#### Importing
 
 ```js
 import better from 'better-color-tools';
 ```
 
-**Input**
+#### Input
 
 ```js
 // CSS format
@@ -63,7 +63,7 @@ _\* With the exception that `lab()` and `lch()` CSS Module 4 colors will be inte
 
 [Playground](https://better-color-tools.pages.dev/)
 
-**Output**
+#### Output
 
 This library converts to most web-compatible formats¹, with an emphasis on usefulness over completeness:
 
@@ -97,7 +97,7 @@ _¹The following formats aren’t supported as outputs:_
 
 For a comprehensive color conversion library, see [Culori].
 
-**Adjust**
+#### Adjust
 
 To adjust a color via Oklch, append `.adjust()` along with the adjustments to make:
 
@@ -111,7 +111,7 @@ You can adjust `lightness`, `chroma`, and `hue` altogether, and you can either o
 _Note: adjustments may be chained together, but it’s worth noting that this library will always “snap” to the closest sRGB color with each adjustment. So chaining enough together, you may get different colors purely due to rounding errors. Prefer fewer
 chained adjustments (or keep the original color around) for best results._
 
-**P3**
+#### P3
 
 This library supports [P3] by expanding the sRGB space into the P3 gamut 1:1. For example, 100% red sRGB is converted to 100% red P3:
 
@@ -129,7 +129,7 @@ P3 gamuts. This gives you more vibrant colors in supporting browsers without you
 While you wouldn’t want to use this technique for other methods such as photo manipulation, for CSS purposes this method is ideal (which better-color-tools assumes you’re using this for). Any deviation between this library’s implementation of P3 from
 others’ are intentional.
 
-**Mix**
+#### Mix
 
 This uses Oklab (best) by default, but also supports `oklch`, `lms`, `sRGB`, and `linearRGB` colorspaces for mixing.
 
@@ -140,7 +140,7 @@ better.mix('blue', 'magenta', 0.5, 'linearRGB'); // Mix `blue` and `magenta` 50%
 
 [Playground](https://better-color-tools.pages.dev/mix)
 
-**Lighten / Darken**
+#### Lighten / Darken
 
 This takes hue and human perception into account for visually-accurate results. Also, fun fact: both functions accept negative values.
 
@@ -151,7 +151,7 @@ better.darken('red', 0.5); // Darken color by 50%
 
 [Playground](https://better-color-tools.pages.dev/color-scale)
 
-**Lightness**
+#### Lightness
 
 Get the human-perceived lightness of any color (this is an alias for `.oklabVal[0]`)
 
@@ -161,7 +161,7 @@ better.lightness('#fc7030'); // 0.7063999
 
 [Playground](https://better-color-tools.pages.dev/grayscale)
 
-**Contrast Ratio**
+#### Contrast Ratio
 
 Get [WCAG 2.1 contrast ratio](https://www.w3.org/WAI/WCAG21/quickref/?showtechniques=141%2C146#contrast-minimum) for 2 colors. The order doesn’t matter.
 
@@ -171,7 +171,7 @@ better.contrastRatio('#37ca93', '#4474cc'); // { ratio: 4.5,   AA: true,  AAA: f
 better.contrastRatio('#37ca93', '#002c7b'); // { ratio: 12.76, AA: true,  AAA: true }
 ```
 
-**Light or dark?**
+#### Light or dark?
 
 Should you overlay white or black text over a color? This will figure out whether a color is perceptually “dark” or “light,” taken directly from [Myndex’s “flip for color” technique](https://gist.github.com/Myndex/e1025706436736166561d339fd667493). You can
 then use white text for dark colors, and vice-versa.
@@ -195,7 +195,7 @@ However, if you need to optimize usage, it’s important to know:
 
 In practical terms, optimal usage only requires caching the `better.from()` call and nothing else. Here are some examples of optimized code with a `color` prop:
 
-**React**
+##### React
 
 ```tsx
 import better from 'better-color-tools';
@@ -208,7 +208,7 @@ function MyComponent({ color }: { color: string }) {
 }
 ```
 
-**Svelte**
+##### Svelte
 
 ```svelte
 <script type"ts">
@@ -229,13 +229,13 @@ usually perform faster than most other color transformations anyway, so in most 
 
 Works with any version of [Dart Sass](https://sass-lang.com/dart-sass) (the current version).
 
-**Importing**
+#### Importing
 
 ```scss
 @use 'better-color-tools' as better;
 ```
 
-**Mix**
+#### Mix
 
 ```scss
 .foo {
@@ -245,7 +245,7 @@ Works with any version of [Dart Sass](https://sass-lang.com/dart-sass) (the curr
 
 Uses Oklab for best results (which yields much better results than Sass’ [mix](https://sass-lang.com/documentation/modules/color#mix)).
 
-**Lighten / Darken**
+#### Lighten / Darken
 
 ```scss
 .foo:hover {
@@ -256,7 +256,7 @@ Uses Oklab for best results (which yields much better results than Sass’ [mix]
 
 Lightens (or darkens) color via Oklab for human-perceived lightness value (which yields much better results than Sass’ [lighten](https://sass-lang.com/documentation/modules/color#lighten)/[darken](https://sass-lang.com/documentation/modules/color#darken):
 
-**P3**
+#### P3
 
 ```scss
 .foo {
@@ -266,7 +266,7 @@ Lightens (or darkens) color via Oklab for human-perceived lightness value (which
 
 Convert any Sass-readable color to [P3].
 
-**Fallback**
+#### Fallback
 
 ```scss
 .foo {
@@ -278,7 +278,7 @@ Convert any Sass-readable color to [P3].
 
 Mixin for adding CSS fallbacks. Can take infinite arguments. Specify desired format first, followed by fallbacks.
 
-**Oklab/Oklch**
+#### Oklab/Oklch
 
 ```scss
 $oklab: better.rgbToOklab(#f00); // (l: 0.6279554, a: 0.22486, b: 0.12585)
@@ -304,7 +304,7 @@ Or for color manipulation:
 $oklab-lighter: map.set($oklab, 'l', 0.8);
 ```
 
-**Lightness**
+#### Lightness
 
 Get the human-perceived lightness of any color (identical to the first value of `.oklabVal`):
 
