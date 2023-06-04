@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import better, { round } from '../lib/better.min.js';
   import AreaChart from './area-chart.svelte';
   import Picker from './picker.svelte';
@@ -86,6 +86,21 @@
     // TODO: allow per-stop tweaks of HCL
     onUpdate(nextRamp);
   }
+
+  function onKeydown(evt: KeyboardEvent) {
+    if (evt.key === 'Escape') {
+      for (const id of Object.keys(colorPickerOpen)) {
+        colorPickerOpen[id] = false;
+      }
+    }
+  }
+
+  onMount(() => {
+    document.body.addEventListener('keydown', onKeydown);
+  });
+  onDestroy(() => {
+    document.body.removeEventListener('keydown', onKeydown);
+  });
 </script>
 
 <div class="wrapper" style={`--cols: ${sortedRamp.length}`}>

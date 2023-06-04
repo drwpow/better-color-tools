@@ -57,7 +57,7 @@
     border-width: 0 0 1px 0;
     color: inherit;
     font-family: var(--font-mono);
-    font-size: inherit;
+    font-size: 0.75rem;
     line-height: 1.5;
     padding: 0;
     text-indent: 0.25em;

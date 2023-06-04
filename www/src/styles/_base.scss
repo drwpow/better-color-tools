@@ -49,6 +49,15 @@ code {
   font-family: var(--font-mono);
 }
 
+p code {
+  background-color: #ececec;
+  border-radius: 0.25rem;
+  display: inline-block;
+  font-size: 0.75em;
+  line-height: inherit;
+  padding: 0.25em 0.5em;
+}
+
 a {
   color: var(--color-b);
 }
