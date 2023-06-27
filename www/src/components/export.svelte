@@ -49,7 +49,7 @@
           value: better.from(color).hex,
         };
         nextCoOutput.color[name][id] = {
-          $value: better.from(color).hex,
+          $value: better.from(color).oklch,
         };
       }
     }
