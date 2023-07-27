@@ -1,4 +1,4 @@
-import { type sRGB, sRGBToOklch, oklchTosRGB } from './colorspace.js';
+import { type Oklch } from './colorspace.js';
 
 export interface AdjustOptions {
   /** type of adjustment (default: `"absolute"`) */
@@ -10,8 +10,8 @@ export interface AdjustOptions {
 }
 
 /** Adjust color through oklab/oklch colorspace */
-export default function adjust(color: sRGB, options: AdjustOptions): sRGB {
-  let [l, c, h, a] = sRGBToOklch(color);
+export default function adjust(oklch: Oklch, options: AdjustOptions): Oklch {
+  let { l, c, h, alpha = 1 } = oklch;
   if (typeof options.lightness === 'number') {
     if (options.mode === 'relative') l += options.lightness;
     else l = options.lightness;
@@ -25,8 +25,8 @@ export default function adjust(color: sRGB, options: AdjustOptions): sRGB {
     else h = options.hue;
   }
   if (typeof options.alpha === 'number') {
-    if (options.mode === 'relative') a += options.alpha;
-    else a = options.alpha;
+    if (options.mode === 'relative') alpha += options.alpha;
+    else alpha = options.alpha;
   }
-  return oklchTosRGB([l, c, h, a]);
+  return { l, c, h, alpha };
 }

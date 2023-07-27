@@ -1,9 +1,15 @@
 # better-color-tools
 
-# ⚠️ Jun 2023 Update
+JS and Sass color tools for the [Oklab]/[Oklch] colorspace for better color operations.
 
-⚠️ Unless you are using WebGL or canvas, you might not need this library anymore now that [oklab()](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/oklab), [oklch()](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/oklch), and
-[color-mix](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix) are **supported in all major browsers** 🎉
+The JS version of this libray is fast (`~200k` ops/s), lightweight (`5.9 kB` gzip), and dependency-free. The Sass version… is Sass (which has no runtime).
+
+[🏀 **Playground**](https://better-color-tools.pages.dev/)
+
+# ⚠️ You may not need this library!
+
+⚠️ As of Jun 2023, [oklab()](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/oklab), [oklch()](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/oklch), and
+[color-mix](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix) are **supported in all major browsers** 🎉. So only use this library if you truly need programmatic color manipulation (e.g. WebGL).
 
 ```css
 /** Blue button with perceptually-lighter hover color */
@@ -29,14 +35,6 @@ TL;DR:
     - `264` **H**ue degree (same as HSL)
 - Use Oklab to **mix**
   - Example: `color-mix(in oklab, [color1] [mix%], [color2])`
-
-## Old version of README
-
-JS and Sass color tools for the [Oklab]/[Oklch] colorspace for better color operations.
-
-The JS version of this libray is fast (`~200k` ops/s), lightweight (`5.9 kB` gzip), and dependency-free. The Sass version… is Sass (which has no runtime).
-
-[🏀 **Playground**](https://better-color-tools.pages.dev/)
 
 ## Usage
 
@@ -140,8 +138,7 @@ better.from('#0060ff').adjust({ mode: 'relative', lightness: -0.1 }); // darken 
 
 You can adjust `lightness`, `chroma`, and `hue` altogether, and you can either operate in `relative` or `absolute` (default) mode.
 
-_Note: adjustments may be chained together, but it’s worth noting that this library will always “snap” to the closest sRGB color with each adjustment. So chaining enough together, you may get different colors purely due to rounding errors. Prefer fewer
-chained adjustments (or keep the original color around) for best results._
+_Update: in past versions color adjustments were “lossy,” but now that’s no longer the case! You can now chain together infinite adjustments with no degradation._
 
 #### P3
 
@@ -163,7 +160,7 @@ others’ are intentional.
 
 #### Mix
 
-This uses Oklab (best) by default, but also supports `oklch`, `lms`, `sRGB`, and `linearRGB` colorspaces for mixing.
+This uses Oklab (best) by default, but also supports `oklch`, `lms`, `sRGB`, `linearRGB`, and `xyz` colorspaces for mixing.
 
 ```js
 better.mix('red', 'lime', 0.35); // Mix `red` and `lime` 35%, i.e. more red

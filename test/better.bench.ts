@@ -27,7 +27,7 @@ describe('benchmark', () => {
     better.from(0xff0000);
   });
 
-  bench('parse speed: rgb array', () => {
-    better.from([1, 0, 0, 1]);
+  bench('parse speed: rgb object', () => {
+    better.from({r: 1, g: 0, b: 0, alpha: 1});
   });
 });

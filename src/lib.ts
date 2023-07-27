@@ -44,6 +44,11 @@ export const LMS_TO_LINEAR_RGB: ColorMatrix = [
   [-1.2684380046, 2.6097574011, -0.3413193965],
   [-0.0041960863, -0.7034186147, 1.707614701],
 ];
+export const LMS_TO_XYZ: ColorMatrix = [
+  [1.227013851103521026, -0.5577999806518222383, 0.28125614896646780758],
+  [-0.040580178423280593977, 1.1122568696168301049, -0.071676678665601200577],
+  [-0.076381284505706892869, -0.42148197841801273055, 1.5861632204407947575],
+];
 export const LINEAR_RGB_TO_LMS: ColorMatrix = [
   [0.4122214708, 0.5363325363, 0.0514459929],
   [0.2119034982, 0.6806995451, 0.1073969566],
@@ -54,7 +59,11 @@ export const OKLAB_TO_LMS: ColorMatrix = [
   [1, -0.10556134232365633, -0.0638541747717059],
   [1, -0.08948418209496574, -1.2914855378640917],
 ];
-
+export const XYZ_TO_LMS: ColorMatrix = [
+  [0.8189330101, 0.3618667424, -0.1288597137],
+  [0.0329845436, 0.9293118715, 0.0361456387],
+  [0.0482003018, 0.2643662691, 0.633851707],
+];
 /**
  * Finds the maximum saturation possible for a given hue that fits in sRGB
  * Saturation here is defined as S = C/L
@@ -140,8 +149,8 @@ export function findCusp(a: number, b: number): Cusp {
   const S_cusp = computeMaxSaturation(a, b);
 
   // Convert to linear RGB (D65) to find the first point where at least one of r,g or b >= 1:
-  const [R, G, B] = lmsToLinearRGBD65(oklabToLMS([1, S_cusp * a, S_cusp * b, 1]));
-  const L_cusp = Math.cbrt(1 / Math.max(R, G, B));
+  const lRGB = lmsToLinearRGBD65(oklabToLMS({ l: 1, a: S_cusp * a, b: S_cusp * b, alpha: 1 }));
+  const L_cusp = Math.cbrt(1 / Math.max(lRGB.r, lRGB.g, lRGB.b));
   const C_cusp = L_cusp * S_cusp;
 
   return { L: L_cusp, C: C_cusp };

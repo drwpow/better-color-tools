@@ -40,7 +40,7 @@ export function lighten(color: Color, value: number, colorSpace: MixColorSpace =
  * "Y" value of sRGB -> XYZ
  */
 export function luminance(color: Color): number {
-  return from(color).xyzVal[1];
+  return from(color).xyzVal.y;
 }
 
 /**
@@ -48,7 +48,7 @@ export function luminance(color: Color): number {
  * Shortcut of "L” from oklab
  */
 export function lightness(color: Color): number {
-  return round(from(color).oklabVal[0], 5); // l == lightness
+  return round(from(color).oklabVal.l, 5); // l == lightness
 }
 
 /**

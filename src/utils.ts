@@ -1,4 +1,4 @@
-import type { ColorMatrix, sRGB } from './index.js';
+import type { ColorMatrix } from './index.js';
 
 /** you know it, you love it */
 export function leftPad(input: string, min = 2): string {
@@ -22,12 +22,11 @@ export function clamp(input: number, min: number, max: number): number {
 }
 
 /** CSS Color Module 4 function */
-export function colorFn(colorSpace: string, val: sRGB): string {
+export function colorFn(colorSpace: string, val: [number, number, number, number]): string {
   const [x, y, z, alpha] = val;
   const alphaSlash = alpha < 1 ? `/${round(alpha, 5)}` : '';
 
   // note: JavaScript abbreviates anything > 6 decimal places as 1e-7, etc.
-
   switch (colorSpace) {
     case 'rgb':
     case 'rgba': {
@@ -48,8 +47,8 @@ export function colorFn(colorSpace: string, val: sRGB): string {
   }
 }
 
-/** multiply 3x1 color matrix with colorspace */
-export function multiplyColorMatrix(color: sRGB, matrix: ColorMatrix): sRGB {
+/** apply 3x3 color matrix to color */
+export function multiplyColorMatrix(color: [number, number, number], matrix: ColorMatrix): [number, number, number] {
   const product: typeof color = [...color];
   for (let y = 0; y < matrix.length; y++) {
     let sum = 0;
