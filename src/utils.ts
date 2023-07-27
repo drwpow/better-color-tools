@@ -50,7 +50,7 @@ export function colorFn(colorSpace: string, val: sRGB): string {
 
 /** multiply 3x1 color matrix with colorspace */
 export function multiplyColorMatrix(color: sRGB, matrix: ColorMatrix): sRGB {
-  const product = [...color];
+  const product: typeof color = [...color];
   for (let y = 0; y < matrix.length; y++) {
     let sum = 0;
     for (let x = 0; x < matrix[y].length; x++) {
