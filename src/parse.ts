@@ -222,10 +222,10 @@ export function hexNumTosRGB(hex: number): sRGB {
 }
 
 /** only grabs numbers from a color string (ignores spaces, commas, slashes, etc.) */
-function parseValueStr(colorStr: string, normalize?: number[]): number[] {
+function parseValueStr(colorStr: string, normalize?: number[]): [number, number, number, number] {
   const matches = colorStr.match(FLOAT_RE);
   if (!matches) throw new Error(`Unexpected color format: ${colorStr}`);
-  const values = [0, 0, 0, 1]; // always start alpha at 1 unless overridden
+  const values: [number, number, number, number] = [0, 0, 0, 1]; // always start alpha at 1 unless overridden
   for (let n = 0; n < matches.length; n++) {
     if (!matches[n]) continue;
     // percentage (already normalized)
