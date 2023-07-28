@@ -3,11 +3,13 @@
 I started this library because I frequently need to mix colors, but was constantly disappointed at how bad the results were using common tools available. Of course, the answer was “color science,” but that field is inaccessible or a huge time-sink to most.
 But since I needed to really understand color science to determine “best” methods, I took the plunge so you don’t have to.
 
-This library is full of opinions that perhaps not all color scientists will agree with, but that’s OK. It posists strong opinions for the sake of the developer. But those strong opinions do come from what I could find to be the largest of consortium of
-color scientists agreeing to.
+## Jun 2023 Update
 
-Put another way, this library aims to bridge the gap between **practicality** (libraries that are easy to use but produce god-awful colors) and **precision** (libraries that are accurate implementations of digital color spaces but require a large learning
-curve to use well).
+**This library is now obsolete,** because the problems it sought to achieve are now solved at large:
+
+- **Mixing/modifying** can be done using browsers’ [mix-color()](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix) CSS function, which will yield great results when using the `oklab` space.
+- **Parsing/converting** for the Oklab/Oklch space can be achieved using browsers’ [oklab()](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/oklab) and [oklch()](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/oklch) CSS
+  functions, respectively. For converting between colorspaces in JS, [culori’s ESM build](https://culorijs.org/guides/tree-shaking/) is the best JS tool available.
 
 ### Practicality
 

@@ -1,40 +1,13 @@
 # better-color-tools
 
-# ⚠️ Jun 2023 Update
+# ⚠️ Update Jun 2023
 
-⚠️ Unless you are using WebGL or canvas, you might not need this library anymore now that [oklab()](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/oklab), [oklch()](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/oklch), and
-[color-mix](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/color-mix) are **supported in all major browsers** 🎉
+⚠️ [This library is no longer maintained](https://github.com/drwpow/better-color-tools/issues/45). Please use [culori’s ESM build](https://culorijs.org/guides/tree-shaking/) which delivers everything this library does, and then some, in the same bundlesize
+and at 5–10× performance.
 
-```css
-/** Blue button with perceptually-lighter hover color */
-
-.btn {
-  --bg: oklch(60% 0.2152 264);
-
-  background-color: var(--bg);
-  color: oklch(100% 0 0);
-
-  &:hover {
-    background-color: color-mix(in oklab, var(--bg) 80%, white);
-  }
-}
-```
-
-TL;DR:
-
-- Use Oklch to **define** colors in a human-friendly way
-  - `oklch(60% 0.2152 264)` unpacks to:
-    - `60%` **L**ightness
-    - `0.2152` **C**hroma (higher is more saturated; max is ~ `0.4`)
-    - `264` **H**ue degree (same as HSL)
-- Use Oklab to **mix**
-  - Example: `color-mix(in oklab, [color1] [mix%], [color2])`
-
-## Old version of README
+## Readme
 
 JS and Sass color tools for the [Oklab]/[Oklch] colorspace for better color operations.
-
-The JS version of this libray is fast (`~200k` ops/s), lightweight (`5.9 kB` gzip), and dependency-free. The Sass version… is Sass (which has no runtime).
 
 [🏀 **Playground**](https://better-color-tools.pages.dev/)
 
@@ -44,16 +17,8 @@ The JS version of this libray is fast (`~200k` ops/s), lightweight (`5.9 kB` gzi
 npm install better-color-tools
 ```
 
-### Comparisons
-
-| Package                                            | Size (min, gzip) |
-| :------------------------------------------------- | ---------------: |
-| **better-color-tools**                             |         `5.9 kB` |
-| [culori](https://culorijs.org) (Oklab/Oklch only)  |        `19.2 kB` |
-| [Color.js](https://colorjs.io/) (Oklab/Oklch only) |        `24.2 kB` |
-
-This library exists to provide performant and accurate access to the Oklab and Oklch colorspaces at minimum filesize and maximum performance. This is **not** a comprehensive colorspace tool like [Culori] or [Color.js][colorjs], rather, better-color-tools
-seeks to give you the best “bang for the buck” by providing maximum utility with minimal footprint.
+This library was created to provide performant and accurate access to the Oklab and Oklch colorspaces at minimum filesize and maximum performance. This is **not** a comprehensive colorspace tool like [Culori] or [Color.js][colorjs], rather,
+better-color-tools seeks to give you the best “bang for the buck” by providing maximum utility with minimal footprint.
 
 To learn more, see [Project Goals](./docs/project-goals.md)
 
