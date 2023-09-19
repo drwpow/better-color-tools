@@ -51,10 +51,14 @@
   }
 
   onMount(() => {
-    document.body.addEventListener('keydown', onKeydown);
+    if (typeof document !== 'undefined') {
+      document.body.addEventListener('keydown', onKeydown);
+    }
   });
   onDestroy(() => {
-    document.body.removeEventListener('keydown', onKeydown);
+    if (typeof document !== 'undefined') {
+      document.body.removeEventListener('keydown', onKeydown);
+    }
   });
 </script>
 
